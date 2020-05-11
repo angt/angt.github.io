@@ -1,0 +1,29 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-weight: 350;
+    font-family: sans-serif;
+}
+html {
+    color: #444;
+}
+main {
+    display: block;
+}
+p, div {
+    padding: 20px;
+}
+body {
+    background-color: #ffd;
+    max-width: 600px;
+    margin: 0 auto;
+    margin-top: 50px;
+    margin-bottom: 50px;
+}
+.center {
+    text-align: center;
+}
+a {
+  background-color: transparent;
+  text-decoration: none;
+}
