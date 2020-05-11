@@ -1,29 +1,34 @@
 * {
-    margin: 0;
-    padding: 0;
     font-weight: 350;
     font-family: sans-serif;
+    line-height: 1.6em;
+    margin: 0;
+    padding: 0;
 }
 html {
-    color: #444;
+    color: #222;
 }
 main {
     display: block;
 }
-p, div {
-    padding: 20px;
-}
 body {
-    background-color: #ffd;
+    background-color: #ffe;
     max-width: 600px;
+    width: 95vw;
     margin: 0 auto;
     margin-top: 50px;
     margin-bottom: 50px;
 }
-.center {
+h1, h2, .center {
     text-align: center;
 }
+h1, h2 {
+    margin-top: 60px;
+}
+h3, h4, h5, h6, div {
+    margin-top: 20px;
+}
 a {
-  background-color: transparent;
-  text-decoration: none;
+    background-color: transparent;
+    text-decoration: none;
 }
