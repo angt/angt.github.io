@@ -1,51 +1,44 @@
-<!doctype html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>AnGT</title>
-        <link rel="stylesheet" href="my.css">
-    </head>
-    <body>
-        <h1>AnGT</h1>
-        <div class="center">I guess I need to put some stuff here...</div>
-        <h2>Projects</h2>
-        <h3><a href="https://github.com/angt/secret">secret</a></h3>
-        <p>A simple and tiny tool that will help you keep your little secrets.
-        I never liked password managers people offered me...
-        Details are <a href="https://dev.to/angt/how-to-store-your-little-secrets-l8e">here</a> for the curious.
-        Anyway, none of them suited me, I must be weird.
-        So I crafted my own and it suits me perfectly.
-        Of course it's open source for weird people like me :)</p>
-        <h3><a href="https://github.com/angt/slashinit">slashinit</a></h3>
-        <p>A minimal PID 1 for initramfs.
-        You can allow yourself to do weird things like redirect all the logs to /dev/kmsg
-        or updating your system via a kexec directly from your init process
-        when you have your whole system under control in production.</p>
-        <h3><a href="https://github.com/angt/glorytun">glorytun</a></h3>
-        <p>A very small, simple and secure multipath UDP tunnel.
-        Originally developed as a side project.
-        It was quickly integrated into the OverTheBox product to guarantee internet connectivity:
-        link aggregation, failover with or without backup, traffic shapping and robust MTU discovery.</p>
-        <h3><a href="https://github.com/angt/slurm-https">slurm-https</a></h3>
-        <p>A simple HTTPS API for slurm.
-        This project uses the worst parts of the Go language to provide a HTTPS+json API to the excellent slurm scheduler.
-        I had written this for a PoC that was prematurely aborted so I decided to open source it.</p>
-        <h3><a href="https://github.com/angt/vbridge">vbridge</a></h3>
-        <p>The X11 remote desktop software used at OVH, CEA-DAM and other equally strange places.
-        The keyboard mapping is generated on the fly as you type,
-        so it is never necessary to configure it (unlike the alternatives).
-        Sessions are encrypted with TLS and can be shared.
-        A new video compression algorithm has been invented for the occasion.
-        The subject is vast and big improvements are still possible, contact me.</p>
-        <h3><a href="https://github.com/angt/durry">durry</a></h3>
-        <p>The only GPU-less driver for X.org that works without modelines!
-        It's a small project written quickly but it's very useful with vbridge.</p>
-        <h2>Links</h2>
-        <div class="center">
-            <a href="https://github.com/angt">GitHub</a>
-            <a href="https://gitlab.com/angt">GitLab</a>
-            <a href="https://dev.to/angt">DEV</a>
-        </div>
-    </body>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Adrien Gallouët" />
+  <title>Projects</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="my.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Projects</h1>
+<p class="author">Adrien Gallouët</p>
+</header>
+<h2 id="glorytun"><a href="https://github.com/angt/glorytun">glorytun</a></h2>
+<p>Small, simple and secure multipath UDP tunnel.</p>
+<p>Originally developed as a side project. It was quickly integrated into the OverTheBox product to guarantee internet connectivity: link aggregation, failover with or without backup, traffic shapping and robust MTU discovery.</p>
+<h2 id="secret"><a href="https://github.com/angt/secret">secret</a></h2>
+<p>Tiny secret store to keep your little secrets.</p>
+<p>I never liked password managers people offered me… Details are <a href="https://dev.to/angt/how-to-store-your-little-secrets-l8e">here</a> for the curious. Anyway, none of them suited me, I must be weird. So I crafted my own and it suits me perfectly. Of course it’s open source for weird people like me :)</p>
+<h2 id="slashinit"><a href="https://github.com/angt/slashinit">slashinit</a></h2>
+<p>Minimal PID 1 for initramfs.</p>
+<p>You can allow yourself to do weird things like redirect all the logs to <code>/dev/kmsg</code> or updating your system via a kexec directly from your init process when you have your whole system under control in production.</p>
+<h2 id="slurm-https"><a href="https://github.com/angt/slurm-https">slurm-https</a></h2>
+<p>Simple HTTPS API for slurm.</p>
+<p>This project uses the worst parts of the Go language to provide a HTTPS+json API to the excellent slurm scheduler. I had written this for a PoC that was prematurely aborted so I decided to open source it.</p>
+<h2 id="vbridge"><a href="https://github.com/angt/vbridge">vbridge</a></h2>
+<p>X11 Cloud desktop software.</p>
+<p>The remote desktop software used at OVH, CEA-DAM and other equally strange places. A new video compression algorithm has been invented for the occasion. The keyboard mapping is generated on the fly as you type, so it is never necessary to configure it (unlike the alternatives). Sessions are encrypted with TLS and can be shared. The subject is vast and big improvements are still possible, contact me.</p>
+<h2 id="durry"><a href="https://github.com/angt/durry">durry</a></h2>
+<p>The only GPU-less driver for X.org that works without modelines!</p>
+<p>It’s a small project written quickly but it’s very useful with vbridge.</p>
+</body>
 </html>

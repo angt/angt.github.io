@@ -1,34 +1,29 @@
 * {
-    font-weight: 350;
-    font-family: sans-serif;
+    font-weight: 300;
+    font-family: monospace;
     line-height: 1.6em;
     margin: 0;
     padding: 0;
 }
 html {
-    color: #222;
-}
-main {
-    display: block;
+    color: #fff;
 }
 body {
-    background-color: #ffe;
+    background-color: #202;
     max-width: 600px;
     width: 95vw;
     margin: 0 auto;
     margin-top: 50px;
     margin-bottom: 50px;
 }
-h1, h2, .center {
-    text-align: center;
+hr, h1, h2 {
+    color: #ffa;
 }
-h1, h2 {
-    margin-top: 60px;
-}
-h3, h4, h5, h6, div {
-    margin-top: 20px;
+h1, h2, h3, h4, h5, h6, div {
+    margin-top: 30px;
 }
 a {
+    color: #fa5;
     background-color: transparent;
     text-decoration: none;
 }
