@@ -9,39 +9,44 @@ Small, simple and secure multipath UDP tunnel.
 
 Originally developed as a side project.
 It was quickly integrated into the OverTheBox product to guarantee internet connectivity:
-link aggregation, failover with or without backup, traffic shapping and robust MTU discovery.
+link aggregation, failover, backup links, traffic shapping and robust MTU discovery.
+For high speed cryptography, I had to implement the [AEGS-256](https://github.com/angt/aegis256) cipher.
+I also implemented it in the [libsodium](github.com/jedisct1/libsodium) library.
 
 ## [secret](https://github.com/angt/secret)
 Tiny secret store to keep your little secrets.
 
-I never liked password managers people offered me...
-Details are [here](https://dev.to/angt/how-to-store-your-little-secrets-l8e) for the curious.
+I never really liked the password managers that people offered...
+I will not go into details but you will find some explanations
+[here](https://dev.to/angt/how-to-store-your-little-secrets-l8e).
 Anyway, none of them suited me, I must be weird.
-So I crafted my own and it suits me perfectly.
-Of course it's open source for weird people like me :)
+So I crafted my own and it perfectly meets my needs.
+Of course, it's open source for weird people like me :)
 
 ## [slashinit](https://github.com/angt/slashinit)
 Minimal PID 1 for initramfs.
 
-You can allow yourself to do weird things like redirect all the logs to `/dev/kmsg`
+You can allow yourself to do weird things like redirect all the logs to /dev/kmsg
 or updating your system via a kexec directly from your init process
-when you have your whole system under control in production.
+when you have your whole system under control.
 
 ## [slurm-https](https://github.com/angt/slurm-https)
 Simple HTTPS API for slurm.
 
 This project uses the worst parts of the Go language to provide a HTTPS+json API to the excellent slurm scheduler.
-I had written this for a PoC that was prematurely aborted so I decided to open source it.
+I had written this for a PoC that was prematurely aborted.
+It seems that some people find it useful and use it so I list it here.
 
 ## [vbridge](https://github.com/angt/vbridge)
 X11 Cloud desktop software.
 
 The remote desktop software used at OVH, CEA-DAM and other equally strange places.
-A new video compression algorithm has been invented for the occasion.
+I had to build a new video compression algorithm, based on an arithmetic encoder, to achieve the requested performances.
 The keyboard mapping is generated on the fly as you type,
-so it is never necessary to configure it (unlike the alternatives).
+so it is never necessary to configure it, unlike the alternatives.
 Sessions are encrypted with TLS and can be shared.
-The subject is vast and big improvements are still possible, contact me.
+The subject is vast and big improvements are still possible,
+contact me if you are interested.
 
 ## [durry](https://github.com/angt/durry)
 The only GPU-less driver for X.org that works without modelines!
