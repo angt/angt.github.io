@@ -27,3 +27,7 @@ a {
     background-color: transparent;
     text-decoration: none;
 }
+:focus {
+    outline: unset;
+    text-decoration: underline;
+}
