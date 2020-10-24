@@ -47,6 +47,7 @@ Sessions are encrypted with TLS and can be shared.
 The subject is vast and big improvements are still possible, contact me if you are interested.
 
 ## [durry](https://github.com/angt/durry)
-The only GPU-less driver for X.org that works without modelines!
+X11 GPU-less driver.
 
-It's a small project written quickly but it's very useful with vbridge.
+The only GPU-less driver for X.org that works without modelines!
+It's a small project written quickly but it's very useful with vbridge and others.
