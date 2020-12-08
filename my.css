@@ -1,27 +1,18 @@
-* {
-    font-weight: lighter;
-    font-size: large;
-    font-family: monospace;
-    line-height: 1.6em;
-    margin: 0;
-    padding: 0;
-}
 html {
     color: #444;
 }
 body {
+    font-family: sans-serif;
     background-color: #fff;
     max-width: 600px;
     width: 95vw;
     margin: 0 auto;
-    margin-top: 50px;
-    margin-bottom: 50px;
 }
-h1, h2 {
+h1, h2, h3, h4 {
     color: #222;
 }
-h1, h2, h3, h4, h5, h6, div {
-    margin-top: 30px;
+p {
+    font-size: 1.21em;
 }
 a {
     color: #830;

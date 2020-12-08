@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>OpenSourceProject</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="my.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">OpenSourceProject</h1>
+</header>
+<p><a href="/">Home</a></p>
+<h2 id="glorytun---multipath-udp-tunnel"><a href="https://github.com/angt/glorytun">glorytun - Multipath UDP tunnel</a></h2>
+<p>Originally developed as a side project. It was quickly integrated into the OverTheBox product to guarantee internet connectivity: link aggregation, failover, backup links, traffic shapping and robust MTU discovery. For high speed cryptography, I had to implement the <a href="https://github.com/angt/aegis256">AEGIS-256</a> cipher. I also implemented it in the <a href="https://github.com/jedisct1/libsodium">libsodium</a> library.</p>
+<h2 id="secret---tiny-secret-store-to-keep-your-little-secrets"><a href="https://github.com/angt/secret">secret - Tiny secret store to keep your little secrets</a></h2>
+<p>I never really liked the password managers that people offered… I will not go into details but you will find some explanations <a href="https://dev.to/angt/how-to-store-your-little-secrets-l8e">here</a>. Anyway, none of them suited me, I must be weird. So I crafted my own and it perfectly meets my needs. Of course, it’s open source for weird people like me :)</p>
+<h2 id="slashinit---minimal-pid-1-for-initramfs"><a href="https://github.com/angt/slashinit">slashinit - Minimal PID 1 for initramfs</a></h2>
+<p>You can allow yourself to do weird things like redirect all the logs to /dev/kmsg or updating your system via a kexec directly from your init process when you have your whole system under control.</p>
+<h2 id="slurm-https---simple-https-api-for-slurm"><a href="https://github.com/angt/slurm-https">slurm-https - Simple HTTPS API for slurm</a></h2>
+<p>This project uses the worst parts of the Go language to provide a HTTPS+json API to the excellent slurm scheduler. I had written this for a PoC that was prematurely aborted. It seems that some people find it useful and use it so I list it here.</p>
+<h2 id="vbridge---x11-cloud-desktop-software"><a href="https://github.com/angt/vbridge">vbridge - X11 Cloud desktop software</a></h2>
+<p>The remote desktop software used at OVH, CEA-DAM and other equally strange places. I had to build a new video compression algorithm, based on an arithmetic encoder, to achieve the requested performances. The keyboard mapping is generated on the fly as you type, so it is never necessary to configure it, unlike the alternatives. Sessions are encrypted with TLS and can be shared. The subject is vast and big improvements are still possible, contact me if you are interested.</p>
+<h2 id="durry---x11-gpu-less-driver"><a href="https://github.com/angt/durry">durry - X11 GPU-less driver</a></h2>
+<p>The only GPU-less driver for X.org that works without modelines! It’s a small project written quickly but it’s very useful with vbridge and others.</p>
+</body>
+</html>
