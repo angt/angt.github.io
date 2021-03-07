@@ -6,10 +6,4 @@ language: en-US
 I love designing new software and I'm part of those who believe that simplicity is its most important quality.
 I have worked on several projects, some of them being [open source](oss.html).
 
-Still there? Here are some links:
-
- - [GitHub](https://github.com/angt)
- - [LinkedIn](https://www.linkedin.com/in/adrien-gallouët-016936113)
- - [DEV](https://dev.to/angt)
-
 Don't hesitate to [contact me](mailto:adrien@gallouet.fr).
