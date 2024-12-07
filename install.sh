@@ -15,4 +15,12 @@ remote origin https://github.com/angt/dotfiles gh:angt/dotfiles
 remote gitlab https://gitlab.com/angt/dotfiles gl:angt/dotfiles
 
 git fetch --all
-git reset --hard origin/master
+
+Y=
+printf "Hard reset ? "
+read -r Y
+
+case "$Y" in
+([Yy]*) git reset --hard origin/master ;;
+(*)     git reset origin/master ;;
+esac
