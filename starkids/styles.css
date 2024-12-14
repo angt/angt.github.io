@@ -8,21 +8,17 @@ body {
 }
 
 input {
-  outline: none;
-  color: #333;
-  border: none;
-  text-align: center;
-  text-decoration: none;
-  font-size: 1rem;
+    outline: none;
+    color: #333;
+    border: none;
+    text-align: center;
+    text-decoration: none;
+    font-size: 1.5rem;
+    box-sizing: border-box;
 }
 
-#app {
+#app, img {
     padding: 20px;
-}
-
-h1 {
-    font-size: 2rem;
-    margin-bottom: 20px;
 }
 
 .kids {
@@ -37,8 +33,6 @@ h1 {
     border-radius: 10px;
     padding: 15px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    min-width: 150px;
-    max-width: 200px;
     font-size: 1.5rem;
 }
 
@@ -46,6 +40,7 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    min-width: 150px;
     gap: 10px;
 }
 
