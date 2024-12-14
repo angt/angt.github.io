@@ -17,7 +17,7 @@ input {
     box-sizing: border-box;
 }
 
-#app, img {
+#app, .logo {
     padding: 20px;
 }
 
@@ -45,7 +45,6 @@ input {
 }
 
 button {
-    background: #ff9a9e;
     border: none;
     border-radius: 5px;
     padding: 5px 10px;
