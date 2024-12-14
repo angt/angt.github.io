@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StarKids</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <h1>StarKids</h1>
+        <div class="kids">
+            <div class="kid" id="kid1">
+                <input class="name-input" type="text" placeholder="Child 1" onchange="updateName('kid1')">
+                <div class="controls">
+                    <button onclick="updateStars('kid1', -1)">-</button>
+                    <span class="stars">0</span>
+                    <button onclick="updateStars('kid1', 1)">+</button>
+                </div>
+            </div>
+            <div class="kid" id="kid2">
+                <input class="name-input" type="text" placeholder="Child 2" onchange="updateName('kid2')">
+                <div class="controls">
+                    <button onclick="updateStars('kid2', -1)">-</button>
+                    <span class="stars">0</span>
+                    <button onclick="updateStars('kid2', 1)">+</button>
+                </div>
+            </div>
+            <div class="kid" id="kid3">
+                <input class="name-input" type="text" placeholder="Child 3" onchange="updateName('kid3')">
+                <div class="controls">
+                    <button onclick="updateStars('kid3', -1)">-</button>
+                    <span class="stars">0</span>
+                    <button onclick="updateStars('kid3', 1)">+</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
+
+
