@@ -18,7 +18,7 @@ function updateStars(kid, change) {
 
 function updateName(kid) {
     const nameInput = document.querySelector(`#${kid} .name-input`);
-    const name = nameInput.value.trim() || localStorage.getItem(`${kid}_name`);
+    const name = nameInput.value.trim() || localStorage.getItem(`${kid}_name`) || "";
     localStorage.setItem(`${kid}_name`, name);
     nameInput.value = name;
 }
