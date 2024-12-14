@@ -8,7 +8,12 @@ function updateStars(kid, change) {
     const starElement = document.querySelector(`#${kid} .stars`);
     const stars = change + parseInt(localStorage.getItem(`${kid}_stars`) || 0);
     localStorage.setItem(`${kid}_stars`, stars);
-    starElement.textContent = stars + " ⭐";
+    let text = ""
+    const count = Math.abs(stars);
+    if (count > 1) text += count;
+    if (stars > 0) text += " ⭐";
+    if (stars < 0) text += " ☠️";
+    starElement.textContent = text;
 }
 
 function updateName(kid) {

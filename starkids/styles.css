@@ -59,6 +59,8 @@ button:hover {
 }
 
 .stars {
+    display: block;
+    width: 100%;
     font-size: 1.5rem;
     font-weight: bold;
 }
