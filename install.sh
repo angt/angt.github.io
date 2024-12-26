@@ -24,3 +24,5 @@ case "$Y" in
 ([Yy]*) git reset --hard origin/master ;;
 (*)     git reset origin/master ;;
 esac
+
+git branch --set-upstream-to origin/master
