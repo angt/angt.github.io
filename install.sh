@@ -15,14 +15,5 @@ remote origin https://github.com/angt/dotfiles gh:angt/dotfiles
 remote gitlab https://gitlab.com/angt/dotfiles gl:angt/dotfiles
 
 git fetch --all
-
-Y=
-printf "Hard reset ? "
-read -r Y
-
-case "$Y" in
-([Yy]*) git reset --hard origin/master ;;
-(*)     git reset origin/master ;;
-esac
-
+git reset --hard origin/master
 git branch --set-upstream-to origin/master
