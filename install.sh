@@ -17,3 +17,5 @@ remote gitlab https://gitlab.com/angt/dotfiles gl:angt/dotfiles
 git fetch --all
 git reset --hard origin/master
 git branch --set-upstream-to origin/master
+
+. ./.shell
