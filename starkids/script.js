@@ -23,6 +23,15 @@ function updateName(kid) {
     nameInput.value = name;
 }
 
+function deleteKid(kidId) {
+    const kidElement = document.getElementById(kidId);
+    if (kidElement) {
+        kidElement.remove();
+        localStorage.removeItem(`${kidId}_stars`);
+        localStorage.removeItem(`${kidId}_name`);
+    }
+}
+
 function createKid(id) {
     const kidId = `kid${id}`;
     const kidElement = document.createElement('div');
@@ -30,12 +39,13 @@ function createKid(id) {
     kidElement.id = kidId;
 
     kidElement.innerHTML = `
-        <input class="name-input" type="text" placeholder="Child ${id}" onchange="updateName('${kidId}')">
+        <input class="name-input" type="text" placeholder="Name" onchange="updateName('${kidId}')">
         <div class="controls">
             <button onclick="updateStars('${kidId}', -1)">☠️</button>
             <span class="stars">0</span>
             <button onclick="updateStars('${kidId}', 1)">⭐</button>
         </div>
+        <button class="del" onclick="deleteKid('${kidId}')">Delete</button>
     `;
 
     document.querySelector('.kids').appendChild(kidElement);
@@ -51,7 +61,8 @@ function add() {
 }
 
 for (let i = 1; i <= kidCount; i++) {
-    createKid(i);
+    if (localStorage.getItem(`kid${i}_name`) !== null)
+        createKid(i);
 }
 
 document.getElementById('add').addEventListener('click', add);
