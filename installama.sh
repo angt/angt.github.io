@@ -1,6 +1,7 @@
 TARGET_FEATURES="https://github.com/angt/target-features/releases/latest/download"
 UNZSTD="https://github.com/angt/unzstd/releases/latest/download"
 REPO="https://huggingface.co/datasets/angt/installamacpp/resolve/main"
+REPO_CUDA="https://huggingface.co/datasets/angt/installamacpp-cuda/resolve/main"
 
 die() {
 	echo "$*" >&2
@@ -8,28 +9,36 @@ die() {
 }
 
 check_bin() {
-	for cmd; do
-		command -v "$cmd" >/dev/null 2>/dev/null ||
-			die "No command $cmd found, please install it"
-		done
+	command -v "$1" >/dev/null 2>/dev/null
 }
 
-detect_target_features() {
-	[ -x ./target-features ] ||
-		curl -fsSL "$TARGET_FEATURES/$ARCH-$OS-target-features" -o target-features
-	chmod +x ./target-features
-	echo "$ARCH$(./target-features | tr + -)"
+dl_bin() {
+	[ -x "$1" ] && return
+	check_bin curl || die "Please install curl"
+	case "$2" in
+	(*.zst) curl -fsSL "$2" | unzstd ;;
+	(*)     curl -fsSL "$2" ;;
+	esac > "$1"
+	chmod +x "$1"
 }
 
 unzstd() (
-	command -v zzstd >/dev/null 2>/dev/null && exec zstd -d
-	[ -x ./unzstd ] ||
-		curl -fsSL "$UNZSTD/$ARCH-$OS-unzstd" -o unzstd
-	chmod +x ./unzstd
-	exec unzstd
+	command -v zstd >/dev/null 2>/dev/null && exec zstd -d
+	dl_bin unzstd "$UNZSTD/$ARCH-$OS-unzstd"
+	exec ./unzstd
 )
 
-check_bin uname
+llama_server_cuda() {
+	dl_bin cuda-probe "$REPO_CUDA/cuda-probe.zst" &&
+	CUDA_ARCH=$(./cuda-probe) &&
+	dl_bin llama-server "$REPO_CUDA/llama-server-cuda-$CUDA_ARCH.zst"
+}
+
+llama_server_cpu() {
+	dl_bin target-features "$TARGET_FEATURES/$ARCH-$OS-target-features" &&
+	TARGET="$ARCH$(./target-features | tr + -)" &&
+	dl_bin llama-server "$REPO/$TARGET/llama-server.zst"
+}
 
 case "$(uname -m)" in
 (arm64|aarch64) ARCH=aarch64 ;;
@@ -73,12 +82,8 @@ MODEL_FILE=$(find "$MODEL_DIR" -name "*$MODEL_QUANT*.gguf" | sort | head -n 1)
 [ -f "$MODEL_FILE" ] ||
 	die "Unable to find the GGUF file in $MODEL_DIR"
 
-if [ ! -x llama-server ]; then
-	TARGET=$(detect_target_features)
-	echo "No llama-server found, downloading for target $TARGET"
-	check_bin curl gunzip
-	curl -fsSL "$REPO/$TARGET/llama-server.zst" | unzstd > llama-server
-	chmod +x llama-server
-fi
+[ -x llama-server ] || llama_server_cuda
+[ -x llama-server ] || llama_server_cpu
+[ -x llama-server ] || die "No llama-server found for your setup..."
 
 exec ./llama-server -m "$MODEL_FILE" "$@"
