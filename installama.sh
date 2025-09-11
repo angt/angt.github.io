@@ -1,4 +1,5 @@
 TARGET_FEATURES="https://github.com/angt/target-features/releases/latest/download"
+UNZSTD="https://github.com/angt/unzstd/releases/latest/download"
 REPO="https://huggingface.co/datasets/angt/installamacpp/resolve/main"
 
 die() {
@@ -19,6 +20,14 @@ detect_target_features() {
 	chmod +x ./target-features
 	echo "$ARCH$(./target-features | tr + -)"
 }
+
+unzstd() (
+	command -v zzstd >/dev/null 2>/dev/null && exec zstd -d
+	[ -x ./unzstd ] ||
+		curl -fsSL "$UNZSTD/$ARCH-$OS-unzstd" -o unzstd
+	chmod +x ./unzstd
+	exec unzstd
+)
 
 check_bin uname
 
@@ -64,13 +73,12 @@ MODEL_FILE=$(find "$MODEL_DIR" -name "*$MODEL_QUANT*.gguf" | sort | head -n 1)
 [ -f "$MODEL_FILE" ] ||
 	die "Unable to find the GGUF file in $MODEL_DIR"
 
-if [ ! -x ~/.installama/llama-server ]; then
+if [ ! -x llama-server ]; then
 	TARGET=$(detect_target_features)
 	echo "No llama-server found, downloading for target $TARGET"
 	check_bin curl gunzip
-	curl -fsSL -O "$REPO/$TARGET/llama-server.gz" &&
-	gunzip llama-server.gz &&
+	curl -fsSL "$REPO/$TARGET/llama-server.zst" | unzstd > llama-server
 	chmod +x llama-server
 fi
 
-exec ~/.installama/llama-server -m "$MODEL_FILE" "$@"
+exec ./llama-server -m "$MODEL_FILE" "$@"
