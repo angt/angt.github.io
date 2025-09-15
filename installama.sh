@@ -30,7 +30,7 @@ unzstd() (
 
 llama_server_cuda() {
 	dl_bin cuda-probe "$REPO_CUDA/cuda-probe.zst" &&
-	CUDA_ARCH=$(./cuda-probe) &&
+	CUDA_ARCH=$(./cuda-probe 2>/dev/null) &&
 	dl_bin llama-server "$REPO_CUDA/llama-server-cuda-$CUDA_ARCH.zst"
 }
 
