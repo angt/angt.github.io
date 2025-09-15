@@ -40,50 +40,54 @@ llama_server_cpu() {
 	dl_bin llama-server "$REPO/$TARGET/llama-server.zst"
 }
 
-case "$(uname -m)" in
-(arm64|aarch64) ARCH=aarch64 ;;
-(amd64|x86_64)  ARCH=x86_64  ;;
-(*) die "Arch not supported"
-esac
+main() {
+	case "$(uname -m)" in
+	(arm64|aarch64) ARCH=aarch64 ;;
+	(amd64|x86_64)  ARCH=x86_64  ;;
+	(*) die "Arch not supported"
+	esac
 
-case "$(uname -s)" in
-(Linux)  OS=linux ;;
-(Darwin) OS=macos ;;
-(*) die "OS not supported"
-esac
+	case "$(uname -s)" in
+	(Linux)  OS=linux ;;
+	(Darwin) OS=macos ;;
+	(*) die "OS not supported"
+	esac
 
-MODEL="${1%%:*}"
-MODEL_REF=main # later
+	MODEL="${1%%:*}"
+	# MODEL_REF=main
 
-case "$MODEL" in (*/*) ;;
-(qwen3-4b)    MODEL="unsloth/Qwen3-4B-Instruct-2507-GGUF" ;;
-(gpt-oss-20b) MODEL="unsloth/gpt-oss-20b-GGUF" ;;
-(*) die "Please choose a model, like qwen3-4b:Q4_0"
-esac
+	case "$MODEL" in (*/*) ;;
+	(qwen3-4b)    MODEL="unsloth/Qwen3-4B-Instruct-2507-GGUF" ;;
+	(gpt-oss-20b) MODEL="unsloth/gpt-oss-20b-GGUF" ;;
+	(*) die "Please choose a model, like qwen3-4b:Q4_0"
+	esac
 
-case "$1" in
-(*:*) MODEL_QUANT="${1##*:}" ;;
-(*) die "Please choose a quant type, like $MODEL:Q8_0"
-esac
+	case "$1" in
+	(*:*) MODEL_QUANT="${1##*:}" ;;
+	(*) die "Please choose a quant type, like $MODEL:Q8_0"
+	esac
 
-shift 1
-mkdir -p ~/.installama
-cd ~/.installama || exit 1
+	shift 1
+	mkdir -p ~/.installama
+	cd ~/.installama || exit 1
 
-check_bin hf
-echo "Downloading model files... this might take a while"
-MODEL_DIR=$(hf download "$MODEL" --include "*$MODEL_QUANT*" 2>/dev/null)
+	check_bin hf
+	echo "Downloading model files... this might take a while"
+	MODEL_DIR=$(hf download "$MODEL" --include "*$MODEL_QUANT*" 2>/dev/null)
 
-[ -d "$MODEL_DIR" ] ||
-	die "Model $MODEL not found"
+	[ -d "$MODEL_DIR" ] ||
+		die "Model $MODEL not found"
 
-MODEL_FILE=$(find "$MODEL_DIR" -name "*$MODEL_QUANT*.gguf" | sort | head -n 1)
+	MODEL_FILE=$(find "$MODEL_DIR" -name "*$MODEL_QUANT*.gguf" | sort | head -n 1)
 
-[ -f "$MODEL_FILE" ] ||
-	die "Unable to find the GGUF file in $MODEL_DIR"
+	[ -f "$MODEL_FILE" ] ||
+		die "Unable to find the GGUF file in $MODEL_DIR"
 
-[ -x llama-server ] || llama_server_cuda
-[ -x llama-server ] || llama_server_cpu
-[ -x llama-server ] || die "No llama-server found for your setup..."
+	[ -x llama-server ] || llama_server_cuda
+	[ -x llama-server ] || llama_server_cpu
+	[ -x llama-server ] || die "No llama-server found for your setup..."
 
-exec ./llama-server -m "$MODEL_FILE" "$@"
+	exec ./llama-server -m "$MODEL_FILE" "$@"
+}
+
+main "$@"
