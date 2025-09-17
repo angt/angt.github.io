@@ -36,7 +36,7 @@ llama_server_cuda() {
 
 llama_server_cpu() {
 	dl_bin target-features "$TARGET_FEATURES/$ARCH-$OS-target-features" &&
-	TARGET="$ARCH$(./target-features | tr + -)" &&
+	TARGET="$ARCH$(./target-features | tr '+' '~')" &&
 	dl_bin llama-server "$REPO/$TARGET/llama-server.zst"
 }
 
