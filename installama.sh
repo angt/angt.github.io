@@ -2,9 +2,10 @@ TARGET_FEATURES="https://github.com/angt/target-features/releases/latest/downloa
 UNZSTD="https://github.com/angt/unzstd/releases/latest/download"
 REPO="https://huggingface.co/datasets/angt/installamacpp/resolve/main"
 REPO_CUDA="https://huggingface.co/datasets/angt/installamacpp-cuda/resolve/main"
+REPO_METAL="https://huggingface.co/datasets/angt/installamacpp-metal/resolve/main"
 
 die() {
-	echo "$*" >&2
+	for msg; do echo "$msg"; done >&2
 	exit 111
 }
 
@@ -38,6 +39,12 @@ llama_server_cpu() {
 	dl_bin target-features "$TARGET_FEATURES/$ARCH-$OS-target-features" &&
 	TARGET="$ARCH$(./target-features | tr '+' '~')" &&
 	dl_bin llama-server "$REPO/$TARGET/llama-server.zst"
+}
+
+llama_server_metal() {
+	MODEL=$(sysctl -n machdep.cpu.brand_string 2>/dev/null) &&
+	case "$MODEL" in ("Apple M"[1234]) ;; (*) false ;; esac &&
+	dl_bin llama-server "$REPO_METAL/llama-server-m1.zst"
 }
 
 main() {
@@ -83,9 +90,16 @@ main() {
 	[ -f "$MODEL_FILE" ] ||
 		die "Unable to find the GGUF file in $MODEL_DIR"
 
-	[ -x llama-server ] || llama_server_cuda
-	[ -x llama-server ] || llama_server_cpu
-	[ -x llama-server ] || die "No llama-server found for your setup..."
+	if [ "$OS" = macos ]; then
+		[ -x llama-server ] || llama_server_metal
+	else
+		[ -x llama-server ] || llama_server_cuda
+		[ -x llama-server ] || llama_server_cpu
+	fi
+
+	[ -x llama-server ] || die \
+		"No prebuilt llama-server binary is available for your system." \
+		"Please compile llama.cpp from source instead."
 
 	exec ./llama-server -m "$MODEL_FILE" "$@"
 }
