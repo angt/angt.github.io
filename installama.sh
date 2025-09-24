@@ -19,8 +19,9 @@ dl_bin() {
 	case "$2" in
 	(*.zst) curl -fsSL "$2" | unzstd ;;
 	(*)     curl -fsSL "$2" ;;
-	esac > "$1"
-	chmod +x "$1"
+	esac > "$1.tmp" &&
+	chmod +x "$1.tmp" &&
+	mv "$1.tmp" "$1"
 }
 
 unzstd() (
@@ -60,6 +61,8 @@ main() {
 	(*) die "OS not supported"
 	esac
 
+	[ "$HOME" ] || die "No HOME, please check your OS"
+
 	mkdir -p ~/.installama
 	cd ~/.installama || exit 1
 
@@ -74,7 +77,9 @@ main() {
 		"No prebuilt llama-server binary is available for your system." \
 		"Please compile llama.cpp from source instead."
 
-	exec ./llama-server "$@"
+	[ $# -gt 0 ] && exec ./llama-server "$@"
+
+	echo "Run ~/.installama/llama-server to launch the llama.cpp server"
 }
 
 main "$@"
