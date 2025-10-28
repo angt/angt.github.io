@@ -2,6 +2,7 @@ TARGET_FEATURES="https://github.com/angt/target-features/releases/latest/downloa
 UNZSTD="https://github.com/angt/unzstd/releases/latest/download"
 REPO="https://huggingface.co/datasets/angt/installamacpp/resolve/main"
 REPO_CUDA="https://huggingface.co/datasets/angt/installamacpp-cuda/resolve/main"
+REPO_ROCM="https://huggingface.co/datasets/angt/installamacpp-rocm/resolve/main"
 REPO_METAL="https://huggingface.co/datasets/angt/installamacpp-metal/resolve/main"
 
 die() {
@@ -19,9 +20,10 @@ dl_bin() {
 	case "$2" in
 	(*.zst) curl -fsSL "$2" | unzstd ;;
 	(*)     curl -fsSL "$2" ;;
-	esac > "$1.tmp" &&
+	esac > "$1.tmp" 2>/dev/null &&
 	chmod +x "$1.tmp" &&
-	mv "$1.tmp" "$1"
+	mv "$1.tmp" "$1" ||
+	echo "Failed to download $2"
 }
 
 unzstd() (
@@ -34,6 +36,12 @@ llama_server_cuda() {
 	dl_bin cuda-probe "$REPO_CUDA/cuda-probe.zst" &&
 	CUDA_ARCH=$(./cuda-probe 2>/dev/null) &&
 	dl_bin llama-server "$REPO_CUDA/llama-server-cuda-$CUDA_ARCH.zst"
+}
+
+llama_server_rocm() {
+	dl_bin rocm-probe "$REPO_ROCM/rocm-probe.zst" &&
+	ROCM_ARCH=$(./rocm-probe 2>/dev/null | cut -d: -f1) &&
+	dl_bin llama-server "$REPO_ROCM/llama-server-$ROCM_ARCH.zst"
 }
 
 llama_server_cpu() {
@@ -70,6 +78,7 @@ main() {
 		[ -x llama-server ] || llama_server_metal
 	else
 		[ -x llama-server ] || llama_server_cuda
+		[ -x llama-server ] || llama_server_rocm
 		[ -x llama-server ] || llama_server_cpu
 	fi
 
