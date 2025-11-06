@@ -47,8 +47,9 @@ llama_server_rocm() {
 
 llama_server_cpu() {
 	dl_bin target-features "$TARGET_FEATURES/$ARCH-$OS-target-features" &&
-	TARGET="$ARCH$(./target-features | tr '+' '~')" &&
-	dl_bin llama-server "$REPO/$TARGET/llama-server.zst"
+	TARGET=$(./target-features) &&
+	TARGET=$(echo "$TARGET" | tr '+' '~') &&
+	dl_bin llama-server "$REPO/$ARCH$TARGET/llama-server.zst"
 }
 
 llama_server_metal() {
