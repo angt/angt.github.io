@@ -41,7 +41,6 @@ llama_server_cuda() {
 llama_server_rocm() {
 	dl_bin rocm-probe "$REPO_ROCM/rocm-probe.zst" &&
 	ROCM_ARCH=$(./rocm-probe 2>/dev/null) &&
-	ROCM_ARCH=${ROCM_ARCH%%:*} &&
 	dl_bin llama-server "$REPO_ROCM/llama-server-$ROCM_ARCH.zst"
 }
 
