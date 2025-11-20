@@ -1,6 +1,6 @@
-TARGET_FEATURES="https://github.com/angt/target-features/releases/latest/download"
+FEATCODE="https://github.com/angt/featcode/releases/latest/download"
 UNZSTD="https://github.com/angt/unzstd/releases/latest/download"
-REPO="https://huggingface.co/datasets/angt"
+REPO="https://huggingface.co/datasets/angt/installama.sh/resolve/main"
 
 die() {
 	for msg; do echo "$msg"; done >&2
@@ -11,10 +11,6 @@ check_bin() {
 	command -v "$1" >/dev/null 2>/dev/null
 }
 
-datasets() {
-	printf "%s/installamacpp-%s/resolve/main/%s" "$REPO" "$1" "$2"
-}
-
 dl_bin() {
 	[ -x "$1" ] && return
 	check_bin curl || die "Please install curl"
@@ -22,9 +18,9 @@ dl_bin() {
 	(*.zst) curl -fsSL "$2" | unzstd ;;
 	(*)     curl -fsSL "$2" ;;
 	esac > "$1.tmp" 2>/dev/null &&
-	chmod +x "$1.tmp" &&
-	mv "$1.tmp" "$1" ||
-	echo "Failed to download $2"
+	chmod +x "$1.tmp" && mv "$1.tmp" "$1" && return
+	echo "Failed to download $2" >&2
+	return 1
 }
 
 unzstd() (
@@ -34,27 +30,29 @@ unzstd() (
 )
 
 llama_server_cuda() {
-	dl_bin cuda-probe "$(datasets cuda "cuda-probe.zst")" &&
-	CUDA_ARCH=$(./cuda-probe 2>/dev/null) &&
-	dl_bin llama-server "$(datasets cuda "llama-server-cuda-$CUDA_ARCH.zst")"
+	[ -z "$SKIP_CUDA" ] &&
+	dl_bin cuda-probe "$REPO/$ARCH/$OS/cuda/probe/probe.zst" &&
+	CONFIG=$(./cuda-probe 2>/dev/null) &&
+	dl_bin llama-server "$REPO/$ARCH/$OS/cuda/$CONFIG/llama-server.zst"
 }
 
 llama_server_rocm() {
-	dl_bin rocm-probe "$(datasets rocm "rocm-probe.zst")" &&
-	ROCM_ARCH=$(./rocm-probe 2>/dev/null) &&
-	dl_bin llama-server "$(datasets rocm "llama-server-$ROCM_ARCH.zst")"
+	[ -z "$SKIP_ROCM" ] &&
+	dl_bin rocm-probe "$REPO/$ARCH/$OS/rocm/probe/probe.zst" &&
+	CONFIG=$(./rocm-probe 2>/dev/null) &&
+	dl_bin llama-server "$REPO/$ARCH/$OS/rocm/$CONFIG/llama-server.zst"
 }
 
 llama_server_cpu() {
-	dl_bin target-features "$TARGET_FEATURES/$ARCH-$OS-target-features" &&
-	TARGET=$(./target-features 2>/dev/null) &&
-	dl_bin llama-server "$(datasets cpu "llama-server-$ARCH$TARGET.zst")"
+	dl_bin featcode "$FEATCODE/$ARCH-$OS-featcode" &&
+	CONFIG=$(./featcode 2>/dev/null) &&
+	dl_bin llama-server "$REPO/$ARCH/$OS/cpu/$CONFIG/llama-server.zst"
 }
 
 llama_server_metal() {
-	MODEL=$(sysctl -n machdep.cpu.brand_string 2>/dev/null) &&
-	case "$MODEL" in ("Apple M"[1234]) MODEL=${MODEL#"Apple M"} ;; (*) false ;; esac &&
-	dl_bin llama-server "$(datasets metal "llama-server-m$MODEL.zst")"
+	CONFIG=$(sysctl -n machdep.cpu.brand_string 2>/dev/null | grep -o "Apple M[1-4]") &&
+	CONFIG=m${CONFIG##*M} &&
+	dl_bin llama-server "$REPO/$ARCH/$OS/metal/$CONFIG/llama-server.zst"
 }
 
 main() {
