@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Space Opera City</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { overflow: hidden; background: #000; font-family: 'Courier New', monospace; }
+canvas { display: block; }
+#ui-overlay {
+ position: fixed;
+ top: 10px;
+ left: 10px;
+ color: #8af;
+ font-size: 12px;
+ pointer-events: none;
+ text-shadow: 0 0 10px #000;
+ z-index: 100;
+}
+#ui-overlay div { margin: 4px 0; }
+.resource-bar { 
+ display: inline-block; 
+ width: 60px; 
+ height: 8px; 
+ background: #1a1a2e; 
+ border: 1px solid #334;
+ margin-left: 5px;
+ vertical-align: middle;
+}
+.resource-fill {
+ height: 100%;
+ transition: width 0.3s;
+}
+#tooltip {
+ position: fixed;
+ bottom: 10px;
+ left: 10px;
+ color: #adf;
+ font-size: 11px;
+ pointer-events: none;
+ text-shadow: 0 0 10px #000;
+ z-index: 100;
+ max-width: 300px;
+}
+#wave-info {
+ position: fixed;
+ top: 10px;
+ right: 90px;
+ color: #fa8;
+ font-size: 14px;
+ pointer-events: none;
+ text-shadow: 0 0 10px #000;
+ z-index: 100;
+}
+</style>
+</head>
+<body>
+<canvas id="glCanvas"></canvas>
+<div id="ui-overlay"></div>
+<div id="tooltip"></div>
+<div id="wave-info"></div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// CANVAS & WEBGL2 INITIALIZATION
+// ============================================================================
+
+const canvas = document.getElementById('glCanvas');
+const gl = canvas.getContext('webgl2', { antialias: false, alpha: false });
+
+if (!gl) {
+ alert('WebGL2 required for this game');
+ throw new Error('WebGL2 not supported');
+}
+
+let W = window.innerWidth;
+let H = window.innerHeight;
+canvas.width = W;
+canvas.height = H;
+gl.viewport(0, 0, W, H);
+
+// ============================================================================
+// 64-COLOR SPACE OPERA PALETTE
+// ============================================================================
+
+const PALETTE = [
+ // Index 0-7: Deep space (backgrounds)
+ [0.02, 0.02, 0.05], [0.04, 0.03, 0.08], [0.06, 0.04, 0.12], [0.08, 0.06, 0.15],
+ [0.05, 0.05, 0.10], [0.07, 0.07, 0.14], [0.09, 0.09, 0.18], [0.03, 0.03, 0.06],
+ 
+ // Index 8-15: White/blue highlights (core, energy glow)
+ [0.95, 0.97, 1.00], [0.85, 0.90, 0.98], [0.70, 0.80, 0.95], [0.55, 0.70, 0.92],
+ [0.40, 0.60, 0.88], [0.30, 0.50, 0.82], [0.25, 0.42, 0.75], [0.20, 0.35, 0.68],
+ 
+ // Index 16-23: Yellow/gold (energy indicators)
+ [1.00, 1.00, 0.90], [1.00, 0.95, 0.60], [1.00, 0.88, 0.40], [1.00, 0.75, 0.25],
+ [0.95, 0.62, 0.18], [0.88, 0.50, 0.12], [0.78, 0.40, 0.08], [0.65, 0.32, 0.05],
+ 
+ // Index 24-31: Red (weapons, damage)
+ [1.00, 0.85, 0.82], [1.00, 0.65, 0.60], [1.00, 0.45, 0.40], [0.95, 0.32, 0.28],
+ [0.88, 0.22, 0.18], [0.78, 0.15, 0.12], [0.65, 0.10, 0.08], [0.50, 0.06, 0.04],
+ 
+ // Index 32-39: Purple (collectors, special)
+ [0.90, 0.82, 0.98], [0.78, 0.68, 0.92], [0.65, 0.52, 0.85], [0.52, 0.40, 0.75],
+ [0.42, 0.30, 0.65], [0.32, 0.22, 0.52], [0.22, 0.15, 0.40], [0.14, 0.10, 0.28],
+ 
+ // Index 40-47: Cyan (lasers, tech)
+ [0.70, 0.98, 0.95], [0.50, 0.92, 0.88], [0.35, 0.82, 0.78], [0.25, 0.70, 0.65],
+ [0.18, 0.58, 0.55], [0.14, 0.48, 0.45], [0.10, 0.38, 0.35], [0.07, 0.28, 0.26],
+ 
+ // Index 48-55: Green (aliens)
+ [0.55, 0.92, 0.48], [0.42, 0.82, 0.35], [0.32, 0.70, 0.25], [0.25, 0.58, 0.20],
+ [0.20, 0.48, 0.16], [0.16, 0.38, 0.12], [0.12, 0.30, 0.10], [0.08, 0.22, 0.07],
+ 
+ // Index 56-63: Gray/metal (hull, structure)
+ [0.92, 0.94, 0.96], [0.78, 0.80, 0.84], [0.64, 0.68, 0.72], [0.52, 0.56, 0.60],
+ [0.42, 0.46, 0.50], [0.34, 0.38, 0.42], [0.26, 0.30, 0.34], [0.18, 0.22, 0.26]
+];
+
+function C(idx, bright = 1.0) {
+ const c = PALETTE[idx % 64];
+ return [c[0] * bright, c[1] * bright, c[2] * bright];
+}
+
+// ============================================================================
+// ATOMIC BLOCK SIZE
+// ============================================================================
+
+const B = 5; // 5x5 pixel atomic square
+
+// ============================================================================
+// BLOCK TYPE DEFINITIONS - SPACESHIP MODULES
+// ============================================================================
+
+const BLOCK_TYPES = {
+ // CORE: Central command - white center, gray hull, blue accents
+ core: {
+  name: 'Command Core',
+  desc: 'Central hub. Powers 2 nearby modules. Auto-defends small threats.',
+  squares: [
+   {x:0,y:0,c:8},
+   {x:-1,y:0,c:9},{x:1,y:0,c:9},{x:0,y:-1,c:9},{x:0,y:1,c:9},
+   {x:-1,y:-1,c:57},{x:1,y:-1,c:57},{x:-1,y:1,c:57},{x:1,y:1,c:57},
+   {x:-2,y:0,c:58},{x:2,y:0,c:58},{x:0,y:-2,c:58},{x:0,y:2,c:58},
+   {x:-2,y:-1,c:59},{x:2,y:-1,c:59},{x:-2,y:1,c:59},{x:2,y:1,c:59},
+   {x:-1,y:-2,c:59},{x:1,y:-2,c:59},{x:-1,y:2,c:59},{x:1,y:2,c:59},
+   {x:-3,y:0,c:60},{x:3,y:0,c:60},{x:0,y:-3,c:60},{x:0,y:3,c:60},
+   {x:-2,y:-2,c:61},{x:2,y:-2,c:61},{x:-2,y:2,c:61},{x:2,y:2,c:61},
+   {x:-3,y:-1,c:12},{x:3,y:-1,c:12},{x:-3,y:1,c:12},{x:3,y:1,c:12},
+   {x:-1,y:-3,c:12},{x:1,y:-3,c:12},{x:-1,y:3,c:12},{x:1,y:3,c:12}
+  ],
+  hp: 2000,
+  energyCost: 0,
+  energyProduce: 3,
+  maxPowered: 2,
+  powerRange: 200,
+  defenseRange: 220,
+  defenseDamage: 15,
+  defenseCooldown: 18
+ },
+ 
+ // ENERGY: Reactor - gray structure with yellow core glow
+ energy: {
+  name: 'Reactor',
+  desc: 'Powers 3 nearby modules. Essential for weapons and collectors.',
+  squares: [
+   {x:0,y:0,c:16},
+   {x:-1,y:0,c:17},{x:1,y:0,c:17},{x:0,y:-1,c:17},{x:0,y:1,c:17},
+   {x:-1,y:-1,c:57},{x:1,y:-1,c:57},{x:-1,y:1,c:57},{x:1,y:1,c:57},
+   {x:-2,y:-1,c:59},{x:2,y:-1,c:59},{x:-2,y:0,c:59},{x:2,y:0,c:59},{x:-2,y:1,c:59},{x:2,y:1,c:59},
+   {x:-1,y:-2,c:59},{x:0,y:-2,c:59},{x:1,y:-2,c:59},
+   {x:-1,y:2,c:59},{x:0,y:2,c:59},{x:1,y:2,c:59},
+   {x:-3,y:-1,c:61},{x:3,y:-1,c:61},{x:-3,y:0,c:61},{x:3,y:0,c:61},{x:-3,y:1,c:61},{x:3,y:1,c:61},
+   {x:0,y:-3,c:19},{x:0,y:3,c:19},{x:-3,y:0,c:19},{x:3,y:0,c:19}
+  ],
+  hp: 150,
+  energyCost: 0,
+  energyProduce: 3,
+  maxPowered: 3,
+  powerRange: 220
+ },
+ 
+ // STORAGE: Cargo container - all gray industrial look
+ storage: {
+  name: 'Cargo Bay',
+  desc: 'Stores collected materials. Larger capacity than core.',
+  squares: [
+   {x:-2,y:-2,c:61},{x:-1,y:-2,c:59},{x:0,y:-2,c:59},{x:1,y:-2,c:59},{x:2,y:-2,c:61},
+   {x:-2,y:-1,c:59},{x:-1,y:-1,c:58},{x:0,y:-1,c:58},{x:1,y:-1,c:58},{x:2,y:-1,c:59},
+   {x:-2,y:0,c:59},{x:-1,y:0,c:58},{x:0,y:0,c:57},{x:1,y:0,c:58},{x:2,y:0,c:59},
+   {x:-2,y:1,c:59},{x:-1,y:1,c:58},{x:0,y:1,c:58},{x:1,y:1,c:58},{x:2,y:1,c:59},
+   {x:-2,y:2,c:61},{x:-1,y:2,c:59},{x:0,y:2,c:59},{x:1,y:2,c:59},{x:2,y:2,c:61},
+   {x:-3,y:-1,c:60},{x:-3,y:0,c:60},{x:-3,y:1,c:60},
+   {x:3,y:-1,c:60},{x:3,y:0,c:60},{x:3,y:1,c:60}
+  ],
+  hp: 180,
+  energyCost: 1,
+  energyProduce: 0,
+  capacity: 800
+ },
+ 
+ // CANON: Turret - gray with red barrel and accents
+ canon: {
+  name: 'Plasma Cannon',
+  desc: 'Heavy projectile weapon. High damage, slow fire rate.',
+  squares: [
+   {x:-1,y:1,c:61},{x:0,y:1,c:60},{x:1,y:1,c:61},
+   {x:-1,y:0,c:59},{x:0,y:0,c:58},{x:1,y:0,c:59},
+   {x:2,y:0,c:60},{x:3,y:0,c:61},
+   {x:4,y:0,c:26},{x:5,y:0,c:27},{x:6,y:0,c:28},
+   {x:-1,y:-1,c:59},{x:0,y:-1,c:58},{x:1,y:-1,c:59},
+   {x:0,y:-2,c:28},{x:2,y:-1,c:28},{x:2,y:1,c:28},
+   {x:7,y:-1,c:25},{x:7,y:0,c:24},{x:7,y:1,c:25},
+   {x:-2,y:0,c:60},{x:-2,y:-1,c:61},{x:-2,y:1,c:61}
+  ],
+  hp: 120,
+  energyCost: 1,
+  energyProduce: 0,
+  range: 400,
+  damage: 45,
+  cooldown: 45
+ },
+ 
+ // LASER: Emitter array - gray with cyan beam elements
+ laser: {
+  name: 'Laser Array',
+  desc: 'Continuous beam weapon. Fast fire rate, lower damage.',
+  squares: [
+   {x:-1,y:1,c:61},{x:0,y:1,c:60},{x:1,y:1,c:61},
+   {x:-1,y:0,c:59},{x:0,y:0,c:58},{x:1,y:0,c:59},
+   {x:-1,y:-1,c:59},{x:0,y:-1,c:58},{x:1,y:-1,c:59},
+   {x:2,y:-1,c:60},{x:2,y:0,c:59},{x:2,y:1,c:60},
+   {x:3,y:0,c:61},
+   {x:4,y:-1,c:60},{x:4,y:0,c:42},{x:4,y:1,c:60},
+   {x:5,y:0,c:59},
+   {x:6,y:-1,c:60},{x:6,y:0,c:43},{x:6,y:1,c:60},
+   {x:7,y:0,c:59},
+   {x:8,y:-1,c:44},{x:8,y:0,c:40},{x:8,y:1,c:44},
+   {x:0,y:-2,c:43},{x:3,y:-2,c:43},{x:5,y:-2,c:43},{x:7,y:-2,c:43},
+   {x:-2,y:0,c:60},{x:-2,y:-1,c:61},{x:-2,y:1,c:61}
+  ],
+  hp: 90,
+  energyCost: 1,
+  energyProduce: 0,
+  range: 550,
+  damage: 6,
+  cooldown: 2
+ },
+ 
+ // RADAR: Dish array - gray with blue scanner elements
+ radar: {
+  name: 'Sensor Array',
+  desc: 'Extends detection and targeting range for nearby weapons.',
+  squares: [
+   {x:0,y:0,c:58},
+   {x:-1,y:0,c:59},{x:1,y:0,c:59},{x:0,y:-1,c:59},{x:0,y:1,c:59},
+   {x:-1,y:-1,c:60},{x:1,y:-1,c:60},{x:-1,y:1,c:60},{x:1,y:1,c:60},
+   {x:-2,y:-2,c:61},{x:-1,y:-2,c:59},{x:0,y:-2,c:59},{x:1,y:-2,c:59},{x:2,y:-2,c:61},
+   {x:-2,y:2,c:61},{x:-1,y:2,c:59},{x:0,y:2,c:59},{x:1,y:2,c:59},{x:2,y:2,c:61},
+   {x:-3,y:-1,c:61},{x:-3,y:0,c:60},{x:-3,y:1,c:61},
+   {x:3,y:-1,c:61},{x:3,y:0,c:60},{x:3,y:1,c:61},
+   {x:0,y:-3,c:11},{x:0,y:3,c:11},{x:-3,y:0,c:11},{x:3,y:0,c:11},
+   {x:-2,y:0,c:12},{x:2,y:0,c:12},{x:0,y:-2,c:12},{x:0,y:2,c:12},
+   {x:-4,y:0,c:61},{x:4,y:0,c:61},{x:0,y:-4,c:61},{x:0,y:4,c:61}
+  ],
+  hp: 100,
+  energyCost: 1,
+  energyProduce: 0,
+  range: 700,
+  rangeBoost: 1.3
+ },
+ 
+ // COLLECTOR: Intake scoop - gray with purple accents
+ collector: {
+  name: 'Mining Drone Bay',
+  desc: 'Launches drones to collect resources from destroyed aliens.',
+  squares: [
+   {x:-2,y:-1,c:61},{x:-1,y:-1,c:60},{x:0,y:-1,c:60},{x:1,y:-1,c:60},{x:2,y:-1,c:61},
+   {x:-1,y:0,c:59},{x:0,y:0,c:58},{x:1,y:0,c:59},
+   {x:-1,y:1,c:60},{x:0,y:1,c:59},{x:1,y:1,c:60},
+   {x:0,y:2,c:61},
+   {x:-2,y:0,c:35},{x:2,y:0,c:35},
+   {x:-1,y:-2,c:36},{x:0,y:-2,c:37},{x:1,y:-2,c:36},
+   {x:0,y:3,c:34},
+   {x:-3,y:0,c:60},{x:3,y:0,c:60},
+   {x:-2,y:1,c:61},{x:2,y:1,c:61}
+  ],
+  hp: 80,
+  energyCost: 1,
+  energyProduce: 0,
+  range: 350,
+  droneMax: 6
+ },
+ 
+ // HULL: Structural connector - pure gray
+ hull: {
+  name: 'Hull Section',
+  desc: 'Structural connector. Cheap way to extend your ship.',
+  squares: [
+   {x:-2,y:-1,c:61},{x:-1,y:-1,c:60},{x:0,y:-1,c:60},{x:1,y:-1,c:60},{x:2,y:-1,c:61},
+   {x:-2,y:0,c:59},{x:-1,y:0,c:58},{x:0,y:0,c:57},{x:1,y:0,c:58},{x:2,y:0,c:59},
+   {x:-2,y:1,c:61},{x:-1,y:1,c:60},{x:0,y:1,c:60},{x:1,y:1,c:60},{x:2,y:1,c:61},
+   {x:-3,y:0,c:61},{x:3,y:0,c:61}
+  ],
+  hp: 200,
+  energyCost: 0,
+  energyProduce: 0,
+  powerPass: true  // Can pass power through
+ }
+};
+
+// ============================================================================
+// SHADERS
+// ============================================================================
+
+const vsSource = `#version 300 es
+in vec2 aPos;
+in vec3 aCol;
+out vec3 vCol;
+uniform vec2 uRes;
+void main() {
+ vec2 pos = aPos / uRes * 2.0 - 1.0;
+ pos.y = -pos.y;
+ gl_Position = vec4(pos, 0.0, 1.0);
+ vCol = aCol;
+}`;
+
+const fsSource = `#version 300 es
+precision highp float;
+in vec3 vCol;
+out vec4 FragColor;
+void main() { FragColor = vec4(vCol, 1.0); }`;
+
+const vsAtom = `#version 300 es
+in vec2 aPos;
+in float aVal;
+out float vVal;
+uniform vec2 uRes;
+void main() {
+ vec2 pos = aPos / uRes * 2.0 - 1.0;
+ pos.y = -pos.y;
+ gl_Position = vec4(pos, 0.0, 1.0);
+ vVal = aVal;
+}`;
+
+const fsAtom = `#version 300 es
+precision highp float;
+in float vVal;
+out vec4 FragColor;
+void main() { FragColor = vec4(vec3(vVal * 0.18), 1.0); }`;
+
+function createShader(type, source) {
+ const s = gl.createShader(type);
+ gl.shaderSource(s, source);
+ gl.compileShader(s);
+ return s;
+}
+
+function createProgram(vs, fs) {
+ const p = gl.createProgram();
+ gl.attachShader(p, createShader(gl.VERTEX_SHADER, vs));
+ gl.attachShader(p, createShader(gl.FRAGMENT_SHADER, fs));
+ gl.linkProgram(p);
+ return p;
+}
+
+const prog = createProgram(vsSource, fsSource);
+const progAtom = createProgram(vsAtom, fsAtom);
+
+const uRes = gl.getUniformLocation(prog, 'uRes');
+const uResAtom = gl.getUniformLocation(progAtom, 'uRes');
+const aPos = gl.getAttribLocation(prog, 'aPos');
+const aCol = gl.getAttribLocation(prog, 'aCol');
+const aPosAtom = gl.getAttribLocation(progAtom, 'aPos');
+const aValAtom = gl.getAttribLocation(progAtom, 'aVal');
+
+const posBuf = gl.createBuffer();
+const colBuf = gl.createBuffer();
+const atomPosBuf = gl.createBuffer();
+const atomValBuf = gl.createBuffer();
+
+const vao = gl.createVertexArray();
+gl.bindVertexArray(vao);
+gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+gl.enableVertexAttribArray(aPos);
+gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+gl.bindBuffer(gl.ARRAY_BUFFER, colBuf);
+gl.enableVertexAttribArray(aCol);
+gl.vertexAttribPointer(aCol, 3, gl.FLOAT, false, 0, 0);
+
+const vaoAtom = gl.createVertexArray();
+gl.bindVertexArray(vaoAtom);
+gl.bindBuffer(gl.ARRAY_BUFFER, atomPosBuf);
+gl.enableVertexAttribArray(aPosAtom);
+gl.vertexAttribPointer(aPosAtom, 2, gl.FLOAT, false, 0, 0);
+gl.bindBuffer(gl.ARRAY_BUFFER, atomValBuf);
+gl.enableVertexAttribArray(aValAtom);
+gl.vertexAttribPointer(aValAtom, 1, gl.FLOAT, false, 0, 0);
+
+gl.bindVertexArray(null);
+
+// ============================================================================
+// GAME STATE
+// ============================================================================
+
+let blocks = [];
+let bridges = [];
+let aliens = [];
+let projectiles = [];
+let atoms = [];
+let drones = [];
+let gameTime = 0;
+let gameOver = false;
+let totalKills = 0;
+
+// Wave configuration - more balanced for longer games
+const WAVE_CONFIG = {
+ small: { avgInterval: 300, strength: 1, count: [2, 3] },
+ medium: { avgInterval: 6000, strength: 2, count: [4, 7] },
+ big: { avgInterval: 15000, strength: 3, count: [8, 14] },
+ huge: { avgInterval: 30000, strength: 4, count: [15, 25] }
+};
+
+let waveTimers = { small: 120, medium: 2000, big: 6000, huge: 15000 };
+let waveCount = { small: 0, medium: 0, big: 0, huge: 0 };
+
+// Resources - balanced for building large ships
+let resources = { C: 200, H: 200, O: 150, N: 150, Fe: 100, Si: 100, Cu: 80 };
+const ATOM_TYPES = ['C','H','O','N','Fe','Si','Cu'];
+const ATOM_COLORS = { C: 57, H: 56, O: 40, N: 32, Fe: 24, Si: 58, Cu: 20 };
+
+// Atom grid
+const GRID_SIZE = 10;
+let GRID_W = Math.ceil(W / GRID_SIZE);
+let GRID_H = Math.ceil(H / GRID_SIZE);
+let atomGrid = new Float32Array(GRID_W * GRID_H);
+
+function initAtomGrid() {
+ for (let i = 0; i < atomGrid.length; i++) atomGrid[i] = Math.random() * 0.08;
+}
+initAtomGrid();
+
+// UI
+const SIDEBAR_W = 100;
+let uiBlocks = [];
+let draggingBlock = null;
+let mouseX = 0, mouseY = 0;
+let hoveredUI = null;
+
+function initUIBlocks() {
+ uiBlocks = [];
+ let y = 20;
+ const order = ['hull', 'energy', 'storage', 'canon', 'laser', 'radar', 'collector'];
+ for (const type of order) {
+  if (type === 'core') continue;
+  const def = BLOCK_TYPES[type];
+  uiBlocks.push({ 
+   type, 
+   x: W - SIDEBAR_W + 8, 
+   y, 
+   w: SIDEBAR_W - 16, 
+   h: 75,
+   name: def.name
+  });
+  y += 82;
+ }
+}
+
+function initCore() {
+ const cx = (W - SIDEBAR_W) / 2;
+ const cy = H / 2;
+ blocks.push({
+  type: 'core',
+  x: cx,
+  y: cy,
+  hp: BLOCK_TYPES.core.hp,
+  maxHp: BLOCK_TYPES.core.hp,
+  operational: true,
+  powered: true,
+  poweredBy: null,
+  cooldown: 0,
+  defenseCooldown: 0,
+  rotation: 0,
+  animOffset: Math.random() * 100,
+  stored: 0
+ });
+}
+
+// ============================================================================
+// INPUT HANDLERS
+// ============================================================================
+
+canvas.addEventListener('mousemove', (e) => {
+ mouseX = e.clientX;
+ mouseY = e.clientY;
+ 
+ // Check hover on UI blocks
+ hoveredUI = null;
+ for (const ui of uiBlocks) {
+  if (mouseX >= ui.x && mouseX <= ui.x + ui.w && mouseY >= ui.y && mouseY <= ui.y + ui.h) {
+   hoveredUI = ui;
+   break;
+  }
+ }
+ 
+ if (draggingBlock) {
+  draggingBlock.x = mouseX;
+  draggingBlock.y = mouseY;
+  updateDragPreview();
+ }
+ 
+ updateTooltip();
+});
+
+canvas.addEventListener('mousedown', (e) => {
+ const mx = e.clientX;
+ const my = e.clientY;
+ for (const ui of uiBlocks) {
+  if (mx >= ui.x && mx <= ui.x + ui.w && my >= ui.y && my <= ui.y + ui.h) {
+   draggingBlock = { 
+    type: ui.type, 
+    x: mx, 
+    y: my,
+    canPlace: false,
+    willHavePower: false,
+    needsMoreEnergy: false,
+    nearestBlock: null
+   };
+   updateDragPreview();
+   return;
+  }
+ }
+});
+
+canvas.addEventListener('mouseup', () => {
+ if (draggingBlock && draggingBlock.canPlace) {
+  placeBlock(draggingBlock.type, draggingBlock.x, draggingBlock.y);
+ }
+ draggingBlock = null;
+});
+
+canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+function updateTooltip() {
+ const tooltip = document.getElementById('tooltip');
+ if (hoveredUI && !draggingBlock) {
+  const def = BLOCK_TYPES[hoveredUI.type];
+  const cost = Math.floor(def.squares.length * 2.5);
+  tooltip.innerHTML = `<b>${def.name}</b><br>${def.desc}<br><span style="color:#fd8">Cost: ~${cost} atoms</span>`;
+ } else if (draggingBlock) {
+  const def = BLOCK_TYPES[draggingBlock.type];
+  let msg = `<b>${def.name}</b><br>`;
+  if (!draggingBlock.canPlace) {
+   msg += '<span style="color:#f55">Too far from ship!</span>';
+  } else if (draggingBlock.needsMoreEnergy) {
+   msg += '<span style="color:#fa5">Needs power! Build a Reactor nearby.</span>';
+  } else {
+   msg += '<span style="color:#5f8">Click to place</span>';
+  }
+  tooltip.innerHTML = msg;
+ } else {
+  tooltip.innerHTML = '';
+ }
+}
+
+function updateDragPreview() {
+ if (!draggingBlock) return;
+ 
+ const def = BLOCK_TYPES[draggingBlock.type];
+ const cost = Math.floor(def.squares.length * 2.5);
+ 
+ // Check resources
+ let totalRes = 0;
+ for (const r in resources) totalRes += resources[r];
+ const canAfford = totalRes >= cost;
+ 
+ // Find nearest existing block (expanded range for larger ships)
+ let nearestBlock = null;
+ let nearestDist = Infinity;
+ for (const b of blocks) {
+  const d = Math.hypot(b.x - draggingBlock.x, b.y - draggingBlock.y);
+  if (d < nearestDist) {
+   nearestDist = d;
+   nearestBlock = b;
+  }
+ }
+ 
+ // Much more generous placement range
+ const placementRange = 350;
+ const inRange = nearestBlock && nearestDist <= placementRange;
+ draggingBlock.canPlace = canAfford && inRange;
+ draggingBlock.nearestBlock = nearestBlock;
+ 
+ // Check power availability
+ if (nearestBlock && draggingBlock.canPlace) {
+  if (def.energyCost === 0) {
+   draggingBlock.willHavePower = true;
+   draggingBlock.needsMoreEnergy = false;
+  } else {
+   let availablePower = 0;
+   for (const b of blocks) {
+    if (b.type === 'energy' || b.type === 'core') {
+     const d = Math.hypot(b.x - draggingBlock.x, b.y - draggingBlock.y);
+     const powerRange = BLOCK_TYPES[b.type].powerRange || 200;
+     if (d < powerRange) {
+      availablePower += BLOCK_TYPES[b.type].energyProduce;
+     }
+    }
+   }
+   
+   let currentNeeds = 0;
+   for (const b of blocks) {
+    const need = BLOCK_TYPES[b.type].energyCost;
+    if (need > 0) {
+     const d = Math.hypot(b.x - draggingBlock.x, b.y - draggingBlock.y);
+     if (d < 250) {
+      currentNeeds += need;
+     }
+    }
+   }
+   
+   const totalNeeds = currentNeeds + def.energyCost;
+   draggingBlock.willHavePower = availablePower >= totalNeeds;
+   draggingBlock.needsMoreEnergy = !draggingBlock.willHavePower;
+  }
+ }
+}
+
+function placeBlock(type, x, y) {
+ const def = BLOCK_TYPES[type];
+ const cost = Math.floor(def.squares.length * 2.5);
+ 
+ let totalRes = 0;
+ for (const r in resources) totalRes += resources[r];
+ if (totalRes < cost) return;
+ 
+ let nearestBlock = null;
+ let nearestDist = Infinity;
+ for (const b of blocks) {
+  const d = Math.hypot(b.x - x, b.y - y);
+  if (d < nearestDist) {
+   nearestDist = d;
+   nearestBlock = b;
+  }
+ }
+ 
+ if (!nearestBlock || nearestDist > 350) return;
+ 
+ // Deduct resources proportionally
+ const each = Math.ceil(cost / Object.keys(resources).length);
+ for (const r in resources) resources[r] = Math.max(0, resources[r] - each);
+ 
+ const rotation = Math.floor(Math.random() * 4);
+ 
+ blocks.push({
+  type, x, y,
+  hp: def.hp,
+  maxHp: def.hp,
+  operational: false,
+  powered: false,
+  poweredBy: null,
+  cooldown: 0,
+  defenseCooldown: 0,
+  rotation,
+  animOffset: Math.random() * 100,
+  drones: [],
+  droneCount: 0,
+  stored: 0
+ });
+ 
+ createBridge(blocks[blocks.length - 1], nearestBlock);
+}
+
+function createBridge(b1, b2) {
+ const dx = b2.x - b1.x;
+ const dy = b2.y - b1.y;
+ const dist = Math.hypot(dx, dy);
+ const steps = Math.floor(dist / (B * 2.5));
+ 
+ const bridgeSquares = [];
+ for (let i = 1; i < steps; i++) {
+  const t = i / steps;
+  bridgeSquares.push({
+   x: b1.x + dx * t,
+   y: b1.y + dy * t,
+   c: i % 2 === 0 ? 60 : 62,
+   phase: Math.random() * Math.PI * 2
+  });
+ }
+ 
+ bridges.push({ from: b1, to: b2, squares: bridgeSquares });
+}
+
+function rotateCoord(x, y, rotation) {
+ for (let i = 0; i < rotation; i++) [x, y] = [y, -x];
+ return [x, y];
+}
+
+// ============================================================================
+// WAVE SPAWNING
+// ============================================================================
+
+function spawnWave(size) {
+ const config = WAVE_CONFIG[size];
+ const count = config.count[0] + Math.floor(Math.random() * (config.count[1] - config.count[0]));
+ 
+ for (let i = 0; i < count; i++) {
+  setTimeout(() => spawnAlien(config.strength), i * (80 + Math.random() * 40));
+ }
+ 
+ waveCount[size]++;
+}
+
+function spawnAlien(strength) {
+ const edge = Math.floor(Math.random() * 4);
+ let x, y;
+ const playW = W - SIDEBAR_W;
+ const margin = 80;
+ 
+ switch(edge) {
+  case 0: x = margin; y = Math.random() * H; break;
+  case 1: x = playW - margin; y = Math.random() * H; break;
+  case 2: x = Math.random() * playW; y = margin; break;
+  default: x = Math.random() * playW; y = H - margin; break;
+ }
+ 
+ const hpMult = [20, 60, 140, 320][strength - 1];
+ const dmgMult = [5, 12, 28, 60][strength - 1];
+ const sizeMult = [1, 1.5, 2.4, 4][strength - 1];
+ 
+ let target = null;
+ let minDist = Infinity;
+ for (const b of blocks) {
+  const d = Math.hypot(b.x - x, b.y - y);
+  if (b.type === 'core' && d < 800) { target = b; break; }
+  if (d < minDist) { minDist = d; target = b; }
+ }
+ 
+ aliens.push({
+  x, y, strength,
+  size: sizeMult,
+  hp: hpMult * (0.8 + Math.random() * 0.4),
+  maxHp: hpMult,
+  damage: dmgMult,
+  speed: 0.35 + Math.random() * 0.25,
+  target,
+  attackCooldown: 0,
+  phase: Math.random() * Math.PI * 2
+ });
+}
+
+// ============================================================================
+// GAME UPDATE
+// ============================================================================
+
+function update() {
+ if (gameOver) return;
+ 
+ gameTime++;
+ 
+ // Wave spawning - more forgiving early game
+ const difficultyMod = Math.min(2, 1 + gameTime / 50000);
+ for (const size in waveTimers) {
+  waveTimers[size]--;
+  const spawnChance = (1 / WAVE_CONFIG[size].avgInterval) * difficultyMod;
+  if (waveTimers[size] <= 0 || Math.random() < spawnChance) {
+   spawnWave(size);
+   waveTimers[size] = WAVE_CONFIG[size].avgInterval * (0.5 + Math.random());
+  }
+ }
+ 
+ // Atom grid decay
+ for (let i = 0; i < atomGrid.length; i++) {
+  atomGrid[i] *= 0.992;
+  if (Math.random() < 0.0003) atomGrid[i] = Math.min(1, atomGrid[i] + 0.12);
+ }
+ 
+ // ========== POWER SYSTEM ==========
+ for (const b of blocks) {
+  b.powered = (b.type === 'core') || (b.type === 'energy') || (b.type === 'hull');
+  b.poweredBy = null;
+ }
+ 
+ const powerSources = blocks.filter(b => b.type === 'energy' || b.type === 'core');
+ 
+ for (const source of powerSources) {
+  const sourceDef = BLOCK_TYPES[source.type];
+  const powerRange = sourceDef.powerRange || 200;
+  const maxPowered = sourceDef.maxPowered || 3;
+  
+  const nearby = [];
+  for (const b of blocks) {
+   if (b === source) continue;
+   if (b.powered) continue;
+   if (BLOCK_TYPES[b.type].energyCost === 0) continue;
+   
+   const d = Math.hypot(b.x - source.x, b.y - source.y);
+   if (d < powerRange) {
+    nearby.push({ block: b, dist: d });
+   }
+  }
+  
+  nearby.sort((a, b) => a.dist - b.dist);
+  
+  let powered = 0;
+  for (const { block: b } of nearby) {
+   if (powered >= maxPowered) break;
+   b.powered = true;
+   b.poweredBy = source;
+   powered++;
+  }
+ }
+ 
+ for (const b of blocks) {
+  const def = BLOCK_TYPES[b.type];
+  if (def.energyCost === 0) {
+   b.operational = true;
+  } else {
+   b.operational = b.powered;
+  }
+ }
+ 
+ // ========== UPDATE BLOCKS ==========
+ for (const b of blocks) {
+  const def = BLOCK_TYPES[b.type];
+  
+  // Core defense
+  if (b.type === 'core') {
+   b.defenseCooldown = Math.max(0, b.defenseCooldown - 1);
+   
+   if (b.defenseCooldown <= 0) {
+    let closest = null;
+    let minD = def.defenseRange;
+    
+    for (const a of aliens) {
+     const d = Math.hypot(a.x - b.x, a.y - b.y);
+     if (d < minD && a.strength <= 2) {
+      minD = d;
+      closest = a;
+     }
+    }
+    
+    if (closest) {
+     const angle = Math.atan2(closest.y - b.y, closest.x - b.x);
+     projectiles.push({
+      x: b.x, y: b.y,
+      vx: Math.cos(angle) * 8,
+      vy: Math.sin(angle) * 8,
+      damage: def.defenseDamage,
+      color: 12,
+      life: 120
+     });
+     b.defenseCooldown = def.defenseCooldown;
+     b.animPulse = 1;
+    }
+   }
+  }
+  
+  // Canon firing
+  if (b.type === 'canon' && b.operational) {
+   b.cooldown = Math.max(0, b.cooldown - 1);
+   
+   if (b.cooldown <= 0) {
+    let closest = null;
+    let minD = def.range;
+    
+    for (const a of aliens) {
+     const d = Math.hypot(a.x - b.x, a.y - b.y);
+     if (d < minD) {
+      minD = d;
+      closest = a;
+     }
+    }
+    
+    if (closest) {
+     const angle = Math.atan2(closest.y - b.y, closest.x - b.x);
+     projectiles.push({
+      x: b.x, y: b.y,
+      vx: Math.cos(angle) * 12,
+      vy: Math.sin(angle) * 12,
+      damage: def.damage,
+      color: 28,
+      life: 150
+     });
+     b.cooldown = def.cooldown;
+     b.animPulse = 1;
+    }
+   }
+  }
+  
+  // Laser firing
+  if (b.type === 'laser' && b.operational) {
+   b.cooldown = Math.max(0, b.cooldown - 1);
+   
+   if (b.cooldown <= 0) {
+    let closest = null;
+    let minD = def.range;
+    
+    for (const a of aliens) {
+     const d = Math.hypot(a.x - b.x, a.y - b.y);
+     if (d < minD) {
+      minD = d;
+      closest = a;
+     }
+    }
+    
+    if (closest) {
+     closest.hp -= def.damage;
+     b.laserTarget = closest;
+     b.animPulse = 1;
+    }
+    
+    b.cooldown = def.cooldown;
+   }
+  }
+  
+  // Radar animation
+  if (b.type === 'radar' && b.operational) {
+   b.animPulse = 0.5 + 0.5 * Math.sin(gameTime * 0.05 + b.animOffset);
+  }
+  
+  // Collector drone spawning - more active
+  if (b.type === 'collector' && b.operational) {
+   if (b.droneCount < (def.droneMax || 6) && Math.random() < 0.025) {
+    drones.push({
+     owner: b,
+     x: b.x, y: b.y,
+     state: 'seeking',
+     target: null,
+     cargo: 0,
+     cargoType: null,
+     homeX: b.x,
+     homeY: b.y
+    });
+    b.droneCount++;
+   }
+   b.animPulse = 0.2;
+  }
+  
+  // Energy glow
+  if (b.type === 'energy') {
+   b.animPulse = 0.6 + 0.4 * Math.sin(gameTime * 0.06 + b.animOffset);
+  }
+  
+  // Core glow
+  if (b.type === 'core') {
+   b.animPulse = 0.4 + 0.3 * Math.sin(gameTime * 0.04);
+  }
+  
+  b.animPulse = Math.max(0, (b.animPulse || 0) - 0.02);
+ }
+ 
+ // ========== UPDATE DRONES ==========
+ for (const d of drones) {
+  if (!blocks.includes(d.owner)) { d.dead = true; continue; }
+  
+  d.homeX = d.owner.x;
+  d.homeY = d.owner.y;
+  
+  if (d.state === 'seeking') {
+   if (!d.target || d.target.collected) {
+    let nearest = null;
+    let minD = 500;
+    for (const a of atoms) {
+     if (a.collected) continue;
+     const dist = Math.hypot(a.x - d.x, a.y - d.y);
+     if (dist < minD) { minD = dist; nearest = a; }
+    }
+    d.target = nearest;
+   }
+   
+   if (d.target && !d.target.collected) {
+    const angle = Math.atan2(d.target.y - d.y, d.target.x - d.x);
+    d.x += Math.cos(angle) * 3;
+    d.y += Math.sin(angle) * 3;
+    
+    if (Math.hypot(d.target.x - d.x, d.target.y - d.y) < 15) {
+     d.cargo = d.target.amount;
+     d.cargoType = d.target.type;
+     d.target.collected = true;
+     d.target = null;
+     d.state = 'returning';
+    }
+   } else {
+    const angle = Math.atan2(d.homeY - d.y, d.homeX - d.x);
+    d.x += Math.cos(angle) * 0.8;
+    d.y += Math.sin(angle) * 0.8;
+   }
+  }
+   
+  if (d.state === 'returning') {
+   const angle = Math.atan2(d.homeY - d.y, d.homeX - d.x);
+   d.x += Math.cos(angle) * 3.5;
+   d.y += Math.sin(angle) * 3.5;
+   
+   if (Math.hypot(d.homeX - d.x, d.homeY - d.y) < 25) {
+    let storage = null;
+    for (const b of blocks) {
+     if (b.type === 'storage' && b.operational) {
+      if (!storage || Math.hypot(b.x - d.homeX, b.y - d.homeY) < Math.hypot(storage.x - d.homeX, storage.y - d.homeY)) {
+       storage = b;
+      }
+     }
+    }
+    
+    if (storage) {
+     storage.stored = Math.min((storage.stored || 0) + d.cargo, BLOCK_TYPES.storage.capacity);
+    } else {
+     resources[d.cargoType] = (resources[d.cargoType] || 0) + d.cargo;
+    }
+    
+    d.cargo = 0;
+    d.cargoType = null;
+    d.state = 'seeking';
+    if (d.owner) d.owner.animPulse = 1;
+   }
+  }
+ }
+ 
+ drones = drones.filter(d => !d.dead);
+ atoms = atoms.filter(a => !a.collected);
+ 
+ // ========== UPDATE ALIENS ==========
+ for (const a of aliens) {
+  if (a.target && blocks.includes(a.target)) {
+   const angle = Math.atan2(a.target.y - a.y, a.target.x - a.x);
+   a.x += Math.cos(angle) * a.speed;
+   a.y += Math.sin(angle) * a.speed;
+   
+   if (Math.hypot(a.target.x - a.x, a.target.y - a.y) < 25) {
+    a.attackCooldown = Math.max(0, a.attackCooldown - 1);
+    if (a.attackCooldown <= 0) {
+     a.target.hp -= a.damage;
+     a.attackCooldown = 18;
+    }
+   }
+  } else {
+   a.target = blocks[Math.floor(Math.random() * blocks.length)];
+  }
+  a.phase += 0.04;
+ }
+ 
+ // ========== UPDATE PROJECTILES ==========
+ for (const p of projectiles) {
+  p.x += p.vx;
+  p.y += p.vy;
+  p.life--;
+  
+  for (const a of aliens) {
+   const hitDist = 15 * a.size;
+   if (Math.hypot(a.x - p.x, a.y - p.y) < hitDist) {
+    a.hp -= p.damage;
+    p.life = 0;
+    const gx = Math.floor(p.x / GRID_SIZE);
+    const gy = Math.floor(p.y / GRID_SIZE);
+    if (gx >= 0 && gx < GRID_W && gy >= 0 && gy < GRID_H) {
+     atomGrid[gy * GRID_W + gx] = Math.min(1, atomGrid[gy * GRID_W + gx] + 0.2);
+    }
+    break;
+   }
+  }
+ }
+ 
+ projectiles = projectiles.filter(p => p.life > 0);
+ 
+ // ========== DEAD ALIENS ==========
+ for (const a of aliens) {
+  if (a.hp <= 0) {
+   totalKills++;
+   const count = Math.floor(a.size * 10);
+   for (let i = 0; i < count; i++) {
+    atoms.push({
+     x: a.x + (Math.random() - 0.5) * 70,
+     y: a.y + (Math.random() - 0.5) * 70,
+     type: ATOM_TYPES[Math.floor(Math.random() * ATOM_TYPES.length)],
+     amount: 3 + Math.floor(Math.random() * 20 * a.size),
+     color: ATOM_COLORS[ATOM_TYPES[Math.floor(Math.random() * ATOM_TYPES.length)]]
+    });
+   }
+   
+   const gx = Math.floor(a.x / GRID_SIZE);
+   const gy = Math.floor(a.y / GRID_SIZE);
+   for (let dx = -5; dx <= 5; dx++) {
+    for (let dy = -5; dy <= 5; dy++) {
+     const nx = gx + dx, ny = gy + dy;
+     if (nx >= 0 && nx < GRID_W && ny >= 0 && ny < GRID_H) {
+      atomGrid[ny * GRID_W + nx] = Math.min(1, atomGrid[ny * GRID_W + nx] + 0.12);
+     }
+    }
+   }
+  }
+ }
+ 
+ aliens = aliens.filter(a => a.hp > 0);
+ 
+ // ========== DEAD BLOCKS ==========
+ for (const b of blocks) {
+  if (b.hp <= 0) {
+   for (let i = 0; i < 20; i++) {
+    atoms.push({
+     x: b.x + (Math.random() - 0.5) * 60,
+     y: b.y + (Math.random() - 0.5) * 60,
+     type: ATOM_TYPES[Math.floor(Math.random() * ATOM_TYPES.length)],
+     amount: 5 + Math.floor(Math.random() * 15),
+     color: ATOM_COLORS[ATOM_TYPES[Math.floor(Math.random() * ATOM_TYPES.length)]]
+    });
+   }
+   
+   bridges = bridges.filter(br => br.from !== b && br.to !== b);
+   for (const d of drones) { if (d.owner === b) d.dead = true; }
+   
+   if (b.type === 'core') gameOver = true;
+  }
+ }
+ 
+ blocks = blocks.filter(b => b.hp > 0);
+ 
+ updateUI();
+}
+
+// ============================================================================
+// UI UPDATE
+// ============================================================================
+
+function updateUI() {
+ let total = 0;
+ for (const r in resources) total += resources[r];
+ 
+ let html = `<div style="font-size:14px;color:#adf">Resources: <b>${total}</b></div>`;
+ html += '<div style="margin-top:8px">';
+ for (const r in resources) {
+  const pct = Math.min(100, resources[r] / 5);
+  const colors = { C:'#888', H:'#aaa', O:'#4df', N:'#a8f', Fe:'#f88', Si:'#aaa', Cu:'#fa8' };
+  html += `<div style="display:inline-block;margin-right:8px">${r}: ${resources[r]}</div>`;
+ }
+ html += '</div>';
+ html += `<div style="margin-top:8px;color:#8f8">Modules: ${blocks.length}</div>`;
+ html += `<div style="color:#faa">Kills: ${totalKills}</div>`;
+ 
+ document.getElementById('ui-overlay').innerHTML = html;
+ 
+ // Wave info
+ let waveHtml = '';
+ for (const size in waveCount) {
+  if (waveCount[size] > 0) {
+   waveHtml += `<div>${size}: ${waveCount[size]}</div>`;
+  }
+ }
+ document.getElementById('wave-info').innerHTML = waveHtml;
+}
+
+// ============================================================================
+// RENDER FUNCTIONS
+// ============================================================================
+
+function render() {
+ gl.clearColor(0.008, 0.008, 0.015, 1);
+ gl.clear(gl.COLOR_BUFFER_BIT);
+ 
+ renderAtomGrid();
+ renderBridges();
+ renderBlocks();
+ renderLaserBeams();
+ renderProjectiles();
+ renderDrones();
+ renderAtoms();
+ renderAliens();
+ renderSidebar();
+ renderDraggingBlock();
+ 
+ if (gameOver) renderGameOver();
+}
+
+function renderAtomGrid() {
+ const positions = [];
+ const values = [];
+ 
+ for (let y = 0; y < GRID_H; y++) {
+  for (let x = 0; x < GRID_W; x++) {
+   const idx = y * GRID_W + x;
+   const val = atomGrid[idx];
+   const x0 = x * GRID_SIZE, y0 = y * GRID_SIZE;
+   
+   positions.push(x0,y0, x0+GRID_SIZE,y0, x0+GRID_SIZE,y0+GRID_SIZE, x0,y0, x0+GRID_SIZE,y0+GRID_SIZE, x0,y0+GRID_SIZE);
+   for (let i = 0; i < 6; i++) values.push(val);
+  }
+ }
+ 
+ gl.useProgram(progAtom);
+ gl.uniform2f(uResAtom, W, H);
+ gl.bindBuffer(gl.ARRAY_BUFFER, atomPosBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW);
+ gl.bindBuffer(gl.ARRAY_BUFFER, atomValBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(values), gl.DYNAMIC_DRAW);
+ gl.bindVertexArray(vaoAtom);
+ gl.drawArrays(gl.TRIANGLES, 0, positions.length / 2);
+}
+
+function renderBridges() {
+ const positions = [];
+ const colors = [];
+ 
+ for (const bridge of bridges) {
+  if (!blocks.includes(bridge.from) || !blocks.includes(bridge.to)) continue;
+  
+  for (const sq of bridge.squares) {
+   const pulse = 0.2 + 0.1 * Math.sin(gameTime * 0.04 + sq.phase);
+   const bright = (bridge.from.operational || bridge.from.type === 'energy' || bridge.from.type === 'core') ? 0.6 + pulse : 0.2;
+   const c = C(sq.c, bright);
+   
+   positions.push(sq.x-B/2,sq.y-B/2, sq.x+B/2,sq.y-B/2, sq.x+B/2,sq.y+B/2, sq.x-B/2,sq.y-B/2, sq.x+B/2,sq.y+B/2, sq.x-B/2,sq.y+B/2);
+   for (let i = 0; i < 6; i++) colors.push(c[0], c[1], c[2]);
+  }
+ }
+ 
+ if (positions.length === 0) return;
+ 
+ gl.useProgram(prog);
+ gl.uniform2f(uRes, W, H);
+ gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW);
+ gl.bindBuffer(gl.ARRAY_BUFFER, colBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.DYNAMIC_DRAW);
+ gl.bindVertexArray(vao);
+ gl.drawArrays(gl.TRIANGLES, 0, positions.length / 2);
+}
+
+function renderBlocks() {
+ const positions = [];
+ const colors = [];
+ 
+ for (const b of blocks) {
+  const def = BLOCK_TYPES[b.type];
+  
+  let bright = b.operational ? 1.0 : (b.powered ? 0.55 : 0.18);
+  const needsEnergy = (def.energyCost > 0) && !b.powered;
+  const pulse = b.animPulse || 0;
+  
+  for (const sq of def.squares) {
+   let [rx, ry] = rotateCoord(sq.x, sq.y, b.rotation);
+   
+   const animPhase = gameTime * 0.03 + b.animOffset + sq.x * 0.15 + sq.y * 0.15;
+   const breathe = b.operational ? Math.sin(animPhase) * 0.15 : 0;
+   
+   const px = b.x + rx * B + breathe;
+   const py = b.y + ry * B + breathe;
+   
+   let c = C(sq.c, bright + pulse * 0.3);
+   
+   if (needsEnergy) {
+    c = [c[0] * 0.5 + 0.35, c[1] * 0.25, c[2] * 0.25];
+   }
+   
+   positions.push(px,py, px+B,py, px+B,py+B, px,py, px+B,py+B, px,py+B);
+   for (let i = 0; i < 6; i++) colors.push(c[0], c[1], c[2]);
+  }
+ }
+ 
+ if (positions.length === 0) return;
+ 
+ gl.useProgram(prog);
+ gl.uniform2f(uRes, W, H);
+ gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW);
+ gl.bindBuffer(gl.ARRAY_BUFFER, colBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.DYNAMIC_DRAW);
+ gl.bindVertexArray(vao);
+ gl.drawArrays(gl.TRIANGLES, 0, positions.length / 2);
+}
+
+function renderLaserBeams() {
+ const positions = [];
+ const colors = [];
+ 
+ for (const b of blocks) {
+  if (b.type === 'laser' && b.laserTarget && aliens.includes(b.laserTarget)) {
+   const dx = b.laserTarget.x - b.x;
+   const dy = b.laserTarget.y - b.y;
+   const dist = Math.hypot(dx, dy);
+   const steps = Math.floor(dist / B);
+   
+   for (let i = 0; i < steps; i++) {
+    const t = i / steps;
+    const px = b.x + dx * t - B/2;
+    const py = b.y + dy * t - B/2;
+    const alpha = 0.8 - t * 0.4;
+    const flicker = Math.sin(gameTime * 0.3 + i * 0.35) * 0.1;
+    const c = C(40, alpha + flicker);
+    
+    positions.push(px,py, px+B,py, px+B,py+B, px,py, px+B,py+B, px,py+B);
+    for (let j = 0; j < 6; j++) colors.push(c[0], c[1], c[2]);
+   }
+   b.laserTarget = null;
+  }
+ }
+ 
+ if (positions.length === 0) return;
+ 
+ gl.useProgram(prog);
+ gl.uniform2f(uRes, W, H);
+ gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW);
+ gl.bindBuffer(gl.ARRAY_BUFFER, colBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.DYNAMIC_DRAW);
+ gl.bindVertexArray(vao);
+ gl.drawArrays(gl.TRIANGLES, 0, positions.length / 2);
+}
+
+function renderProjectiles() {
+ const positions = [];
+ const colors = [];
+ 
+ for (const p of projectiles) {
+  const flicker = Math.sin(gameTime * 0.35 + p.x) * 0.1;
+  const c = C(p.color, 1.0 + flicker);
+  const bx = p.x - B/2, by = p.y - B/2;
+  
+  positions.push(bx,by, bx+B,by, bx+B,by+B, bx,by, bx+B,by+B, bx,by+B);
+  for (let i = 0; i < 6; i++) colors.push(c[0], c[1], c[2]);
+ }
+ 
+ if (positions.length === 0) return;
+ 
+ gl.useProgram(prog);
+ gl.uniform2f(uRes, W, H);
+ gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW);
+ gl.bindBuffer(gl.ARRAY_BUFFER, colBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.DYNAMIC_DRAW);
+ gl.bindVertexArray(vao);
+ gl.drawArrays(gl.TRIANGLES, 0, positions.length / 2);
+}
+
+function renderDrones() {
+ const positions = [];
+ const colors = [];
+ 
+ for (const d of drones) {
+  const flicker = Math.sin(gameTime * 0.15 + d.x + d.y) * 0.1;
+  const c = (d.cargo > 0) ? C(35, 0.85 + flicker) : C(34, 0.65 + flicker);
+  const bx = d.x - B/2, by = d.y - B/2;
+  
+  positions.push(bx,by, bx+B,by, bx+B,by+B, bx,by, bx+B,by+B, bx,by+B);
+  for (let i = 0; i < 6; i++) colors.push(c[0], c[1], c[2]);
+ }
+ 
+ if (positions.length === 0) return;
+ 
+ gl.useProgram(prog);
+ gl.uniform2f(uRes, W, H);
+ gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW);
+ gl.bindBuffer(gl.ARRAY_BUFFER, colBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.DYNAMIC_DRAW);
+ gl.bindVertexArray(vao);
+ gl.drawArrays(gl.TRIANGLES, 0, positions.length / 2);
+}
+
+function renderAtoms() {
+ const positions = [];
+ const colors = [];
+ 
+ for (const a of atoms) {
+  const flicker = 0.5 + 0.5 * Math.sin(gameTime * 0.08 + a.x * 0.06 + a.y * 0.06);
+  const c = C(a.color || 57, flicker * 0.6);
+  const bx = a.x - B/2, by = a.y - B/2;
+  
+  positions.push(bx,by, bx+B,by, bx+B,by+B, bx,by, bx+B,by+B, bx,by+B);
+  for (let i = 0; i < 6; i++) colors.push(c[0], c[1], c[2]);
+ }
+ 
+ if (positions.length === 0) return;
+ 
+ gl.useProgram(prog);
+ gl.uniform2f(uRes, W, H);
+ gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW);
+ gl.bindBuffer(gl.ARRAY_BUFFER, colBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.DYNAMIC_DRAW);
+ gl.bindVertexArray(vao);
+ gl.drawArrays(gl.TRIANGLES, 0, positions.length / 2);
+}
+
+function renderAliens() {
+ const positions = [];
+ const colors = [];
+ 
+ for (const a of aliens) {
+  const size = a.size;
+  const count = Math.floor(4 + size * 6);
+  const spread = 1.0 + size * 0.7;
+  const seed = Math.floor(a.x * 100) ^ Math.floor(a.y * 10);
+  
+  for (let i = 0; i < count; i++) {
+   const angle = (i / count) * Math.PI * 2;
+   const wobble = Math.sin(a.phase + i * 0.5) * 2;
+   const r = spread * B * (0.4 + 0.6 * Math.sin(seed + i * 2.0));
+   
+   const px = a.x + Math.cos(angle + Math.sin(gameTime * 0.02 + i) * 0.3) * r + wobble - B/2;
+   const py = a.y + Math.sin(angle + Math.sin(gameTime * 0.02 + i) * 0.3) * r + wobble - B/2;
+   
+   const cIdx = 48 + (i % 8);
+   const pulse = 0.7 + 0.3 * Math.sin(a.phase + i * 0.4);
+   const c = C(cIdx, pulse);
+   
+   positions.push(px,py, px+B,py, px+B,py+B, px,py, px+B,py+B, px,py+B);
+   for (let j = 0; j < 6; j++) colors.push(c[0], c[1], c[2]);
+  }
+ }
+ 
+ if (positions.length === 0) return;
+ 
+ gl.useProgram(prog);
+ gl.uniform2f(uRes, W, H);
+ gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW);
+ gl.bindBuffer(gl.ARRAY_BUFFER, colBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.DYNAMIC_DRAW);
+ gl.bindVertexArray(vao);
+ gl.drawArrays(gl.TRIANGLES, 0, positions.length / 2);
+}
+
+function renderSidebar() {
+ const positions = [];
+ const colors = [];
+ 
+ // Sidebar background
+ const sbX = W - SIDEBAR_W;
+ positions.push(sbX,0, W,0, W,H, sbX,0, W,H, sbX,H);
+ for (let i = 0; i < 6; i++) colors.push(0.015, 0.018, 0.025);
+ 
+ // Border
+ positions.push(sbX,0, sbX+2,0, sbX+2,H, sbX,0, sbX+2,H, sbX,H);
+ for (let i = 0; i < 6; i++) colors.push(0.1, 0.12, 0.15);
+ 
+ // Draw module previews
+ for (const ui of uiBlocks) {
+  const def = BLOCK_TYPES[ui.type];
+  const scale = 0.38;
+  const bx = ui.x + (ui.w / 2);
+  const by = ui.y + 25;
+  
+  // Highlight if hovered
+  if (hoveredUI === ui) {
+   positions.push(ui.x-2,ui.y-2, ui.x+ui.w+2,ui.y-2, ui.x+ui.w+2,ui.y+ui.h+2, ui.x-2,ui.y-2, ui.x+ui.w+2,ui.y+ui.h+2, ui.x-2,ui.y+ui.h+2);
+   for (let i = 0; i < 6; i++) colors.push(0.15, 0.18, 0.25);
+  }
+  
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const sq of def.squares) {
+   if (sq.x < minX) minX = sq.x;
+   if (sq.x > maxX) maxX = sq.x;
+   if (sq.y < minY) minY = sq.y;
+   if (sq.y > maxY) maxY = sq.y;
+  }
+  
+  const offsetX = -(minX + maxX) / 2;
+  const offsetY = -(minY + maxY) / 2;
+  
+  for (const sq of def.squares) {
+   const px = bx + (sq.x + offsetX) * B * scale;
+   const py = by + (sq.y + offsetY) * B * scale;
+   const c = C(sq.c, 0.8);
+   
+   positions.push(px,py, px+B*scale,py, px+B*scale,py+B*scale, px,py, px+B*scale,py+B*scale, px,py+B*scale);
+   for (let i = 0; i < 6; i++) colors.push(c[0], c[1], c[2]);
+  }
+ }
+ 
+ gl.useProgram(prog);
+ gl.uniform2f(uRes, W, H);
+ gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW);
+ gl.bindBuffer(gl.ARRAY_BUFFER, colBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.DYNAMIC_DRAW);
+ gl.bindVertexArray(vao);
+ gl.drawArrays(gl.TRIANGLES, 0, positions.length / 2);
+}
+
+function renderDraggingBlock() {
+ if (!draggingBlock) return;
+ 
+ const def = BLOCK_TYPES[draggingBlock.type];
+ const positions = [];
+ const colors = [];
+ 
+ let baseBright;
+ if (!draggingBlock.canPlace) {
+  baseBright = 0.15;
+ } else if (draggingBlock.needsMoreEnergy) {
+  baseBright = 0.35;
+ } else {
+  baseBright = 0.7;
+ }
+ 
+ const needsEnergy = draggingBlock.needsMoreEnergy;
+ 
+ let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+ for (const sq of def.squares) {
+  if (sq.x < minX) minX = sq.x;
+  if (sq.x > maxX) maxX = sq.x;
+  if (sq.y < minY) minY = sq.y;
+  if (sq.y > maxY) maxY = sq.y;
+ }
+ 
+ const offsetX = -(minX + maxX) / 2;
+ const offsetY = -(minY + maxY) / 2;
+ const scale = 0.55;
+ 
+ for (const sq of def.squares) {
+  const px = draggingBlock.x + (sq.x + offsetX) * B * scale;
+  const py = draggingBlock.y + (sq.y + offsetY) * B * scale;
+  
+  let c = C(sq.c, baseBright);
+  if (needsEnergy) {
+   c = [c[0] * 0.45 + 0.30, c[1] * 0.20, c[2] * 0.20];
+  }
+  
+  positions.push(px,py, px+B*scale,py, px+B*scale,py+B*scale, px,py, px+B*scale,py+B*scale, px,py+B*scale);
+  for (let i = 0; i < 6; i++) colors.push(c[0], c[1], c[2]);
+ }
+ 
+ // Preview bridge
+ if (draggingBlock.nearestBlock && draggingBlock.canPlace) {
+  const nb = draggingBlock.nearestBlock;
+  const dx = nb.x - draggingBlock.x;
+  const dy = nb.y - draggingBlock.y;
+  const dist = Math.hypot(dx, dy);
+  const steps = Math.floor(dist / 8);
+  
+  for (let i = 1; i < steps; i++) {
+   const t = i / steps;
+   const px = draggingBlock.x + dx * t - B/2;
+   const py = draggingBlock.y + dy * t - B/2;
+   const alpha = 0.3 + Math.sin(gameTime * 0.08 + i * 0.25) * 0.15;
+   const c = C(60, alpha);
+   
+   positions.push(px,py, px+B,py, px+B,py+B, px,py, px+B,py+B, px,py+B);
+   for (let j = 0; j < 6; j++) colors.push(c[0], c[1], c[2]);
+  }
+ }
+ 
+ gl.useProgram(prog);
+ gl.uniform2f(uRes, W, H);
+ gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW);
+ gl.bindBuffer(gl.ARRAY_BUFFER, colBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.DYNAMIC_DRAW);
+ gl.bindVertexArray(vao);
+ gl.drawArrays(gl.TRIANGLES, 0, positions.length / 2);
+}
+
+function renderGameOver() {
+ const positions = [0,0, W,0, W,H, 0,0, W,H, 0,H];
+ const colors = [];
+ const pulse = 0.2 + 0.12 * Math.sin(gameTime * 0.05);
+ for (let i = 0; i < 6; i++) colors.push(0.3 * pulse, 0.04, 0.04);
+ 
+ gl.enable(gl.BLEND);
+ gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+ gl.useProgram(prog);
+ gl.uniform2f(uRes, W, H);
+ gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW);
+ gl.bindBuffer(gl.ARRAY_BUFFER, colBuf);
+ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.DYNAMIC_DRAW);
+ gl.bindVertexArray(vao);
+ gl.drawArrays(gl.TRIANGLES, 0, 6);
+ gl.disable(gl.BLEND);
+}
+
+// ============================================================================
+// RESIZE HANDLER
+// ============================================================================
+
+window.addEventListener('resize', () => {
+ W = window.innerWidth;
+ H = window.innerHeight;
+ canvas.width = W;
+ canvas.height = H;
+ gl.viewport(0, 0, W, H);
+ GRID_W = Math.ceil(W / GRID_SIZE);
+ GRID_H = Math.ceil(H / GRID_SIZE);
+ atomGrid = new Float32Array(GRID_W * GRID_H);
+ initAtomGrid();
+ initUIBlocks();
+});
+
+// ============================================================================
+// INIT & GAME LOOP
+// ============================================================================
+
+initUIBlocks();
+initCore();
+
+function gameLoop() {
+ update();
+ render();
+ requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+
+</script>
+</body>
+</html>
