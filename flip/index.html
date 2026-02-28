@@ -83,7 +83,7 @@
     <body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
         <div class="text-center mb-6">
             <h1 class="text-3xl font-bold text-purple-800 mb-2">Number Flip</h1>
-            <p class="text-gray-600">Tap the card to reveal</p>
+            <p class="text-gray-600" id="instruction">Tap the card to reveal</p>
         </div>
 
         <div class="card mb-8" id="card">
@@ -93,18 +93,13 @@
             </div>
         </div>
 
-        <div class="flex flex-col items-center w-full max-w-xs">
-            <button id="reset-btn" class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 mb-4 w-full">
-                New Number
-            </button>
-            <div id="message" class="text-lg font-semibold text-purple-700 h-8 text-center px-4"></div>
-        </div>
+        <div id="message" class="text-lg font-semibold text-purple-700 h-8 text-center px-4"></div>
 
         <script>
             const card = document.getElementById('card');
             const cardBack = document.getElementById('card-back');
-            const resetBtn = document.getElementById('reset-btn');
             const messageEl = document.getElementById('message');
+            const instructionEl = document.getElementById('instruction');
 
             const messages = {
                 0: "Zero! The circle of life!",
@@ -115,39 +110,48 @@
 
             let currentNumber = getRandomNumber();
             let cardFlipped = false;
+            let isAnimating = false;
 
             function getRandomNumber() {
                 return Math.floor(Math.random() * 10);
             }
 
-            function flipCard() {
-                if (cardFlipped) return;
-                card.classList.add('flipped');
-                cardBack.textContent = currentNumber;
-                cardFlipped = true;
+            function toggleCard() {
+                if (isAnimating) return;
 
-                if (messages[currentNumber]) {
-                    messageEl.textContent = messages[currentNumber];
-                }
-                if (currentNumber === 7) {
-                    createConfetti();
-                }
-            }
+                if (!cardFlipped) {
+                    // Flip to reveal
+                    isAnimating = true;
+                    card.classList.add('flipped');
+                    cardBack.textContent = currentNumber;
+                    cardFlipped = true;
+                    instructionEl.textContent = 'Tap again for a new number';
 
-            function resetGame() {
-                if (cardFlipped) {
+                    setTimeout(() => {
+                        isAnimating = false;
+                    }, 600);
+
+                    if (messages[currentNumber]) {
+                        messageEl.textContent = messages[currentNumber];
+                    }
+                    if (currentNumber === 7) {
+                        createConfetti();
+                    }
+                } else {
+                    // Flip back and get new number
+                    isAnimating = true;
                     card.classList.remove('flipped');
                     cardFlipped = false;
                     messageEl.textContent = '';
+                    instructionEl.textContent = 'Tap the card to reveal';
+
                     const onTransitionEnd = () => {
                         card.removeEventListener('transitionend', onTransitionEnd);
                         currentNumber = getRandomNumber();
                         cardBack.textContent = '';
+                        isAnimating = false;
                     };
                     card.addEventListener('transitionend', onTransitionEnd);
-                } else {
-                    currentNumber = getRandomNumber();
-                    messageEl.textContent = '';
                 }
             }
 
@@ -166,13 +170,11 @@
                 }
             }
 
-            card.addEventListener('click', flipCard);
+            card.addEventListener('click', toggleCard);
             card.addEventListener('touchstart', (e) => {
                 e.preventDefault();
-                flipCard();
+                toggleCard();
             }, { passive: false });
-
-            resetBtn.addEventListener('click', resetGame);
         </script>
     </body>
 </html>
