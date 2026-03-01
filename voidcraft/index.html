@@ -16,7 +16,7 @@
     Collect atomic resources from destroyed enemies to construct powerful modules.
     Protect your Command Core at all costs. Harness the devastating power of the
     Singularity Pulse - an ultimate weapon that creates a localized black hole,
-    obliterating all matter in its radius.
+    obliterating ALL matter in its radius.
 
     OBJECTIVE
     ---------
@@ -105,12 +105,18 @@
       - Triggers when 8+ aliens are within 450px range
       - CHARGING PHASE: Energy particles spiral inward, light intensifies
       - FIRING EFFECT: Massive implosion pulls all matter toward center
-      - ATOMS ANNIHILATED: All atoms, debris, and aliens in range dissolve into void
+      - TOTAL ANNIHILATION:
+        * ALL aliens in range are erased from existence
+        * NO atoms are spawned from singularity-killed aliens (matter is destroyed)
+        * ALL existing atoms in range dissolve into the void
+        * The atom grid is cleared within the effect radius
       - Creates expanding reality-rupture shockwave
       - Leaves behind a temporary void rift that fades
       - Cooldown: 900 frames (15 seconds) after discharge
       - Requires significant resources to build (designed for late game)
       - Essential for surviving massive alien horde attacks
+      - WARNING: You gain no resources from aliens killed by singularity!
+        (Their matter is completely destroyed, not converted to atoms)
 
     BUILDING MECHANICS
     ------------------
@@ -149,14 +155,22 @@
     the Singularity Pulse or extensive defensive preparations.
     Warning: Multiple huge aliens may appear during horde events.
 
-    THE SINGULARITY EFFECT
-    ----------------------
+    THE SINGULARITY EFFECT - COMPLETE ANNIHILATION
+    ----------------------------------------------
     When the Singularity Pulse fires, witness the ultimate weapon:
     1. ENERGY BUILD-UP: Swirling particles accelerate inward
     2. IMPLOSION: All matter within range pulled toward center
-    3. ANNIHILATION: Atoms dissolve into pure void energy
+    3. TOTAL ERASURE:
+       - Aliens are removed from existence (not killed normally)
+       - No atoms spawn from their destruction - matter is gone
+       - All existing atoms in range are absorbed and destroyed
     4. SHOCKWAVE: Reality-bending wave expands outward
     5. VOID RIFT: Temporary rift marks where matter was erased
+
+    IMPORTANT: The singularity is a double-edged sword. While it
+    obliterates all enemies in range, you receive NO resources from
+    those kills. Use it strategically when overwhelmed, but rely
+    on conventional weapons for resource gathering.
 
     CONTROLS
     --------
@@ -176,6 +190,8 @@
     9. The Singularity Pulse needs 8+ nearby aliens to trigger
     10. Build multiple Mining Drone Bays to afford the Singularity Pulse
     11. Watch the beautiful annihilation when Singularity fires!
+    12. Don't rely on Singularity for resources - it destroys matter!
+    13. Use Singularity as emergency defense, not for farming
     -->
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -199,6 +215,10 @@
             text-shadow: 0 0 10px #000;
             z-index: 100;
             max-width: calc(100vw - 120px);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(136, 170, 255, 0.3);
         }
         #ui-overlay div { margin: 4px 0; }
         .resource-bar {
@@ -224,6 +244,10 @@
             text-shadow: 0 0 10px #000;
             z-index: 100;
             max-width: 280px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(170, 221, 255, 0.3);
         }
         #mobile-controls {
             position: fixed;
@@ -254,6 +278,32 @@
             font-size: 18px;
             color: #adf;
             z-index: 200;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 25px;
+            border-radius: 8px;
+            border: 2px solid #58a;
+        }
+        #restart-btn {
+            display: none;
+            position: fixed;
+            top: 55%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            color: #5f8;
+            background: rgba(0, 50, 0, 0.8);
+            border: 2px solid #5f8;
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 200;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        #restart-btn:hover {
+            background: rgba(0, 80, 0, 0.9);
+            box-shadow: 0 0 20px rgba(85, 255, 136, 0.5);
         }
         #horde-warning {
             display: none;
@@ -268,6 +318,10 @@
             font-weight: bold;
             text-align: center;
             animation: pulse 0.5s ease-in-out infinite alternate;
+            background: rgba(50, 0, 50, 0.8);
+            padding: 15px 30px;
+            border-radius: 8px;
+            border: 2px solid #f5f;
         }
         #singularity-warning {
             display: none;
@@ -282,6 +336,22 @@
             font-weight: bold;
             text-align: center;
             animation: singularityPulse 0.3s ease-in-out infinite alternate;
+            background: rgba(30, 0, 50, 0.8);
+            padding: 12px 25px;
+            border-radius: 8px;
+            border: 2px solid #a5f;
+        }
+        #fps-counter {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            color: #5f5;
+            font-size: 11px;
+            pointer-events: none;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 4px 8px;
+            border-radius: 4px;
         }
         @keyframes pulse {
             from { opacity: 0.6; transform: translateX(-50%) scale(1); }
@@ -313,8 +383,10 @@
     <div id="mobile-controls"></div>
     <div id="game-over-text">GAME OVER</div>
     <div id="final-score"></div>
-    <div id="horde-warning">HORDE INCOMING</div>
-    <div id="singularity-warning">SINGULARITY CHARGING</div>
+    <div id="restart-btn" onclick="restartGame()">Restart Mission</div>
+    <div id="horde-warning">⚠ HORDE INCOMING ⚠</div>
+    <div id="singularity-warning">⬡ SINGULARITY CHARGING ⬡</div>
+    <div id="fps-counter">FPS: 60</div>
 
     <script>
         'use strict';
@@ -359,6 +431,24 @@
         }
 
         let SIDEBAR_W = getSidebarWidth();
+
+        // ============================================================
+        // FPS COUNTER
+        // ============================================================
+
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let currentFps = 60;
+
+        function updateFps(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate >= 1000) {
+                currentFps = frameCount;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+                document.getElementById('fps-counter').textContent = `FPS: ${currentFps}`;
+            }
+        }
 
         // ============================================================
         // 64-COLOR SPACE OPERA PALETTE
@@ -843,6 +933,7 @@ void main() { FragColor = vec4(vec3(vVal * 0.18), 1.0); }`;
         let gameOver = false;
         let totalKills = 0;
         let isPaused = false;
+        let survivalTime = 0;
 
         // HORDE SYSTEM
         let nextHordeTime = 4800 + Math.floor(Math.random() * 2400);
@@ -1084,6 +1175,7 @@ void main() { FragColor = vec4(vec3(vVal * 0.18), 1.0); }`;
                 let extraInfo = '';
                 if (hoveredUI.type === 'singularity') {
                     extraInfo = '<br><span style="color:#a5f">Creates a black hole that annihilates ALL matter!</span>';
+                    extraInfo += '<br><span style="color:#f88">WARNING: No resources from killed aliens!</span>';
                 }
                 tooltip.innerHTML = `<b>${def.name}</b><br>${def.desc}<br><span style="color:${color}">${costStr}</span>${extraInfo}`;
             } else if (draggingBlock) {
@@ -1405,6 +1497,10 @@ void main() { FragColor = vec4(vec3(vVal * 0.18), 1.0); }`;
                 if (d < minDist) { minDist = d; target = b; }
             }
 
+            if (!target && blocks.length > 0) {
+                target = blocks[Math.floor(Math.random() * blocks.length)];
+            }
+
             aliens.push({
                 x, y, strength,
                 size: sizeMult,
@@ -1422,6 +1518,7 @@ void main() { FragColor = vec4(vec3(vVal * 0.18), 1.0); }`;
         // ============================================================
         // SINGULARITY PULSE - THE ULTIMATE WEAPON
         // Creates a devastating black hole effect
+        // COMPLETE ANNIHILATION: No atoms spawn from killed aliens
         // ============================================================
 
         function triggerSingularityPulse(block) {
@@ -1429,16 +1526,14 @@ void main() { FragColor = vec4(vec3(vVal * 0.18), 1.0); }`;
             const range = def.range;
             const threshold = def.triggerThreshold;
 
-            // Count nearby aliens
-            let nearbyAliens = [];
+            // Count nearby aliens at trigger time
+            let nearbyCount = 0;
             for (const a of aliens) {
                 const d = Math.hypot(a.x - block.x, a.y - block.y);
-                if (d < range) {
-                    nearbyAliens.push({ alien: a, dist: d });
-                }
+                if (d < range) nearbyCount++;
             }
 
-            if (nearbyAliens.length >= threshold) {
+            if (nearbyCount >= threshold) {
                 // Start charging sequence
                 block.isCharging = true;
                 block.chargeLevel = 0;
@@ -1478,7 +1573,10 @@ void main() { FragColor = vec4(vec3(vVal * 0.18), 1.0); }`;
 
                 // After charging, fire the weapon
                 setTimeout(() => {
-                    if (!blocks.includes(block)) return;
+                    if (!blocks.includes(block)) {
+                        document.getElementById('singularity-warning').style.display = 'none';
+                        return;
+                    }
 
                     document.getElementById('singularity-warning').style.display = 'none';
                     block.isCharging = false;
@@ -1506,24 +1604,42 @@ void main() { FragColor = vec4(vec3(vVal * 0.18), 1.0); }`;
                     rift.phase = 0;
                     voidRifts.push(rift);
 
-                    // ANNIHILATE ALL MATTER IN RANGE
+                    // ====================================================
+                    // COMPLETE ANNIHILATION - ALL MATTER ERASED
+                    // Aliens are removed directly - NO atoms spawn!
+                    // ====================================================
+
                     let killCount = 0;
 
-                    // Kill all aliens in range
-                    for (const { alien: a, dist: d } of nearbyAliens) {
-                        a.hp = 0;
+                    // Collect all aliens in range AT THE MOMENT OF FIRING
+                    // We calculate position at firing time, not trigger time
+                    const aliensToRemove = [];
+                    for (let i = aliens.length - 1; i >= 0; i--) {
+                        const a = aliens[i];
+                        const d = Math.hypot(a.x - block.x, a.y - block.y);
+                        if (d < range) {
+                            aliensToRemove.push({ alien: a, dist: d, index: i });
+                        }
+                    }
+
+                    // Sort by index descending to splice correctly without index issues
+                    aliensToRemove.sort((a, b) => b.index - a.index);
+
+                    // Process each alien: create visual effect, remove from array
+                    // CRITICAL: We do NOT spawn atoms - matter is destroyed!
+                    for (const { alien: a, dist: d, index } of aliensToRemove) {
                         killCount++;
 
-                        // Create dissolution particles for each alien
+                        // Create dissolution particles for visual effect
+                        // These spiral into the void but produce no resources
                         const particleCount = Math.floor(a.size * 12);
                         for (let i = 0; i < particleCount; i++) {
                             const p = getSingularityParticle();
                             const angle = Math.random() * Math.PI * 2;
-                            const startRadius = d;
                             p.x = a.x;
                             p.y = a.y;
                             p.angle = angle;
-                            p.radius = startRadius;
+                            p.radius = d;
                             p.speed = 0.08 + Math.random() * 0.06;
                             p.brightness = 0.8 + Math.random() * 0.2;
                             p.size = 1.5 + Math.random() * 2;
@@ -1533,9 +1649,20 @@ void main() { FragColor = vec4(vec3(vVal * 0.18), 1.0); }`;
                             p.ownerY = block.y;
                             singularityParticles.push(p);
                         }
+
+                        // DIRECT REMOVAL - alien is erased from existence
+                        // No atoms will spawn because we bypass the normal death code
+                        aliens.splice(index, 1);
                     }
 
-                    // ANNIHILATE ALL ATOMS IN RANGE - they dissolve into void
+                    // Update global kill counter
+                    totalKills += killCount;
+
+                    // ====================================================
+                    // ANNIHILATE ALL EXISTING ATOMS IN RANGE
+                    // They dissolve into the void - no resources recovered
+                    // ====================================================
+
                     for (let i = atoms.length - 1; i >= 0; i--) {
                         const a = atoms[i];
                         const d = Math.hypot(a.x - block.x, a.y - block.y);
@@ -1555,13 +1682,13 @@ void main() { FragColor = vec4(vec3(vVal * 0.18), 1.0); }`;
                             p.ownerY = block.y;
                             singularityParticles.push(p);
 
-                            // Remove the atom
+                            // Remove the atom completely
                             returnAtom(a);
                             atoms.splice(i, 1);
                         }
                     }
 
-                    // Clear atom grid in range
+                    // Clear the atom grid in range - no residue left
                     const gx = Math.floor(block.x / GRID_SIZE);
                     const gy = Math.floor(block.y / GRID_SIZE);
                     const gridRange = Math.ceil(range / GRID_SIZE);
@@ -1582,7 +1709,6 @@ void main() { FragColor = vec4(vec3(vVal * 0.18), 1.0); }`;
                     block.triggerCooldown = def.cooldown;
                     block.chargeLevel = 0;
 
-                    return killCount;
                 }, chargeDuration * 16.67);
 
                 return 0;
@@ -1599,6 +1725,7 @@ void main() { FragColor = vec4(vec3(vVal * 0.18), 1.0); }`;
             if (gameOver || isPaused) return;
 
             gameTime++;
+            survivalTime = Math.floor(gameTime / 60);
 
             // Probabilistic alien spawning with horde events
             checkAlienSpawn();
@@ -1993,7 +2120,16 @@ void main() { FragColor = vec4(vec3(vVal * 0.18), 1.0); }`;
                         }
                     }
                 } else {
-                    a.target = blocks[Math.floor(Math.random() * blocks.length)];
+                    let newTarget = null;
+                    let minDist = Infinity;
+                    for (const b of blocks) {
+                        const d = Math.hypot(b.x - a.x, b.y - a.y);
+                        if (d < minDist) {
+                            minDist = d;
+                            newTarget = b;
+                        }
+                    }
+                    a.target = newTarget;
                 }
                 a.phase += 0.04;
             }
@@ -2098,7 +2234,55 @@ void main() { FragColor = vec4(vec3(vVal * 0.18), 1.0); }`;
         function showGameOver() {
             document.getElementById('game-over-text').style.display = 'block';
             document.getElementById('final-score').style.display = 'block';
-            document.getElementById('final-score').innerHTML = `Modules: ${blocks.length} | Kills: ${totalKills}`;
+            document.getElementById('restart-btn').style.display = 'block';
+            document.getElementById('final-score').innerHTML = `
+                <div style="margin-bottom:10px">⏱ Survival Time: ${Math.floor(gameTime/60)}s</div>
+                <div style="margin-bottom:10px">🏗 Modules Built: ${blocks.length}</div>
+                <div>💀 Total Kills: ${totalKills}</div>
+            `;
+        }
+
+        // ============================================================
+        // RESTART GAME
+        // ============================================================
+
+        function restartGame() {
+            // Reset game state
+            blocks = [];
+            bridges = [];
+            aliens = [];
+            projectiles = [];
+            atoms = [];
+            drones = [];
+            shockwaves = [];
+            singularityParticles = [];
+            voidRifts = [];
+            gameTime = 0;
+            gameOver = false;
+            totalKills = 0;
+            survivalTime = 0;
+            nextHordeTime = 4800 + Math.floor(Math.random() * 2400);
+            hordeActive = false;
+            hordeWarningShown = false;
+            nextSpawnCheck = 60;
+
+            // Reset resources
+            resources = calculateStarterResources();
+
+            // Reset atom grid
+            initAtomGrid();
+
+            // Hide game over UI
+            document.getElementById('game-over-text').style.display = 'none';
+            document.getElementById('final-score').style.display = 'none';
+            document.getElementById('restart-btn').style.display = 'none';
+            document.getElementById('horde-warning').style.display = 'none';
+            document.getElementById('singularity-warning').style.display = 'none';
+
+            // Reinitialize core and UI
+            initCore();
+            initUIBlocks();
+            updateUI();
         }
 
         // ============================================================
@@ -2137,9 +2321,10 @@ void main() { FragColor = vec4(vec3(vVal * 0.18), 1.0); }`;
 
             html += `<div style="margin-top:8px;color:#8f8">Modules: ${blocks.length}</div>`;
             html += `<div style="color:#faa">Kills: ${totalKills}</div>`;
+            html += `<div style="color:#ff8">Time: ${Math.floor(gameTime/60)}s</div>`;
 
             if (hordeWarningShown) {
-                html += `<div style="color:#f5f;font-weight:bold">HORDE INCOMING!</div>`;
+                html += `<div style="color:#f5f;font-weight:bold;margin-top:8px">⚠ HORDE INCOMING!</div>`;
             }
 
             document.getElementById('ui-overlay').innerHTML = html;
@@ -2181,7 +2366,7 @@ void main() { FragColor = vec4(vec3(vVal * 0.18), 1.0); }`;
             vertexCount += 6;
         }
 
-        function render() {
+        function render(timestamp) {
             gl.clearColor(0.008, 0.008, 0.015, 1);
             gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -2213,6 +2398,8 @@ void main() { FragColor = vec4(vec3(vVal * 0.18), 1.0); }`;
                 gl.bindVertexArray(vao);
                 gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
             }
+
+            updateFps(timestamp);
         }
 
         function renderAtomGrid() {
@@ -2690,13 +2877,13 @@ void main() { FragColor = vec4(vec3(vVal * 0.18), 1.0); }`;
         initCore();
         updateUI();
 
-        function gameLoop() {
+        function gameLoop(timestamp) {
             update();
-            render();
+            render(timestamp);
             requestAnimationFrame(gameLoop);
         }
 
-        gameLoop();
+        gameLoop(0);
 
     </script>
 </body>
