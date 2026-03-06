@@ -3,6 +3,8 @@
 const B = 5;
 const MAX_VERTICES = 2000000;
 const GRID_SIZE = 10;
+const VIEW_HEIGHT = 800;
+const WORLD_RADIUS = 2 * VIEW_HEIGHT;
 
 const PALETTE = [
     // 0-7: Deep space backgrounds
@@ -124,8 +126,7 @@ const RADAR_BLOCK = {
         {x:-2,y:0,c:12},{x:2,y:0,c:12},{x:0,y:-2,c:12},{x:0,y:2,c:12},
         {x:-4,y:0,c:61},{x:4,y:0,c:61},{x:0,y:-4,c:61},{x:0,y:4,c:61}
     ],
-    hp: 100, energyCost: 0, energyProduce: 0,
-    range: 700, rangeBoost: 1.3,
+    hp: 100, energyCost: 0, energyProduce: 0, rangeBoost: 1.3,
     cost: Cargo({ H: 8, O: 15, C: 10, Fe: 15, Si: 45, Al: 12, N: 15, Ar: 5 })
 };
 
@@ -141,7 +142,7 @@ const COLLECTOR_BLOCK = {
         {x:-3,y:0,c:60},{x:3,y:0,c:60},{x:-2,y:1,c:61},{x:2,y:1,c:61}
     ],
     hp: 80, energyCost: 8, energyProduce: 0,
-    range: 450, droneMax: 6, cooldown: 1000,
+    range: 300, droneMax: 6, cooldown: 1000,
     cost: Cargo({ H: 18, O: 12, C: 22, Fe: 25, Si: 20, Al: 15, N: 20, Li: 3 })
 };
 
@@ -181,8 +182,8 @@ const SINGULARITY_BLOCK = {
         {x:-5,y:-1,c:61},{x:5,y:-1,c:61},{x:-5,y:1,c:61},{x:5,y:1,c:61},
         {x:-1,y:-5,c:61},{x:1,y:-5,c:61},{x:-1,y:5,c:61},{x:1,y:5,c:61}
     ],
-    hp: 250, energyCost: 50, energyProduce: 0,
-    range: 450, triggerThreshold: 8, cooldown: 15000,
+    hp: 1000, energyCost: 500, energyProduce: 0,
+    range: 400, triggerThreshold: 8, cooldown: 15000,
     cost: Cargo({ H: 400, O: 500, C: 800, Fe: 700, Si: 800, Al: 300, N: 250, Li: 200, Ar: 150, Ti: 350, Nd: 400, Au: 250 })
 };
 
@@ -202,7 +203,7 @@ const CORE_BLOCK = {
         {x:-1,y:-3,c:12},{x:1,y:-3,c:12},{x:-1,y:3,c:12},{x:1,y:3,c:12}
     ],
     hp: 2000, energyCost: 0, energyProduce: 50,
-    defenseRange: 220, defenseDamage: 15, defenseCooldown: 300,
+    range: 220, damage: 15, cooldown: 300,
     cost: {},
     capacity: Cargo()
         .addCapacity(ENERGY_BLOCK.cost._capacity)
