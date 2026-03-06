@@ -414,21 +414,10 @@ function initMainPanel() {
 
         item.querySelector('.module-preview').appendChild(previewCanvas);
         item._blockType = type;
-
         moduleList.appendChild(item);
     }
 
-    moduleList.addEventListener('mousedown', e => {
-        const item = e.target.closest('.module-item');
-        if (item) dragStart(item._blockType, e.clientX, e.clientY);
-    });
-
-    moduleList.addEventListener('touchstart', e => {
-        e.preventDefault();
-        const touch = e.touches[0];
-        const item = document.elementFromPoint(touch.clientX, touch.clientY)?.closest('.module-item');
-        if (item) dragStart(item._blockType, touch.clientX, touch.clientY);
-    }, { passive: false });
+    updatePanelAffordability();
 }
 
 // ============================================================================
@@ -564,9 +553,19 @@ function placeBlock(block) {
     logStatus(`${def.name} built`, 'success');
 }
 
-function dragStart(type, x, y) {
-    if (gameOver || !canAfford(BLOCKS[type].cost)) return;
+function dragStart(e) {
+    const item = e.target.closest('.module-item');
+    if (!item) return;
 
+    e.preventDefault();
+
+    if (gameOver || !canAfford(BLOCKS[item.dataset.type].cost)) return;
+
+    const touch = e.touches?.[0];
+    const x = touch ? touch.clientX : e.clientX;
+    const y = touch ? touch.clientY : e.clientY;
+
+    const type = item.dataset.type;
     const nearestBlock = findValidLinkTarget(type, x, y);
     const def = BLOCKS[type];
 
@@ -582,8 +581,16 @@ function dragStart(type, x, y) {
     showModuleInfo(type);
 }
 
-function moveEvent(x, y) {
+document.addEventListener('mousedown', dragStart);
+document.addEventListener('touchstart', dragStart, { passive: false });
+
+function moveEvent(e) {
     if (!draggingBlock) return;
+    e.preventDefault();
+
+    const touch = e.touches?.[0];
+    const x = touch ? touch.clientX : e.clientX;
+    const y = touch ? touch.clientY : e.clientY;
 
     draggingBlock.x = x;
     draggingBlock.y = y;
@@ -595,8 +602,16 @@ function moveEvent(x, y) {
     draggingBlock.needsMoreEnergy = def.energyCost > 0 && nearestBlock?.type === 'hull';
 }
 
+document.addEventListener('mousemove', moveEvent);
+document.addEventListener('touchmove', moveEvent, { passive: false });
+
 function moveEnd(cancel = false) {
     if (!draggingBlock) return;
+
+    if (typeof cancel === 'object') {
+        cancel.preventDefault();
+        cancel = false;
+    }
 
     if (!cancel && draggingBlock.canPlace) {
         placeBlock(draggingBlock);
@@ -608,17 +623,11 @@ function moveEnd(cancel = false) {
     hideModuleInfo();
 }
 
-canvas.addEventListener('contextmenu', e => e.preventDefault());
-canvas.addEventListener('mouseleave', () => moveEnd(true));
-canvas.addEventListener('mousemove', e => moveEvent(e.clientX, e.clientY));
-canvas.addEventListener('touchmove', e => {
-    e.preventDefault();
-    if (e.touches.length) moveEvent(e.touches[0].clientX, e.touches[0].clientY);
-}, { passive: false });
-
-document.addEventListener('mouseup', () => moveEnd());
-document.addEventListener('touchend', e => { e.preventDefault(); moveEnd(); });
+document.addEventListener('mouseup', moveEnd);
+document.addEventListener('touchend', moveEnd, { passive: false });
 document.addEventListener('touchcancel', () => moveEnd(true));
+
+document.addEventListener('contextmenu', e => e.preventDefault());
 
 // ============================================================================
 // ALIEN SPAWNING
