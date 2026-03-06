@@ -6,11 +6,11 @@ function Cargo(capacity = {}) {
         _contents: {},
 
         capacity(type) {
-            return this._capacity[type] ?? this._capacity.default ?? 0;
+            return this._capacity[type] ?? 0;
         },
 
         get(type) {
-            return this._contents[type] || 0;
+            return this._contents[type] ?? 0;
         },
 
         space(type) {
@@ -32,40 +32,28 @@ function Cargo(capacity = {}) {
             return Object.keys(this._contents).filter(t => this._contents[t] > 0);
         },
 
-        total() {
-            return this.types().reduce((sum, t) => sum + this._contents[t], 0);
-        },
-
         isEmpty() {
-            return this.types().length === 0;
-        },
-
-        _trim(type) {
-            if (this._contents[type] > this._capacity[type]) {
-                this._contents[type] = this._capacity[type];
+            for (const type in this._contents) {
+                if (this._contents[type] > 0) return false;
             }
-            if (this._contents[type] <= 0) delete this._contents[type];
-            return this;
-        },
-
-        _trimAll(types) {
-            for (const t of types) {
-                this._trim(t);
-            }
-            return this;
+            return true;
         },
 
         scale(factor) {
             for (const type in this._capacity) {
                 this._capacity[type] = Math.floor(this._capacity[type] * factor);
             }
-            this._trimAll(Object.keys(this._contents));
+            for (const type in this._contents) {
+                if (this._capacity[type] !== undefined && this._contents[type] > this._capacity[type]) {
+                    this._contents[type] = this._capacity[type];
+                }
+                if (this._contents[type] <= 0) delete this._contents[type];
+            }
             return this;
         },
 
         add(type, amount) {
-            const space = this.space(type);
-            const toAdd = Math.min(amount, space);
+            const toAdd = Math.min(amount, this.space(type));
             if (toAdd > 0) {
                 this._contents[type] = (this._contents[type] || 0) + toAdd;
             }
@@ -73,21 +61,16 @@ function Cargo(capacity = {}) {
         },
 
         remove(type, amount) {
-            const have = this.get(type);
-            const toRemove = Math.min(amount, have);
-            this._contents[type] = have - toRemove;
-            if (this._contents[type] <= 0) delete this._contents[type];
+            const toRemove = Math.min(amount, this.get(type));
+            if (toRemove > 0) {
+                const remaining = this._contents[type] - toRemove;
+                if (remaining > 0) {
+                    this._contents[type] = remaining;
+                } else {
+                    delete this._contents[type];
+                }
+            }
             return toRemove;
-        },
-
-        removeAll(type) {
-            const amount = this.get(type);
-            delete this._contents[type];
-            return amount;
-        },
-
-        clear() {
-            this._contents = {};
         },
 
         fill() {
@@ -97,50 +80,51 @@ function Cargo(capacity = {}) {
             return this;
         },
 
-        mergedWith(other) {
-            const mergedCapacity = { ...this._capacity };
+        mergeFrom(other) {
             for (const t in other._capacity) {
-                mergedCapacity[t] = (mergedCapacity[t] || 0) + other._capacity[t];
+                this._capacity[t] = (this._capacity[t] || 0) + other._capacity[t];
             }
-            const result = Cargo(mergedCapacity);
-            for (const t in this._contents) {
-                result._contents[t] = this._contents[t];
-            }
-            for (const t of other.types()) {
-                result.add(t, other.get(t));
-            }
-            return result;
-        },
-
-        addCapacity(type, amount) {
-            if (typeof type === 'object' && amount === undefined) {
-                for (const t in type) {
-                    this._capacity[t] = (this._capacity[t] || 0) + type[t];
-                }
-            } else {
-                this._capacity[type] = (this._capacity[type] || 0) + amount;
+            for (const t in other._contents) {
+                this._contents[t] = (this._contents[t] || 0) + other._contents[t];
             }
             return this;
         },
 
+        addCapacity(other) {
+            const obj = other._capacity || other;
+            for (const t in obj) {
+                this._capacity[t] = (this._capacity[t] || 0) + obj[t];
+            }
+            return this;
+        },
+
+        canAfford(costObj) {
+            const cost = costObj._capacity || costObj;
+            for (const type in cost) {
+                if (this.get(type) < cost[type]) return false;
+            }
+            return true;
+        },
+
         canStore(target) {
-            return this.types().some(type => target.space(type) > 0);
+            for (const type in this._contents) {
+                if (target.space(type) > 0) return true;
+            }
+            return false;
         },
 
         storeTo(target) {
             let totalStored = 0;
-
-            for (const type of this.types()) {
-                const have = this.get(type);
+            for (const type in this._contents) {
+                const have = this._contents[type];
+                if (have <= 0) continue;
                 const stored = target.add(type, have);
-
                 if (stored > 0) {
                     this._contents[type] = have - stored;
                     if (this._contents[type] <= 0) delete this._contents[type];
                     totalStored += stored;
                 }
             }
-
             return totalStored;
         },
 

@@ -217,6 +217,10 @@ canvas { display: block; touch-action: none; }
     color: #aaa;
     margin-top: 1px;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
+    max-width: 100%;
+    text-align: center;
 }
 
 .atom-cell.empty {

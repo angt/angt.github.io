@@ -13,8 +13,6 @@ annihilate hordes when overwhelmed.
 Survive as long as possible. The game ends when your Command Core is
 destroyed.
 
----
-
 ## Resource System
 
 Twelve atomic elements are collected from destroyed aliens and cosmic
@@ -38,7 +36,16 @@ be identified by its color.
 
 The heavier the atom, the rarer it is.
 
----
+Atoms floating in space are unstable and gradually dissipate over time.
+
+**Decay Mechanism:**
+* Each atom has a probability of disappearing each second
+* The decay probability follows an exponential decay model
+* Base half-life: approximately 60 seconds for all atom types
+
+This creates urgency for players to collect resources promptly and adds
+strategic depth to Drone Bay placement — faster collection means less
+lost to decay.
 
 ## Storage System
 
@@ -54,8 +61,6 @@ available storage (Core or Cargo Bays).
 
 * If all storage is full, Drones cannot drop off or collect more resources
 * If a Cargo Bay is destroyed, all resources stored inside are also dropped in space
-
----
 
 ## Power System
 
@@ -75,8 +80,6 @@ during implementation.
 * Unpowered modules appear darker and cannot function; there is no light
   moving in the link.
 
----
-
 ## Linkage System
 
 Every module in the game must be linked to the ship's network. The
@@ -95,8 +98,6 @@ rules:
 * **Hull Sections (Energy Proxies):** Hull Sections are solely used to
   extend link distance. They act as energy proxies and can **only** be
   attached to another Hull Section or to an energy-providing module.
-
----
 
 ## Modules
 
@@ -179,24 +180,22 @@ rules:
 * No atoms spawn from killed aliens
 * All existing atoms in range are also destroyed
 
----
-
 ## Aliens
 
 Aliens attack the ship in waves. They have random sizes, with smaller
 aliens more probable than larger ones. Aliens crash into modules to deal
 damage.
 
-Aliens spawn far off-screen and move toward any module of the ship.
+**Targeting Behavior:**
+* Aliens **only target operational modules**
+* Non-operational modules (unpowered, destroyed, or disconnected) are ignored
+* When an alien's current target becomes non-operational, it immediately
+  searches for a new operational target
+* If no operational modules remain, aliens will drift toward the Core
+  (even if non-operational)
 
-Spawn pressure increases over time, creating emergent behavior only
-using the leviathan pressure formula:
-
-* Frequent small attacks
-* Occasional medium attacks
-* Rare massive hordes if pressure builds long enough
-
----
+Aliens spawn far off-screen and move toward any **operational** module
+of the ship.
 
 ## Building Mechanics
 
@@ -210,14 +209,10 @@ using the leviathan pressure formula:
 Destroyed modules can be rebuilt. The atoms used to build the destroyed
 module are dropped for collection.
 
----
-
 ## Controls
 
 **Desktop:** Click and drag modules from sidebar
 **Mobile:** Touch and drag modules from sidebar
-
----
 
 ## Survival Tips
 
