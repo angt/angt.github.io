@@ -1,230 +1,198 @@
 # VOIDCRAFT
 
-## Overview
+## 1. Overview & Objective
 
-VoidCraft is a space survival tower defense game. Build and expand your
-spaceship while defending against waves of alien invaders. Collect
-atomic resources from destroyed enemies to construct modules. Protect
-your Command Core at all costs. Deploy the Singularity Pulse to
-annihilate hordes when overwhelmed.
+**VoidCraft** is a modular space survival tower defense game. Players
+must expand a spaceship, manage an atomic resource economy, and defend
+against endless waves of alien invaders. The ultimate objective is to
+survive as long as possible. The game immediately ends if the player's
+**Command Core** is destroyed.
 
-## Objective
+## 2. Resource Economy
 
-Survive as long as possible. The game ends when your Command Core is
-destroyed.
+Resources consist of 12 atomic elements harvested from destroyed aliens
+and cosmic debris. Elements are categorized by natural space abundance
+(heavier atoms are rarer). Each atom type is visually identified by a
+unique color.
 
-## Resource System
+**Atomic Elements:**
 
-Twelve atomic elements are collected from destroyed aliens and cosmic
-debris, categorized by their natural space abundance:
+* **H (Hydrogen):** Primary fusion fuel, water base, thermal reaction
+  mass
+* **O (Oxygen):** Life support, chemical oxidizers, ceramic processing
+* **C (Carbon):** Graphene hull plating, carbon-nanotube structures,
+  organics
+* **Fe (Iron):** Heavy infrastructure, kinetic armor, ballistic
+  ammunition
+* **Si (Silicon):** Photovoltaic solar arrays, microprocessors,
+  heat-resistant ceramics
+* **Al (Aluminum):** Lightweight frames, kinetic mirrors, primary
+  electrical wiring
+* **N (Nitrogen):** Habitable atmosphere buffering, agriculture,
+  cold-gas thrusters
+* **Li (Lithium):** High-density energy storage arrays, life-support CO2
+  scrubbers
+* **Ar (Argon):** Highly efficient, inert propellant for ion/plasma
+  drives
+* **Ti (Titanium):** Ultra-high-temperature engine nozzles, premium
+  aerospace armor
+* **Nd (Neodymium):** Superconducting electromagnets for railguns and
+  fusion containment
+* **Au (Gold):** Critical radiation shielding, non-corrosive quantum
+  electronics
 
-    H  (Hydrogen)  — Primary fusion fuel, water base, and raw thermal reaction mass
-    O  (Oxygen)    — Life support, chemical oxidizers, and ceramic processing
-    C  (Carbon)    — Graphene hull plating, carbon-nanotube structures, and organics
-    Fe (Iron)      — Primary heavy infrastructure, kinetic armor, and ballistic ammunition
-    Si (Silicon)   — Photovoltaic solar arrays, microprocessors, and heat-resistant ceramics
-    Al (Aluminum)  — Lightweight structural frames, kinetic mirrors, and primary electrical wiring
-    N  (Nitrogen)  — Habitable atmosphere buffering, agriculture, and cold-gas attitude thrusters
-    Li (Lithium)   — High-density energy storage arrays and life-support CO2 scrubbers
-    Ar (Argon)     — Highly efficient, inert propellant for ion/plasma drives
-    Ti (Titanium)  — Ultra-high-temperature engine nozzles and premium aerospace armor
-    Nd (Neodymium) — Superconducting electromagnets required for railguns and fusion containment
-    Au (Gold)      — Critical radiation shielding for crew/computers and non-corrosive quantum electronics
+**Atom Decay Mechanism:**
 
-Each module requires specific amounts of different atoms. Each atom can
-be identified by its color.
+* Floating atoms are unstable and gradually dissipate.
+* Decay follows an exponential model with a base half-life of
+  approximately 60 seconds.
+* Every floating atom evaluates a probability of disappearing each
+  second.
+* This enforces strategic Drone Bay placement to minimize resource loss.
 
-The heavier the atom, the rarer it is.
+## 3. Storage System
 
-Atoms floating in space are unstable and gradually dissipate over time.
+Resources are pooled across all available storage modules. When
+constructing new modules, atoms are drawn automatically from this global
+pool.
 
-**Decay Mechanism:**
-* Each atom has a probability of disappearing each second
-* The decay probability follows an exponential decay model
-* Base half-life: approximately 60 seconds for all atom types
+**Storage Rules:**
 
-This creates urgency for players to collect resources promptly and adds
-strategic depth to Drone Bay placement — faster collection means less
-lost to decay.
+* **Command Core:** Provides limited starting capacity to bootstrap
+  initial expansion. The capacity is full at the beginning.
+* **Cargo Bays:** Expand global storage limits. Capacities vary per atom
+  type.
+* **Full Capacity:** If the global pool is full, Drones cannot collect
+  or deposit additional atoms.
+* **Destruction Penalty:** If a Cargo Bay is destroyed, all atoms stored
+  within it are ejected into space and become subject to standard atom
+  decay.
 
-## Storage System
+## 4. Power & Grid Linkage
 
-Resources are stored in:
+Every module must be structurally and logically integrated into the
+ship's network. Energy is measured in Joules (J).
 
-* **Command Core** — Limited starting capacity (enough to build initial modules)
-* **Cargo Bay** — Expands storage capacity, different limits per atom type
+**Power Mechanics:**
 
-Storage pools together. When building, atoms are drawn from any
-available storage (Core or Cargo Bays).
+* **Generation:** Initial power is supplied by the Command Core.
+  Expansion requires dedicated Reactors.
+* **Visual Indicators:** A lit, moving energy line connects powered
+  modules to their energy source. Unpowered modules appear dark and lack
+  moving light indicators. Unpowered modules are non-functional.
 
-**Important:**
+**Strict Linkage Rules:**
 
-* If all storage is full, Drones cannot drop off or collect more resources
-* If a Cargo Bay is destroyed, all resources stored inside are also dropped in space
+* **No Floating Modules:** Every module must connect to the ship's
+  contiguous structure.
+* **Energy Consumers:** Modules requiring power must attach directly to
+  a power provider OR an energy proxy (Hull Section).
+* **Energy Providers:** Modules generating power must attach directly to
+  an energy consumer.
+* **Hull Sections (Proxies):** Passively bridge power over distances.
+  They can only attach to other Hull Sections or energy-providing
+  modules.
+* **Sensor Arrays:** Require no power. Must attach exclusively to Weapon
+  modules.
 
-## Power System
+## 5. Construction Mechanics
 
-Most modules require power to operate. Energy is measured in **joules
-(J)**. Specific generation rates and consumption values are defined
-during implementation.
+* **Placement:** Players drag and drop modules from the UI sidebar (via
+  mouse on desktop or touch on mobile).
+* **Validation:** Modules only snap to valid locations dictated by the
+  Linkage Rules. Visual bridges confirm valid attachment points.
+* **Cost:** Atoms are deducted from the global storage pool.
+  Unaffordable modules appear faded in the UI.
+* **Salvage:** When a module is destroyed by aliens, 100% of its atom
+  cost is dropped into space as harvestable debris.
 
-**Power Sources:**
+## 6. Module Specifications
 
-* **Command Core** — Generates initial power
-* **Reactor** — Generates power for expansion
+**Command Core**
 
-**Power Indicators:**
+* **Role:** Central Hub (Unique, Game Over if destroyed).
+* **Features:** Provides starting power, limited storage, and an
+  integrated auto-cannon capable of surviving early waves unassisted.
 
-* Powered modules show an energy line connecting them with light moving
-  from the power module.
-* Unpowered modules appear darker and cannot function; there is no light
-  moving in the link.
+**Reactor**
 
-## Linkage System
+* **Role:** Power Generator.
+* **Features:** Sustains expanding defense and collection networks.
 
-Every module in the game must be linked to the ship's network. The
-placement and connection of modules are governed by strict structural
-rules:
+**Cargo Bay**
 
-* **Universal Linkage:** All modules must be linked to the ship
-  structure. You cannot place floating, disconnected modules.
-* **Energy Consumers:** Any module that requires energy must be attached
-  directly to a module that provides energy (or to an energy proxy like
-  a Hull Section).
-* **Energy Providers:** Any module that provides energy (like a Reactor)
-  must be attached to a module that requires energy.
-* **Sensor Array (Radar):** The Sensor Array does not require energy. It
-  can **only** be attached to a weapon module.
-* **Hull Sections (Energy Proxies):** Hull Sections are solely used to
-  extend link distance. They act as energy proxies and can **only** be
-  attached to another Hull Section or to an energy-providing module.
+* **Role:** Resource Storage.
+* **Features:** Requires power. Expands global atom capacity. Drops
+  contents if destroyed.
 
-## Modules
+**Hull Section**
 
-### Command Core
+* **Role:** Structural Proxy.
+* **Features:** Zero power requirement. Cost-effective method for
+  bridging power to distant consumer modules.
 
-*Starting Module — Unique*
+**Drone Bay**
 
-* Central hub that must be protected
-* Has a basic auto-cannon (survives approximately one horde without help)
-* Provides initial power to the ship's network
-* Has limited storage, full at game start
-* **Game over if destroyed**
+* **Role:** Resource Harvester.
+* **Features:** Requires power. Deploys autonomous drones. Defines the
+  maximum collection radius. Does not store resources. Drones die
+  instantly upon alien contact.
 
-### Reactor
+**Drone Logic Loop**
 
-* Generates power for the ship's network
-* Essential for powering weapons and collectors far from the Core
+1. **If cargo is not empty:** Find the nearest valid storage module.
+2. **If cargo is not full:** Find the nearest atom within the Drone Bay's radius.
+3. Move toward the nearest target found above.
+4. **If no target was found:** Orbit any ship module.
 
-### Cargo Bay
+**Plasma Cannon**
 
-* Stores collected atoms
-* Different capacity per atom type
-* Required to expand economy beyond Core storage
-* Resources lost if destroyed
-* Requires power
+* **Role:** Heavy Defense.
+* **Features:** Requires power. Fires heavy projectiles. High damage,
+  high cooldown. Optimal against massive, slow aliens.
 
-### Drone Bay
+**Laser Array**
 
-* Provides drones and controls them to collect atoms from
-  destroyed aliens. Drones are independent entities once deployed
-* The Drone Bay itself does not offer storage
-* Requires power
-* **Vulnerability:** Drones can be killed by aliens on contact
-* **Drone logic:** Drones evaluate the following logic in priority order
-  every frame. Their range of action is defined by their owner:
-  1. If carrying atoms, find the nearest storage module with available
-     space.
-  2. If there is room for atoms and there it's owned, find the nearest
-     storable atom in the allowed range.
-  3. Target the nearest destination found in step 1 and step 2.
-  4. Without target from 1 and 2, target the nearest module to orbit
-     until something change.
+* **Role:** Light Defense.
+* **Features:** Requires power. Continuous beam. Low damage, low
+  cooldown. Optimal against small, fast aliens.
 
-### Plasma Cannon
+**Sensor Array**
 
-* Heavy projectile weapon
-* Best against large, slow targets
-* High damage, high cooldown
-* Requires power
+* **Role:** Utility Upgrade.
+* **Features:** Zero power requirement. Extends the targeting range of its host.
 
-### Laser Array
+**Singularity Pulse**
 
-* Continuous beam weapon
-* Best against fast, small targets
-* Low damage, low cooldown
-* Requires power
+* **Role:** Ultimate Emergency Weapon.
+* **Features:** Massive power and resource cost. Long cooldown.
+  Auto-triggers when overrun.
+* **Effect:** Generates a localized black hole. Instantly annihilates
+  all aliens and floating atoms in range (yields zero resource drops).
 
-### Sensor Array
+## 7. Alien Behavior
 
-* Extends targeting range for the weapon it is attached to
-* Does not require power
+* **Spawning:** Aliens spawn off-screen in waves. Smaller variants are
+  statistically more common than large ones.
+* **Combat:** Aliens deal damage by physically crashing into ship
+  modules.
+* **Targeting Priority:** Aliens strictly path toward *operational*
+  modules (powered, active, and connected).
+* **Dynamic Retargeting:** If a targeted module becomes non-operational,
+  the alien instantly seeks a new operational target.
+* **Fallback Targeting:** If zero operational modules remain on the
+  ship, all aliens drift directly toward the Command Core.
 
-### Hull Section
+## 8. Strategic Survival Principles
 
-* Structural connector / Energy Proxy
-* Cheapest way to extend ship size and bridge power to distant consumers
-* Passes power through
-* Does not require power to function
-
-### Singularity Pulse
-
-* Creates a localized black hole that annihilates all matter in range
-* Fires automatically when enough aliens are within attack range
-* Long cooldown after discharge
-* Requires significant resources and power
-
-**Effect:**
-
-* All aliens in range are killed
-* No atoms spawn from killed aliens
-* All existing atoms in range are also destroyed
-
-## Aliens
-
-Aliens attack the ship in waves. They have random sizes, with smaller
-aliens more probable than larger ones. Aliens crash into modules to deal
-damage.
-
-**Targeting Behavior:**
-* Aliens **only target operational modules**
-* Non-operational modules (unpowered, destroyed, or disconnected) are ignored
-* When an alien's current target becomes non-operational, it immediately
-  searches for a new operational target
-* If no operational modules remain, aliens will drift toward the Core
-  (even if non-operational)
-
-Aliens spawn far off-screen and move toward any **operational** module
-of the ship.
-
-## Building Mechanics
-
-* Drag modules from the sidebar onto the play area
-* Modules must be placed in valid locations according to the **Linkage
-  System** rules.
-* A visual bridge connects new modules to the required attachment point.
-* Atoms are drawn from any available storage
-* Unaffordable modules appear faded
-
-Destroyed modules can be rebuilt. The atoms used to build the destroyed
-module are dropped for collection.
-
-## Controls
-
-**Desktop:** Click and drag modules from sidebar
-**Mobile:** Touch and drag modules from sidebar
-
-## Survival Tips
-
-* Build Reactors early to power expanding defense perimeters
-* Build Cargo Bays to expand storage (Core storage is limited)
-* Position Drone Bays carefully; keeping them near combat zones speeds
-  up collection but risks drones getting killed by aliens
-* Use Hull Sections to extend power to distant areas
-* Sensor Arrays extend weapon range
-* Balance offense with economy
-* Protect the Core from all directions
-* Save the Singularity Pulse for horde emergencies
-* Singularity destroys matter — do not rely on it for resources
-* Keep your Drone Bays powered and protected, otherwise your deployed
-  drones will become lost!
+* Prioritize early Reactor construction to support grid expansion.
+* Scale Cargo Bays quickly; Core storage bottlenecks economy.
+* Balance Drone Bay placement: closer to the frontline increases
+  collection speed but exposes fragile drones to lethal alien
+  collisions.
+* Use Hull Sections generously to keep vital systems safely behind the
+  frontline.
+* Rely on the Singularity Pulse only for survival, as it vaporizes
+  potential resource gains.
+* Ensure Drone Bays remain powered; unpowered bays result in lost,
+  inactive drones.

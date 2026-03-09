@@ -86,14 +86,6 @@ function toCSS(color) {
     return `rgb(${Math.floor(color[0]*255)}, ${Math.floor(color[1]*255)}, ${Math.floor(color[2]*255)})`;
 }
 
-function mix(c1, c2, t) {
-    return [
-        c1[0] + (c2[0] - c1[0]) * t,
-        c1[1] + (c2[1] - c1[1]) * t,
-        c1[2] + (c2[2] - c1[2]) * t
-    ];
-}
-
 // ============================================================================
 // INSTANCE BUFFER SETUP - Each quad is one instance
 // ============================================================================
@@ -203,7 +195,6 @@ const shockwaves = [];
 const singularityParticles = [];
 const voidRifts = [];
 let gameTime = 0, elapsedTime = 0, gameOver = false, totalKills = 0, isPaused = false;
-const energy = { produced: 0, consumed: 0 };
 
 // ============================================================================
 // STORAGE SYSTEM
@@ -211,21 +202,14 @@ const energy = { produced: 0, consumed: 0 };
 
 function totalStorage() {
     const total = Cargo();
-    for (const { cargo } of storages) {
-        total.mergeFrom(cargo);
+    for (const b of storages) {
+        total.mergeFrom(b.cargo);
     }
     return total;
 }
 
-function deductResources(costObj) {
-    const cost = costObj._capacity || costObj;
-    for (const type in cost) {
-        let needed = cost[type];
-        for (const { cargo } of storages) {
-            if (needed <= 0) break;
-            needed -= cargo.remove(type, needed);
-        }
-    }
+function buyBlock(cost) {
+    for (const s of storages) s.cargo.storeTo(cost);
 }
 
 // ============================================================================
@@ -238,8 +222,8 @@ function updateShip() {
             bridges.delete(b);
         }
     }
-
     const children = new Map();
+
     for (const b of blocks) {
         b.operational = false;
         children.set(b, []);
@@ -247,7 +231,6 @@ function updateShip() {
     for (const b of bridges) {
         children.get(b.from).push(b.to);
     }
-
     const linked = new Set([coreBlock]);
     const queue = [coreBlock];
     while (queue.length > 0) {
@@ -259,39 +242,36 @@ function updateShip() {
             }
         }
     }
-    coreBlock.operational = true;
-
     let totalPower = 0;
-    const consumers = [];
 
     for (const b of linked) {
-        const def = BLOCKS[b.type];
-        if (def.energyProduce > 0) {
-            totalPower += def.energyProduce;
-            b.operational = true;
-        } else if (def.energyCost > 0) {
-            consumers.push({ block: b, cost: def.energyCost });
-        } else {
+        const power = b.energyProduce - b.energyCost;
+        if (power >= 0) {
+            totalPower += power;
             b.operational = true;
         }
     }
-
-    let availablePower = totalPower;
-
-    for (const { block, cost } of consumers) {
-        if (availablePower >= cost) {
-            availablePower -= cost;
-            block.operational = true;
-        }
+    for (const b of linked) {
+        if (b.operational) continue;
+        totalPower += b.energyProduce - b.energyCost;
+        if (totalPower >= 0) b.operational = true;
     }
-
-    energy.produced = totalPower;
-    energy.consumed = totalPower - availablePower;
-
     storages.length = 0;
+
     for (const b of blocks) {
         if (b.cargo && b.operational) {
-            storages.push({ cargo: b.cargo, block: b });
+            storages.push(b);
+        }
+    }
+    for (const b of blocks) {
+        if (b.range > 0) {
+            let range = b.range;
+            for (const bridge of bridges) {
+                if (bridge.from === b && bridge.to.rangeBoost) {
+                    range *= bridge.to.rangeBoost;
+                }
+            }
+            b.rangeBoosted = range;
         }
     }
 }
@@ -373,7 +353,7 @@ function updatePanelAffordability() {
     items.forEach(item => {
         const def = BLOCKS[item._blockType];
         if (!def) return;
-        item.classList.toggle('unaffordable', !totalStorage().canAfford(def.cost));
+        item.classList.toggle('unaffordable', !totalStorage().canFill(def.cost));
     });
 }
 
@@ -494,67 +474,34 @@ function dist2(x1, y1, x2, y2) {
 
 let draggingBlock = null;
 
-function findValidLinkTarget(type, x, y) {
+function findValidLinkTarget(block) {
     let nearest = null;
     let nearestDist = Infinity;
     const maxDist = 350 * 350;
 
-    const energyConsumers = ['storage', 'canon', 'laser', 'collector', 'singularity'];
-    const weapons = ['canon', 'laser', 'singularity'];
-    const powerSources = ['core', 'energy', 'hull'];
+    if (!totalStorage().canFill(block.cost))
+        return null;
 
     for (const b of blocks) {
-        if (b === draggingBlock) continue;
-
-        const d = dist2(b.x, b.y, x, y);
+        const d = dist2(b.x, b.y, block.x, block.y);
         if (d > maxDist) continue;
-
         let isValid = false;
 
-        switch (type) {
-            case 'energy':
-                isValid = energyConsumers.includes(b.type);
-                break;
-            case 'hull':
-                isValid = powerSources.includes(b.type);
-                break;
-            case 'canon':
-            case 'laser':
-            case 'collector':
-            case 'storage':
-            case 'singularity':
-                isValid = powerSources.includes(b.type);
-                break;
-            case 'radar':
-                isValid = weapons.includes(b.type);
-                break;
+        if (block.energyProduce > 0) {
+            isValid = b.energyCost > 0;
         }
-
+        if (block.energyCost > 0) {
+            isValid = b.energyProduce > 0;
+        }
+        if (block.rangeBoost) {
+            isValid = b.range > 0;
+        }
         if (isValid && d < nearestDist) {
             nearestDist = d;
             nearest = b;
         }
     }
-
     return nearest;
-}
-
-function placeBlock(block) {
-    const def = BLOCKS[block.type];
-    deductResources(def.cost);
-    bridges.add({
-        from: block.nearestBlock,
-        to: block,
-        flowPhase: Math.random() * Math.PI * 2,
-        reverse: def.energyProduce > 0,
-    });
-    delete block.canPlace;
-    delete block.needsMoreEnergy;
-    delete block.nearestBlock;
-    delete block.dragStartTime;
-    blocks.add(draggingBlock);
-    updateShip();
-    logStatus(`${def.name} built`, 'success');
 }
 
 function dragStart(e) {
@@ -562,28 +509,19 @@ function dragStart(e) {
     if (!item) return;
 
     e.preventDefault();
-
-    if (gameOver || !totalStorage().canAfford(BLOCKS[item.dataset.type].cost)) return;
+    if (gameOver) return;
 
     const touch = e.touches?.[0];
     const screenX = touch ? touch.clientX : e.clientX;
     const screenY = touch ? touch.clientY : e.clientY;
-
     const worldPos = camera.screenToWorld(screenX, screenY);
 
-    const type = item.dataset.type;
-    const nearestBlock = findValidLinkTarget(type, worldPos.x, worldPos.y);
-    const def = BLOCKS[type];
-
-    draggingBlock = createBlock(type, worldPos.x, worldPos.y);
+    draggingBlock = createBlock(item.dataset.type, worldPos.x, worldPos.y);
     draggingBlock.initialRotation = Math.floor(Math.random() * 4);
     draggingBlock.rotation = draggingBlock.initialRotation;
     draggingBlock.dragStartTime = gameTime;
-    draggingBlock.canPlace = nearestBlock !== null;
-    draggingBlock.needsMoreEnergy = def.energyCost > 0 && nearestBlock?.type === 'hull';
-    draggingBlock.nearestBlock = nearestBlock;
 
-    showModuleInfo(type);
+    showModuleInfo(draggingBlock.type);
 }
 
 document.addEventListener('mousedown', dragStart);
@@ -591,22 +529,17 @@ document.addEventListener('touchstart', dragStart, { passive: false });
 
 function moveEvent(e) {
     if (!draggingBlock) return;
+
     e.preventDefault();
+    if (gameOver) return;
 
     const touch = e.touches?.[0];
     const screenX = touch ? touch.clientX : e.clientX;
     const screenY = touch ? touch.clientY : e.clientY;
-
     const worldPos = camera.screenToWorld(screenX, screenY);
 
     draggingBlock.x = worldPos.x;
     draggingBlock.y = worldPos.y;
-    const nearestBlock = findValidLinkTarget(draggingBlock.type, worldPos.x, worldPos.y);
-    const def = BLOCKS[draggingBlock.type];
-
-    draggingBlock.nearestBlock = nearestBlock;
-    draggingBlock.canPlace = nearestBlock !== null && totalStorage().canAfford(def.cost);
-    draggingBlock.needsMoreEnergy = def.energyCost > 0 && nearestBlock?.type === 'hull';
 }
 
 document.addEventListener('mousemove', moveEvent);
@@ -614,17 +547,34 @@ document.addEventListener('touchmove', moveEvent, { passive: false });
 
 function moveEnd(cancel = false) {
     if (!draggingBlock) return;
+    const block = draggingBlock;
+    draggingBlock = null;
+
+    if (gameOver) return;
 
     if (typeof cancel === 'object') {
         cancel.preventDefault();
         cancel = false;
     }
-
-    if (!cancel && draggingBlock.canPlace) {
-        placeBlock(draggingBlock);
-    }
-    draggingBlock = null;
     hideModuleInfo();
+
+    if (cancel || !block.nearestBlock) {
+        return;
+    }
+    buyBlock(block.cost);
+    bridges.add({
+        from: block.nearestBlock,
+        to: block,
+        reverse: block.energyProduce > block.nearestBlock.energyProduce
+    });
+    delete block.dragStartTime;
+    delete block.initialRotation;
+    delete block.nearestBlock;
+
+    blocks.add(block);
+    updateShip();
+
+    logStatus(`${block.name} built`, 'success');
 }
 
 document.addEventListener('mouseup', moveEnd);
@@ -639,38 +589,33 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 
 let spawnAngle = Math.random() * Math.PI * 2;
 let spawnDist = WORLD_RADIUS + 200;
-let spawnTime = 0;
 let spawnUpdateTime = 0;
 
 function updateSpawning() {
     if (gameTime < spawnUpdateTime + 1000) return;
     spawnUpdateTime = gameTime;
-
     if (Math.random() < 0.3) {
-        const dt = (gameTime - spawnTime) / 1000;
-        const r = Math.random() * Math.random() * gameTime / 1000;
-        for (let i = 0; i < 1 + Math.floor(dt * dt + r); i++) {
+        const r = Math.random() * Math.random() * gameTime / 800;
+        for (let i = 0; i < 10 + Math.floor(r); i++) {
             spawnAlien();
         }
-        spawnTime = gameTime;
     }
 }
 
 function spawnAlien() {
-    spawnAngle += (Math.random() - 0.5) * 0.1;
-    spawnDist += (Math.random() - 0.5) * 20;
+    spawnAngle += (Math.random() - 0.5) * 0.08;
+    spawnDist += (Math.random() - 0.5) * 10;
     spawnDist = Math.max(WORLD_RADIUS + 100, Math.min(WORLD_RADIUS + 400, spawnDist));
-    const size = 0.5 + Math.random() * Math.random() * 4;
-
+    const size = 1 + Math.random() * Math.random() * 4;
     aliens.add({
         x: Math.cos(spawnAngle) * spawnDist,
         y: Math.sin(spawnAngle) * spawnDist,
         size,
         hp: size * 20,
         damage: size * 5,
-        speed: Math.max(0.1, 0.5 - size * 0.08 + Math.random() * 0.1),
+        speed: 0.01 + Math.random() * 0.05,
         phase: Math.random() * Math.PI * 2,
-        seed: Math.random() * 1000,
+        seed: Math.random(),
         attackCooldown: 0,
         target: null
     });
@@ -684,8 +629,7 @@ let storageFullWarned = false;
 // ============================================================================
 
 function fireSingularity(block) {
-    const def = BLOCKS.singularity;
-    const range = def.range * def.range;
+    const range = block.range ** 2;
 
     singularityWarningActive = false;
     logStatus('SINGULARITY PULSE ACTIVATED!', 'special');
@@ -693,13 +637,13 @@ function fireSingularity(block) {
 
     shockwaves.push({
         x: block.x, y: block.y,
-        radius: 0, maxRadius: def.range,
+        radius: 0, maxRadius: block.range,
         life: 1500, alpha: 1, type: 'singularity'
     });
 
     voidRifts.push({
         x: block.x, y: block.y,
-        radius: def.range * 0.8, maxRadius: def.range,
+        radius: block.range * 0.8, maxRadius: block.range,
         life: 3000, maxLife: 3000, phase: 0
     });
 
@@ -735,25 +679,24 @@ function fireSingularity(block) {
     }
 
     logStatus(`Singularity destroyed ${killedCount} enemies, ${atomsDestroyed} atoms lost`, 'warning');
-    block.triggerCooldown = gameTime + def.cooldown;
+    block.triggerCooldown = gameTime + block.cooldown;
     block.chargeLevel = 0;
 }
 
 function moveToward(obj, targetX, targetY) {
     const angle = Math.atan2(targetY - obj.y, targetX - obj.x);
-    const moveSpeed = obj.speed * (elapsedTime / 16);
+    const moveSpeed = obj.speed * elapsedTime;
     obj.x += Math.cos(angle) * moveSpeed;
     obj.y += Math.sin(angle) * moveSpeed;
 }
 
 function orbitAround(obj, targetX, targetY) {
-    const dt = elapsedTime / 16;
     const dy = obj.y - targetY;
     const dx = obj.x - targetX;
     const angle = Math.atan2(dy, dx) + Math.PI / 2;
-    const moveSpeed = obj.speed * dt;
-    obj.x += Math.cos(angle) * moveSpeed - dx * 0.0005 * dt;
-    obj.y += Math.sin(angle) * moveSpeed - dy * 0.0005 * dt;
+    const moveSpeed = obj.speed * elapsedTime;
+    obj.x += Math.cos(angle) * moveSpeed - dx * 0.0001 * elapsedTime;
+    obj.y += Math.sin(angle) * moveSpeed - dy * 0.0001 * elapsedTime;
 }
 
 // ============================================================================
@@ -761,79 +704,71 @@ function orbitAround(obj, targetX, targetY) {
 // ============================================================================
 
 function updateDrone(drone) {
-    const owner = drone.owner;
-    const ownerOperational = owner && blocks.has(owner) && owner.operational;
-
     let bestTarget = null;
     let bestDist = Infinity;
-    let isStorage = false;
+    let action = null;
 
     if (!drone.cargo.isEmpty()) {
-        for (const { cargo, block } of storages) {
-            if (!drone.cargo.canStore(cargo)) continue;
-            const dist = dist2(block.x, block.y, drone.x, drone.y);
+        for (const b of storages) {
+            if (!drone.cargo.canStore(b.cargo)) continue;
+            const dist = dist2(b.x, b.y, drone.x, drone.y);
             if (dist < bestDist) {
                 bestDist = dist;
-                bestTarget = block;
-                isStorage = true;
+                bestTarget = b;
+                action = 'drop';
             }
         }
     }
 
-    if (ownerOperational && owner.nearbyAtoms) {
-        for (const type in drone.cargo._capacity) {
-            if (drone.cargo.space(type) <= 0) continue;
-            if (!totalStorage().hasSpace(type, 1)) continue;
-            for (const a of owner.nearbyAtoms[type] || []) {
+    if (drone.owner && drone.owner.operational) {
+        for (const type of drone.cargo.typesWithSpace()) {
+            for (const a of drone.owner.nearbyAtoms?.[type] || []) {
                 const dist = dist2(a.x, a.y, drone.x, drone.y);
                 if (dist < bestDist) {
                     bestDist = dist;
                     bestTarget = a;
-                    isStorage = false;
+                    action = 'add';
                 }
             }
         }
     }
 
     if (!bestTarget) {
-        let nearest = null, nearestDist = Infinity;
         for (const b of blocks) {
             const dist = dist2(b.x, b.y, drone.x, drone.y);
-            if (dist < nearestDist) { nearestDist = dist; nearest = b; }
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestTarget = b;
+            }
         }
-        if (nearest) orbitAround(drone, nearest.x, nearest.y);
+        orbitAround(drone, bestTarget.x, bestTarget.y);
         return;
     }
 
-    if (bestDist < DRONE.range * DRONE.range) {
-        if (isStorage) {
-            if (drone.cargo.storeTo(bestTarget.cargo) > 0) {
-                bestTarget.animPulse = 1;
-            }
-        } else {
-            const collected = drone.cargo.add(bestTarget.type, bestTarget.amount);
-            bestTarget.amount -= collected;
-            if (bestTarget.amount <= 0) {
-                atoms.delete(bestTarget);
-            }
+    if (action && bestDist < DRONE.range * DRONE.range) {
+        switch (action) {
+            case 'drop':
+                if (drone.cargo.storeTo(bestTarget.cargo) > 0) {
+                    bestTarget.animPulse = 1;
+                }
+                break;
+            case 'add':
+                bestTarget.amount -= drone.cargo.add(bestTarget.type, bestTarget.amount);
+                if (bestTarget.amount <= 0) {
+                    atoms.delete(bestTarget);
+                }
+                break;
         }
-    } else {
-        moveToward(drone, bestTarget.x, bestTarget.y);
     }
+    moveToward(drone, bestTarget.x, bestTarget.y);
 }
 
 // ============================================================================
 // GAME UPDATE
 // ============================================================================
 
-function getWeaponRange(weapon) {
-    const base = BLOCKS[weapon.type].range;
-    for (const b of bridges) {
-        if (b.from === weapon && b.to.type === 'radar' && b.to.operational) {
-            return base * BLOCKS.radar.rangeBoost;
-        }
-    }
-    return base;
+function getWeaponRange(block) {
+    return block.rangeBoosted || block.range || 0;
 }
 
 let atomUpdateTime = 0;
@@ -846,10 +781,10 @@ function updateAtoms() {
             atoms.delete(a);
         }
     }
-    const range = BLOCKS.collector.range * BLOCKS.collector.range;
     for (const b of blocks) {
-        if (b.type === 'collector' && b.operational) {
+        if (b.droneMax > 0 && b.operational) {
             b.nearbyAtoms = b.nearbyAtoms || {};
+            const range = b.rangeBoosted ** 2;
             for (const type of ATOM_TYPES) b.nearbyAtoms[type] = [];
             for (const a of atoms) {
                 if (dist2(a.x, a.y, b.x, b.y) <= range) {
@@ -870,19 +805,17 @@ function update() {
         draggingBlock.rotation = (draggingBlock.initialRotation + dt) % 4;
     }
 
-    for (const b of blocks) b.laserTarget = null;
-
     updateSpawning();
 
     // Singularity particles
     for (let i = singularityParticles.length - 1; i >= 0; i--) {
         const p = singularityParticles[i];
-        p.angle += p.speed * (elapsedTime / 16);
-        p.radius -= 1.5 * (elapsedTime / 16);
+        p.angle += p.speed * elapsedTime;
+        p.radius -= 1.5 * elapsedTime;
         p.x = p.ownerX + Math.cos(p.angle) * Math.max(0, p.radius);
         p.y = p.ownerY + Math.sin(p.angle) * Math.max(0, p.radius);
         p.life -= elapsedTime;
-        p.brightness *= Math.pow(0.98, elapsedTime / 16);
+        p.brightness *= Math.pow(0.98, elapsedTime);
         if (p.life <= 0 || p.radius <= 0) {
             singularityParticles.splice(i, 1);
         }
@@ -894,7 +827,7 @@ function update() {
         if (voidRifts[i].life <= 0) {
             voidRifts.splice(i, 1);
         } else {
-            voidRifts[i].phase += 0.05 * (elapsedTime / 16);
+            voidRifts[i].phase += 0.05 * elapsedTime;
         }
     }
 
@@ -910,69 +843,40 @@ function update() {
     // Block updates
     for (const b of blocks) {
         if (!b.operational) continue;
-        const def = BLOCKS[b.type];
 
-        // Core defense
-        if (b.type === 'core') {
+        if (b.projectile) {
             if (gameTime >= b.lastTime) {
-                let closest = null, minD = def.range * def.range;
+                const range = getWeaponRange(b) ** 2;
                 for (const a of aliens) {
-                    const d = dist2(a.x, a.y, b.x, b.y);
-                    if (d < minD) { minD = d; closest = a; }
-                }
-                if (closest) {
-                    const angle = Math.atan2(closest.y - b.y, closest.x - b.x);
-                    projectiles.push({
-                        x: b.x, y: b.y,
-                        vx: Math.cos(angle) * 8,
-                        vy: Math.sin(angle) * 8,
-                        damage: def.damage,
-                        color: Colors.blue,
-                        life: 2000
-                    });
-                    b.lastTime = gameTime + def.cooldown;
-                    b.animPulse = 1;
+                    if (a.hp > 0 && dist2(a.x, a.y, b.x, b.y) < range) {
+                        const angle = Math.atan2(a.y - b.y, a.x - b.x);
+                        projectiles.push({
+                            x: b.x, y: b.y,
+                            vx: Math.cos(angle) * b.projectile.speed,
+                            vy: Math.sin(angle) * b.projectile.speed,
+                            damage: b.projectile.damage,
+                            color: b.projectile.color,
+                            life: 10000,
+                        });
+                        b.lastTime = gameTime + b.cooldown;
+                        b.animPulse = 1;
+                        break;
+                    }
                 }
             }
         }
 
-        // Plasma Cannon
-        if (b.type === 'canon') {
+        if (b.laser) {
             if (gameTime >= b.lastTime) {
-                let closest = null, minD = getWeaponRange(b) ** 2;
+                const range = getWeaponRange(b) ** 2;
                 for (const a of aliens) {
-                    const d = dist2(a.x, a.y, b.x, b.y);
-                    if (d < minD) { minD = d; closest = a; }
-                }
-                if (closest) {
-                    const angle = Math.atan2(closest.y - b.y, closest.x - b.x);
-                    projectiles.push({
-                        x: b.x, y: b.y,
-                        vx: Math.cos(angle) * 12,
-                        vy: Math.sin(angle) * 12,
-                        damage: def.damage,
-                        color: Colors.rose,
-                        life: 2500
-                    });
-                    b.lastTime = gameTime + def.cooldown;
-                    b.animPulse = 1;
-                }
-            }
-        }
-
-        // Laser Array
-        if (b.type === 'laser') {
-            if (gameTime >= b.lastTime) {
-                let closest = null, minD = getWeaponRange(b) ** 2;
-                for (const a of aliens) {
-                    const d = dist2(a.x, a.y, b.x, b.y);
-                    if (d < minD) { minD = d; closest = a; }
-                }
-                if (closest) {
-                    closest.hp -= def.damage;
-                    b.laserTarget = closest;
-                    b.animPulse = 1;
-                    b.lastTime = gameTime + def.cooldown;
+                    if (a.hp > 0 && dist2(a.x, a.y, b.x, b.y) < range) {
+                        a.hp -= b.laser.damage;
+                        b.laserTarget = a;
+                        b.animPulse = 1;
+                        b.lastTime = gameTime + b.cooldown;
+                        break;
+                    }
                 }
             }
         }
@@ -983,7 +887,7 @@ function update() {
             b.isCharging = b.isCharging ?? false;
             b.chargeLevel = b.chargeLevel ?? 0;
 
-            if (Math.random() < 0.3 * (elapsedTime / 16) && !b.isCharging) {
+            if (Math.random() < 0.3 * elapsedTime && !b.isCharging) {
                 const angle = Math.random() * Math.PI * 2;
                 const r = 25 + Math.random() * 15;
                 singularityParticles.push({
@@ -999,12 +903,14 @@ function update() {
             }
 
             if (gameTime >= b.triggerCooldown && !b.isCharging) {
-                const range = def.range * def.range;
+                const range = b.range ** 2;
                 let count = 0;
                 for (const a of aliens) {
-                    if (dist2(a.x, a.y, b.x, b.y) < range) count++;
+                    if (dist2(a.x, a.y, b.x, b.y) < range) {
+                        if (++count >= b.triggerThreshold) break;
+                    }
                 }
-                if (count >= def.triggerThreshold) {
+                if (count >= b.triggerThreshold) {
                     b.isCharging = true;
                     b.chargeLevel = 0;
                     b.chargeStartTime = gameTime;
@@ -1017,11 +923,11 @@ function update() {
             }
 
             if (b.isCharging) {
-                b.chargeLevel = Math.min(1, b.chargeLevel + 0.012 * (elapsedTime / 16));
+                b.chargeLevel = Math.min(1, b.chargeLevel + 0.012 * elapsedTime);
                 b.animPulse = 1 + b.chargeLevel;
                 if (gameTime - b.chargeStartTime >= 3000) fireSingularity(b);
             } else {
-                b.chargeLevel = Math.max(0, b.chargeLevel - 0.02 * (elapsedTime / 16));
+                b.chargeLevel = Math.max(0, b.chargeLevel - 0.02 * elapsedTime);
                 b.animPulse = 0.3 + 0.2 * Math.sin(gameTime * 0.00008 + b.animOffset);
             }
         }
@@ -1040,7 +946,7 @@ function update() {
                     if (d.owner === b) ownedCount++;
                     else if (!unowned && !d.owner) unowned = d;
                 }
-                if (ownedCount < def.droneMax) {
+                if (ownedCount < b.droneMax) {
                     if (unowned) {
                         unowned.owner = b;
                     } else {
@@ -1052,7 +958,7 @@ function update() {
                         });
                     }
                 }
-                b.lastTime = gameTime + def.cooldown;
+                b.lastTime = gameTime + b.cooldown;
             }
             b.animPulse = 0.2;
         }
@@ -1067,13 +973,13 @@ function update() {
             b.animPulse = 0.4 + 0.3 * Math.sin(gameTime * 0.00004);
         }
 
-        b.animPulse = Math.max(0, (b.animPulse || 0) - 0.02 * (elapsedTime / 16));
+        b.animPulse = Math.max(0, (b.animPulse || 0) - 0.02 * elapsedTime);
     }
 
     // Shockwaves
     for (let i = shockwaves.length - 1; i >= 0; i--) {
         const sw = shockwaves[i];
-        sw.radius += (sw.maxRadius - sw.radius) * 0.12 * (elapsedTime / 16);
+        sw.radius += (sw.maxRadius - sw.radius) * 0.12 * elapsedTime;
         sw.life -= elapsedTime;
         sw.alpha = sw.life / (sw.type === 'singularity' ? 1500 : 1000);
         if (sw.life <= 0) {
@@ -1088,49 +994,43 @@ function update() {
 
     // Aliens
     for (const a of aliens) {
-        const hasValidTarget = a.target && blocks.has(a.target) && a.target.operational;
-        if (!hasValidTarget) {
-            let minD = Infinity;
-            a.target = null;
-            for (const b of blocks) {
-                if (!b.operational) continue;
-                const d = dist2(a.x, a.y, b.x, b.y);
-                if (d < minD) { minD = d; a.target = b; }
+        const dt = elapsedTime;
+        const range = 16 * B2;
+
+        for (const b of blocks) {
+            if (b.hp > 0 && dist2(a.x, a.y, b.x, b.y) < range) {
+                b.hp -= a.damage * dt;
+                break;
             }
         }
-        if (a.target) {
-            moveToward(a, a.target.x, a.target.y);
-            a.attackCooldown = Math.max(0, a.attackCooldown - elapsedTime);
-            if (a.attackCooldown <= 0 && dist2(a.target.x, a.target.y, a.x, a.y) < 16 * B2) {
-                a.target.hp -= a.damage;
-                a.attackCooldown = 300;
-            }
-        }
-        a.phase += 0.04 * (elapsedTime / 16);
         for (const d of drones) {
-            if (dist2(a.x, a.y, d.x, d.y) < B2) {
+            if (dist2(a.x, a.y, d.x, d.y) < range) {
                 destroyDrone(d);
+                break;
             }
         }
+        moveToward(a, 0,0);
     }
 
     // Projectiles
     for (let i = projectiles.length - 1; i >= 0; i--) {
+        const range = 16 * B2;
         const p = projectiles[i];
-        p.x += p.vx * (elapsedTime / 16);
-        p.y += p.vy * (elapsedTime / 16);
+        p.x += p.vx * elapsedTime;
+        p.y += p.vy * elapsedTime;
         p.life -= elapsedTime;
-        if (p.life <= 0 || p.damage <= 0) {
-            projectiles.splice(i, 1);
-            continue;
-        }
         for (const a of aliens) {
             if (p.damage <= 0) break;
-            if (dist2(a.x, a.y, p.x, p.y) < 16 * B2) {
+            if (a.hp > 0 && dist2(a.x, a.y, p.x, p.y) < range) {
                 const damageDealt = Math.min(p.damage, a.hp);
                 a.hp -= damageDealt;
                 p.damage -= damageDealt;
+                break;
             }
+        }
+        if (p.life <= 0 || p.damage <= 0) {
+            projectiles.splice(i, 1);
+            continue;
         }
     }
 
@@ -1152,20 +1052,18 @@ function update() {
 
     // Block destruction
     for (const b of blocks) {
+        if (b.laserTarget && !aliens.has(b.laserTarget))
+            b.laserTarget = null;
         if (b.hp <= 0) {
-            logStatus(`${BLOCKS[b.type].name} destroyed!`, 'danger');
+            logStatus(`${b.name} destroyed!`, 'danger');
             if (b.type === 'collector') {
                 drones.forEach(d => { if (d.owner === b) d.owner = null; });
             }
+            // cost filled by buyBlock
             const cargo = b.cargo?.mergeFrom(b.cost) || b.cost;
             spawnAtomsFromCargo(cargo, b.x, b.y);
             blocks.delete(b);
         }
-    }
-
-    // Clean up laser targets
-    for (const b of blocks) {
-        if (b.laserTarget && !aliens.has(b.laserTarget)) b.laserTarget = null;
     }
 
     updateShip();
@@ -1203,15 +1101,8 @@ function renderBlock(block) {
     const def = BLOCKS[block.type];
     if (!def) return;
 
-    const isPlacing = block.canPlace !== undefined;
-    const brightness = isPlacing 
-        ? (block.canPlace ? (block.needsMoreEnergy ? 0.55 : 0.7) : 0.18)
-        : (block.operational ? 1.0 : (def.energyCost > 0 ? 0.35 : 0.55));
-
-    const needsEnergy = !isPlacing && !block.operational && def.energyCost > 0;
-
+    const brightness = 1;
     const rotation = block.rotation || 0;
-    const scaledB = B * (block.scale || 1);
     const pulse = block.animPulse || 0;
     const animOffset = block.animOffset || 0;
     const chargeLevel = block.chargeLevel || 0;
@@ -1225,24 +1116,22 @@ function renderBlock(block) {
         maxY = Math.max(maxY, ry);
     }
 
-    const baseX = block.x - (minX + maxX) * scaledB * 0.5;
-    const baseY = block.y - (minY + maxY) * scaledB * 0.5;
+    const baseX = block.x - (minX + maxX) * B * 0.5;
+    const baseY = block.y - (minY + maxY) * B * 0.5;
 
     for (const sq of def.squares) {
         const [rx, ry] = rotateCoord(sq.x, sq.y, rotation);
         const breathe = block.operational ? Math.sin(gameTime * 0.00003 + (sq.x * 127 + sq.y * 311 + animOffset) * 0.01) * 0.15 : 0;
-
-        let c = bright(sq.color, brightness + pulse * 0.3);
-
-        if (block.type === 'singularity' && block.operational) {
+        let c = bright(sq.color, 1.0 + pulse * 0.3);
+        if (block.type == 'singularity' && block.operational) {
             const charge = chargeLevel * 0.8;
             if (sq.color === Colors.white) c = bright(sq.color, 0.9 + 0.1 * Math.sin(gameTime * 0.00015) + charge);
             else if (sq.color === Colors.lavender || sq.color === Colors.orchid || sq.color === Colors.purple || sq.color === Colors.mauve) {
                 c = bright(sq.color, brightness + pulse * 0.5 + charge + Math.sin(gameTime * 0.0001 + sq.x * 0.5 + sq.y * 0.3) * 0.3);
             }
         }
-        if (needsEnergy) c = [c[0] * 0.5 + 0.35, c[1] * 0.25, c[2] * 0.25];
-        addQuad(baseX + rx * scaledB + breathe, baseY + ry * scaledB + breathe, scaledB, c);
+        if (!block.operational && !block.dragStartTime) c = [c[0] * 0.5 + 0.25, c[1] * 0.25, c[2] * 0.25];
+        addQuad(baseX + rx * B + breathe, baseY + ry * B + breathe, B, c);
     }
 }
 
@@ -1253,7 +1142,7 @@ function render() {
 
     // Atoms
     for (const a of atoms) {
-        const c = bright(a.color || Colors.gray, (0.5 + 0.5 * Math.sin(gameTime * 0.00008 + a.phase)) * 0.6);
+        const c = bright(a.color, a.amount / 100);
         addQuad(a.x, a.y, B / 2, c);
     }
 
@@ -1273,39 +1162,46 @@ function render() {
 
     // Bridges
     for (const b of bridges) {
-        const flow = (gameTime * 0.0015 + b.flowPhase) % 1;
+        const wl = 200;
+        const flow = (gameTime * 0.5) % wl;
         const size = B * 0.7;
         const c = bright(Colors.lightGray, 0.3);
-        const dx = b.to.x - b.from.x, dy = b.to.y - b.from.y;
-        const steps = Math.floor(Math.hypot(dx, dy) / 8);
-        for (let i = 0; i < steps; i++) {
-            const t = i / steps;
-            const x = b.from.x + dx * t;
-            const y = b.from.y + dy * t;
+        const dx = b.to.x - b.from.x;
+        const dy = b.to.y - b.from.y;
+        const len = Math.hypot(dx, dy);
+        for (let d = 0; d < len; d += 8) {
+            const x = b.from.x + dx * d / len;
+            const y = b.from.y + dy * d / len;
             if (b.to.operational && b.from.operational) {
-                const a = b.reverse ? t + flow - 1: t - flow;
+                const a = (b.reverse ? d + flow : d - flow) / wl;
                 const f = Math.max(0, Math.cos(a * Math.PI * 2));
-                const s = size + (1 + f) * 0.5 - 0.5;
-                addQuad(x, y, s, [c[0] + f * (1.2 - c[0]), c[1] + f * (1.0 - c[1]), c[2] * (1 - f * 0.9)]);
+                addQuad(x, y, size + (1 + f) * 0.5 - 0.5, [
+                    c[0] + f * (1.2 - c[0]),
+                    c[1] + f * (1.0 - c[1]),
+                    c[2] * (1 - f * 0.9)
+                ]);
             } else {
                 addQuad(x, y, size, c);
             }
         }
     }
 
-    // Placement preview bridge
-    if (draggingBlock && draggingBlock.nearestBlock && draggingBlock.canPlace) {
-        const b = draggingBlock;
-        const nb = b.nearestBlock;
-        const size = B * 0.7;
-        const c = bright(Colors.lightGray, 0.3);
-        const dx = nb.x - b.x, dy = nb.y - b.y;
-        const steps = Math.floor(Math.hypot(dx, dy) / 8);
-        for (let i = 1; i < steps; i++) {
-            const t = i / steps;
-            const x = b.x + dx * t;
-            const y = b.y + dy * t;
-            addQuad(x, y, size, c);
+    // Preview bridges
+    if (draggingBlock) {
+        draggingBlock.nearestBlock = findValidLinkTarget(draggingBlock);
+        if (draggingBlock.nearestBlock) {
+            const b = draggingBlock;
+            const nb = draggingBlock.nearestBlock;
+            const size = B * 0.7;
+            const c = bright(Colors.lightGray, 0.3);
+            const dx = nb.x - b.x;
+            const dy = nb.y - b.y;
+            const len = Math.hypot(dx, dy);
+            for (let d = 0; d < len; d += 8) {
+                const x = b.x + dx * d / len;
+                const y = b.y + dy * d / len;
+                addQuad(x, y, size, c);
+            }
         }
     }
 
@@ -1319,11 +1215,10 @@ function render() {
     // Singularity range indicator
     for (const b of blocks) {
         if (b.type === 'singularity' && b.operational) {
-            const def = BLOCKS.singularity;
             for (let i = 0; i < 48; i++) {
                 const angle = (i / 48) * Math.PI * 2 + gameTime * 0.00002;
                 for (let layer = 0; layer < 3; layer++) {
-                    const r = def.range * (0.3 + layer * 0.25) + Math.sin(gameTime * 0.00005 + i * 0.4 + layer) * 30;
+                    const r = b.range * (0.3 + layer * 0.25) + Math.sin(gameTime * 0.00005 + i * 0.4 + layer) * 30;
                     const x1 = b.x + Math.cos(angle + layer * 0.3) * r;
                     const y1 = b.y + Math.sin(angle + layer * 0.3) * r;
                     const c = bright(shade(Colors.mauve, -layer), 0.1 + 0.08 * Math.sin(gameTime * 0.00008 + i * 0.2 + layer));
@@ -1342,21 +1237,42 @@ function render() {
 
     // Laser beams
     for (const b of blocks) {
-        if (b.type === 'laser' && b.laserTarget && aliens.has(b.laserTarget)) {
-            const dx = b.laserTarget.x - b.x, dy = b.laserTarget.y - b.y;
-            const steps = Math.floor(Math.hypot(dx, dy) / B);
-            for (let i = 0; i < steps; i++) {
-                const t = i / steps;
-                const c = bright(Colors.paleCyan, 0.8 - t * 0.4 + Math.sin(gameTime * 0.0003 + i * 0.35) * 0.1);
-                addQuad(b.x + dx * t, b.y + dy * t, B, c);
+        if (b.laserTarget) {
+            const dx = b.laserTarget.x - b.x;
+            const dy = b.laserTarget.y - b.y;
+            const len = Math.hypot(dx, dy);
+            const offset = (gameTime * 0.4) % B;
+            for (let d = offset; d < len; d += B) {
+                const x = b.x + dx * d / len;
+                const y = b.y + dy * d / len;
+                const fade = 1 - d / len * 0.6;
+                addQuad(x, y, B * 0.8, bright(b.laser.color, fade));
             }
         }
     }
 
     // Projectiles
     for (const p of projectiles) {
-        const c = bright(p.color, 1.0 + Math.sin(gameTime * 0.00035 + p.x) * 0.1);
-        addQuad(p.x, p.y, B, c);
+        for (let ring = 3; ring >= 1; ring--) {
+            addQuad(p.x, p.y, B * (1 + ring * 1.5), bright(p.color, 0.15 / ring));
+        }
+        addQuad(p.x, p.y, B * 1.5, bright(p.color, 1.2));
+        addQuad(p.x, p.y, B * 0.8, [1, 1, 1]);
+        const trailLen = 5;
+        for (let i = 1; i <= trailLen; i++) {
+            const tx = p.x - p.vx * i * 12;
+            const ty = p.y - p.vy * i * 12;
+            const fade = 1 - i / trailLen;
+            const size = B * (1.2 - i * 0.15);
+            addQuad(tx, ty, size, bright(p.color, 0.5 * fade));
+        }
+        for (let i = 0; i < 2; i++) {
+            const angle = gameTime * 0.05 + i * Math.PI + p.x * 0.1;
+            const r = B * 0.8;
+            const sx = p.x + Math.cos(angle) * r;
+            const sy = p.y + Math.sin(angle) * r;
+            addQuad(sx, sy, B * 0.3, bright(p.color, 0.8));
+        }
     }
 
     // Shockwaves
@@ -1386,21 +1302,31 @@ function render() {
 
     // Drones
     for (const d of drones) {
-        const c = bright(Colors.mauve, 1.4);
-        addQuad(d.x, d.y, B / 2, c);
+        addQuad(d.x, d.y, B / 2, bright(Colors.mauve, 1.4));
     }
 
     // Aliens
     for (const a of aliens) {
         const count = Math.floor(4 + a.size * 6);
         const spread = 1.0 + a.size * 0.7;
+        const rotSpeed = 0.001 + (a.seed % 100) / 100 * 0.003;
+        const rotDir = Math.sin(a.seed * 7.3) > 0 ? 1 : -1;
+        const rotation = gameTime * rotSpeed * rotDir + a.seed;
+        const pulseSpeed = 0.003 + Math.sin(a.seed * 3.7) * 0.002;
+        const pulse = 1 + 0.15 * Math.sin(gameTime * pulseSpeed + a.phase);
         for (let i = 0; i < count; i++) {
-            const angle = (i / count) * Math.PI * 2;
-            const r = spread * B * (0.4 + 0.6 * Math.sin(a.seed + i * 2.0));
-            const px = a.x + Math.cos(angle + Math.sin(gameTime * 0.00002 + i) * 0.3) * r + Math.sin(a.phase + i * 0.5) * 2;
-            const py = a.y + Math.sin(angle + Math.sin(gameTime * 0.00002 + i) * 0.3) * r + Math.sin(a.phase + i * 0.5) * 2;
-            const c = bright(AlienColors[i % 8], 0.7 + 0.3 * Math.sin(a.phase + i * 0.4));
-            addQuad(px, py, B, c);
+            const baseAngle = (i / count) * Math.PI * 2;
+            const angleOffset = Math.sin(a.seed * (i + 1) * 3.1) * 0.5;
+            const angle = baseAngle + rotation + angleOffset;
+            const radiusMult = 0.3 + Math.abs(Math.sin(a.seed * i * 2.7 + i)) * 0.7;
+            const r = spread * B * radiusMult * pulse;
+            const wobble = Math.sin(gameTime * 0.01 + a.seed + i * 2.3) * 0.08;
+            const px = a.x + Math.cos(angle + wobble) * r;
+            const py = a.y + Math.sin(angle + wobble) * r;
+            const flicker = Math.sin(gameTime * 0.008 + i * 1.5 + a.seed * 2) * 0.15;
+            const c = bright(AlienColors[i % 8], 0.7 + 0.3 * Math.sin(gameTime * 0.005 + i * 0.4 + a.phase) + flicker);
+            const sizeVar = 0.6 + Math.sin(a.seed + i * 4.1) * 0.4;
+            addQuad(px, py, B * pulse * sizeVar, c);
         }
     }
 

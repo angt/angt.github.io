@@ -1,6 +1,7 @@
 'use strict';
 
 const B = 5;
+const B2 = B * B;
 const MAX_VERTICES = 2000000;
 const GRID_SIZE = 10;
 const VIEW_HEIGHT = 800;
@@ -81,15 +82,14 @@ const ATOM_COLORS = {
     Ar: Colors.paleCyan, Ti: Colors.brightGray, Nd: Colors.green, Au: Colors.gold
 };
 
-const ALIEN_DROP = Cargo({ H: 100, O: 90, C: 85, Fe: 80, Si: 75, Al: 40, N: 35, Li: 25, Ar: 20, Ti: 10, Nd: 8, Au: 5 }).fill();
+const ALIEN_DROP = Cargo({ H: 100, O: 90, C: 85, Fe: 80, Si: 75, Al: 40, N: 35, Li: 25, Ar: 20, Ti: 10, Nd: 8, Au: 5 });
 
 function defineBlock(config) {
     return {
         ...config,
-        cost: config.cost.fill(),
         create() {
             const { create, ...t } = this;
-            return { ...t, cargo: t.cargo?.clone(true) ?? null };
+            return { ...t, cost: t.cost.clone(), cargo: t.cargo?.clone(true) ?? null };
         }
     };
 }
@@ -108,7 +108,7 @@ const ENERGY_BLOCK = defineBlock({
         {x:0,y:-3,color:Colors.yellow},{x:0,y:3,color:Colors.yellow},{x:-3,y:0,color:Colors.yellow},{x:3,y:0,color:Colors.yellow}
     ],
     hp: 150, energyCost: 0, energyProduce: 75,
-    damage: 0, range: 0, cooldown: 0,
+    range: 0, cooldown: 0,
     cost: Cargo({ H: 25, O: 10, C: 20, Fe: 35, Si: 25, Al: 10, N: 8, Li: 5, Ar: 3 })
 });
 
@@ -124,7 +124,7 @@ const STORAGE_BLOCK = defineBlock({
         {x:-3,y:-1,color:Colors.lightGray},{x:-3,y:0,color:Colors.lightGray},{x:-3,y:1,color:Colors.lightGray},{x:3,y:-1,color:Colors.lightGray},{x:3,y:0,color:Colors.lightGray},{x:3,y:1,color:Colors.lightGray}
     ],
     hp: 180, energyCost: 5, energyProduce: 0,
-    damage: 0, range: 0, cooldown: 0,
+    range: 0, cooldown: 0,
     cargo: ALIEN_DROP.clone().scale(10),
     cost: Cargo({ H: 15, O: 10, C: 25, Fe: 30, Si: 15, Al: 20, N: 5, Li: 3, Ar: 2 })
 });
@@ -143,7 +143,8 @@ const CANON_BLOCK = defineBlock({
         {x:-2,y:0,color:Colors.lightGray},{x:-2,y:-1,color:Colors.dimGray},{x:-2,y:1,color:Colors.dimGray}
     ],
     hp: 120, energyCost: 15, energyProduce: 0,
-    range: 200, damage: 45, cooldown: 750,
+    range: 200, cooldown: 750,
+    projectile: { speed: 1.2, damage: 45, color: Colors.rose },
     cost: Cargo({ H: 10, O: 20, C: 30, Fe: 45, Si: 15, Al: 10, N: 8, Ti: 5, Nd: 3 })
 });
 
@@ -162,7 +163,8 @@ const LASER_BLOCK = defineBlock({
         {x:-2,y:0,color:Colors.lightGray},{x:-2,y:-1,color:Colors.dimGray},{x:-2,y:1,color:Colors.dimGray}
     ],
     hp: 90, energyCost: 10, energyProduce: 0,
-    range: 400, damage: 4, cooldown: 33,
+    range: 400, cooldown: 33,
+    laser: { damage: 4, color: Colors.paleCyan },
     cost: Cargo({ H: 8, O: 25, C: 12, Fe: 20, Si: 40, Al: 8, N: 5, Ar: 3 })
 });
 
@@ -182,7 +184,7 @@ const RADAR_BLOCK = defineBlock({
         {x:-4,y:0,color:Colors.dimGray},{x:4,y:0,color:Colors.dimGray},{x:0,y:-4,color:Colors.dimGray},{x:0,y:4,color:Colors.dimGray}
     ],
     hp: 20, energyCost: 0, energyProduce: 0, rangeBoost: 1.3,
-    damage: 0, range: 0, cooldown: 0,
+    range: 0, cooldown: 0,
     cost: Cargo({ H: 20, O: 15, C: 10, Fe: 15, Si: 45, Al: 12, N: 15, Ar: 5, Au: 10 })
 });
 
@@ -198,7 +200,7 @@ const COLLECTOR_BLOCK = defineBlock({
         {x:-3,y:0,color:Colors.lightGray},{x:3,y:0,color:Colors.lightGray},{x:-2,y:1,color:Colors.dimGray},{x:2,y:1,color:Colors.dimGray}
     ],
     hp: 80, energyCost: 8, energyProduce: 0,
-    damage: 0, range: 300, cooldown: 1000,
+    range: 300, cooldown: 1000,
     droneMax: 6,
     cost: Cargo({ H: 18, O: 12, C: 22, Fe: 25, Si: 20, Al: 15, N: 20, Li: 3 })
 });
@@ -212,8 +214,8 @@ const HULL_BLOCK = defineBlock({
         {x:-2,y:1,color:Colors.dimGray},{x:-1,y:1,color:Colors.lightGray},{x:0,y:1,color:Colors.lightGray},{x:1,y:1,color:Colors.lightGray},{x:2,y:1,color:Colors.dimGray},
         {x:-3,y:0,color:Colors.dimGray},{x:3,y:0,color:Colors.dimGray}
     ],
-    hp: 200, energyCost: 0, energyProduce: 0,
-    damage: 0, range: 0, cooldown: 0,
+    hp: 200, energyCost: 1, energyProduce: 1,
+    range: 0, cooldown: 0,
     cost: Cargo({ H: 10, O: 5, C: 15, Fe: 20, Si: 5, Al: 5, N: 3 })
 });
 
@@ -241,8 +243,8 @@ const SINGULARITY_BLOCK = defineBlock({
         {x:-1,y:-5,color:Colors.dimGray},{x:1,y:-5,color:Colors.dimGray},{x:-1,y:5,color:Colors.dimGray},{x:1,y:5,color:Colors.dimGray}
     ],
     hp: 1000, energyCost: 500, energyProduce: 0,
-    damage: 0, range: 400, cooldown: 15000,
-    triggerThreshold: 8,
+    range: 400, cooldown: 15000,
+    singularity: { triggerThreshold: 8 },
     cost: Cargo({ H: 400, O: 500, C: 800, Fe: 700, Si: 800, Al: 300, N: 250, Li: 200, Ar: 150, Ti: 350, Nd: 400, Au: 250 })
 });
 
@@ -262,7 +264,8 @@ const CORE_BLOCK = defineBlock({
         {x:-1,y:-3,color:Colors.blue},{x:1,y:-3,color:Colors.blue},{x:-1,y:3,color:Colors.blue},{x:1,y:3,color:Colors.blue}
     ],
     hp: 2000, energyCost: 0, energyProduce: 50,
-    range: 220, damage: 15, cooldown: 300,
+    range: 220, cooldown: 300,
+    projectile: { speed: 0.8, damage: 15, color: Colors.blue },
     cost: Cargo(),
     cargo: Cargo()
         .addCapacity(ENERGY_BLOCK.cost)
@@ -284,7 +287,7 @@ const BLOCKS = {
 };
 
 const DRONE = {
-    speed: 3,
+    speed: 0.1,
     cargo: Cargo({ H: 5, O: 4, C: 4, Fe: 3, Si: 3, Al: 3, N: 4, Li: 3, Ar: 3, Ti: 2, Nd: 2, Au: 1}),
     range: 12,
 };

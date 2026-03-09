@@ -32,6 +32,10 @@ function Cargo(capacity = {}) {
             return Object.keys(this._contents).filter(t => this._contents[t] > 0);
         },
 
+        typesWithSpace() {
+            return Object.keys(this._capacity).filter(t => this.space(t) > 0);
+        },
+
         isEmpty() {
             for (const type in this._contents) {
                 if (this._contents[type] > 0) return false;
@@ -78,6 +82,13 @@ function Cargo(capacity = {}) {
                 this._contents[type] = this._capacity[type];
             }
             return this;
+        },
+
+        canFill(cost) {
+            for (const type of Object.keys(cost._capacity)) {
+                if (this.get(type) < cost._capacity[type]) return false;
+            }
+            return true;
         },
 
         mergeFrom(other) {

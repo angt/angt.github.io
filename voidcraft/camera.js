@@ -2,24 +2,15 @@
 
 function Camera() {
     return {
-        // Position
         x: 0,
         y: 0,
         targetX: 0,
         targetY: 0,
-
-        // Smoothing
-        smoothing: 0.15,
-
-        // Fixed view size in world units
+        smoothing: 0.05,
         viewHeight: 0,
         viewWidth: 0,
-
-        // Pixel dimensions
         pixelWidth: 0,
         pixelHeight: 0,
-
-        // Radial world bound for constraint
         maxRadius: Infinity,
 
         setViewHeight(height) {
@@ -45,7 +36,7 @@ function Camera() {
 
         update(dt) {
             if (dt <= 0) return;
-            const factor = 1 - Math.pow(1 - this.smoothing, dt / 16);
+            const factor = 1 - Math.pow(1 - this.smoothing, dt);
             this.x += (this.targetX - this.x) * factor;
             this.y += (this.targetY - this.y) * factor;
         },
