@@ -93,72 +93,58 @@ function createInputHandler(camera, canvas) {
     }
 
     canvas.addEventListener('mousedown', (e) => {
-        if (e.button === 2) {
-            state.isPanning = true;
-            state.panStartX = e.clientX;
-            state.panStartY = e.clientY;
-            e.preventDefault();
-        }
+        if (e.button !== 2) return;
+        state.isPanning = true;
+        state.panStartX = e.clientX;
+        state.panStartY = e.clientY;
+        e.preventDefault();
     });
 
     canvas.addEventListener('mousemove', (e) => {
-        if (state.isPanning) {
-            const dx = e.clientX - state.panStartX;
-            const dy = e.clientY - state.panStartY;
-            camera.pan(dx, dy);
-            state.panStartX = e.clientX;
-            state.panStartY = e.clientY;
-        }
+        if (!state.isPanning) return;
+        camera.pan(e.clientX - state.panStartX, e.clientY - state.panStartY);
+        state.panStartX = e.clientX;
+        state.panStartY = e.clientY;
     });
 
     const endPan = () => state.isPanning = false;
-    canvas.addEventListener('mouseup', (e) => {
-        if (e.button === 2) endPan();
-    });
+    canvas.addEventListener('mouseup', (e) => e.button === 2 && endPan());
     canvas.addEventListener('mouseleave', endPan);
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
     canvas.addEventListener('wheel', (e) => {
         e.preventDefault();
-        const dx = e.deltaX || 0;
-        const dy = e.deltaY || 0;
-        if (dx !== 0 || dy !== 0) {
-            camera.pan(dx, dy);
-        }
+        camera.pan(e.deltaX, e.deltaY);
     }, { passive: false });
+
+    const resetTouch = () => { state.lastCentroid = null; state.lastTouchCount = 0; };
 
     canvas.addEventListener('touchstart', (e) => {
         if (e.touches.length >= 2) {
             state.lastCentroid = getCentroid(e.touches);
             state.lastTouchCount = e.touches.length;
         }
-    }, { passive: true });
+    });
 
     canvas.addEventListener('touchmove', (e) => {
-        if (e.touches.length >= 2 && state.lastCentroid && state.lastTouchCount >= 2) {
-            const curr = getCentroid(e.touches);
-            if (curr) {
-                const dx = state.lastCentroid.x - curr.x;
-                const dy = state.lastCentroid.y - curr.y;
-                camera.pan(dx, dy);
-                state.lastCentroid = curr;
-            }
-            e.preventDefault();
+        if (e.touches.length < 2 || !state.lastCentroid || state.lastTouchCount < 2) {
+            state.lastTouchCount = e.touches.length;
+            return;
         }
+        const curr = getCentroid(e.touches);
+        if (curr) {
+            camera.pan(state.lastCentroid.x - curr.x, state.lastCentroid.y - curr.y);
+            state.lastCentroid = curr;
+        }
+        e.preventDefault();
         state.lastTouchCount = e.touches.length;
     }, { passive: false });
 
     canvas.addEventListener('touchend', (e) => {
-        if (e.touches.length < 2) {
-            state.lastCentroid = null;
-        }
-        state.lastTouchCount = e.touches.length;
-    }, { passive: true });
+        e.touches.length < 2 ? resetTouch() : state.lastTouchCount = e.touches.length;
+    });
 
-    canvas.addEventListener('touchcancel', () => {
-        state.lastCentroid = null;
-        state.lastTouchCount = 0;
-    }, { passive: true });
+    canvas.addEventListener('touchcancel', resetTouch);
 
     return state;
 }

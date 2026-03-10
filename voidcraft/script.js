@@ -194,7 +194,7 @@ const storages = [];
 const shockwaves = [];
 const singularityParticles = [];
 const voidRifts = [];
-let gameTime = 0, elapsedTime = 0, gameOver = false, totalKills = 0, isPaused = false;
+let gameTime = 0, gameOver = false, totalKills = 0, isPaused = false;
 
 // ============================================================================
 // STORAGE SYSTEM
@@ -474,29 +474,25 @@ function dist2(x1, y1, x2, y2) {
 
 let draggingBlock = null;
 
+function getEventCoords(e) {
+    const touch = e.touches?.[0];
+    return touch ? { x: touch.clientX, y: touch.clientY } : { x: e.clientX, y: e.clientY };
+}
+
+function canConnect(from, to) {
+    return (from.energyProduce > 0 && to.energyCost > 0)
+        || (from.energyCost > 0 && to.energyProduce > to.energyCost)
+        || (from.range && to.rangeBoost > 0)
+}
+
 function findValidLinkTarget(block) {
     let nearest = null;
     let nearestDist = Infinity;
     const maxDist = 350 * 350;
-
-    if (!totalStorage().canFill(block.cost))
-        return null;
-
     for (const b of blocks) {
         const d = dist2(b.x, b.y, block.x, block.y);
         if (d > maxDist) continue;
-        let isValid = false;
-
-        if (block.energyProduce > 0) {
-            isValid = b.energyCost > 0;
-        }
-        if (block.energyCost > 0) {
-            isValid = b.energyProduce > 0;
-        }
-        if (block.rangeBoost) {
-            isValid = b.range > 0;
-        }
-        if (isValid && d < nearestDist) {
+        if (canConnect(b, block) && d < nearestDist) {
             nearestDist = d;
             nearest = b;
         }
@@ -506,15 +502,12 @@ function findValidLinkTarget(block) {
 
 function dragStart(e) {
     const item = e.target.closest('.module-item');
-    if (!item) return;
+    if (!item || gameOver) return;
 
     e.preventDefault();
-    if (gameOver) return;
 
-    const touch = e.touches?.[0];
-    const screenX = touch ? touch.clientX : e.clientX;
-    const screenY = touch ? touch.clientY : e.clientY;
-    const worldPos = camera.screenToWorld(screenX, screenY);
+    const { x, y } = getEventCoords(e);
+    const worldPos = camera.screenToWorld(x, y);
 
     draggingBlock = createBlock(item.dataset.type, worldPos.x, worldPos.y);
     draggingBlock.initialRotation = Math.floor(Math.random() * 4);
@@ -524,41 +517,33 @@ function dragStart(e) {
     showModuleInfo(draggingBlock.type);
 }
 
-document.addEventListener('mousedown', dragStart);
-document.addEventListener('touchstart', dragStart, { passive: false });
+document.addEventListener('mousedown', dragStart, { capture: true });
+document.addEventListener('touchstart', dragStart, { passive: false, capture: true });
 
 function moveEvent(e) {
-    if (!draggingBlock) return;
+    if (!draggingBlock || gameOver) return;
 
     e.preventDefault();
-    if (gameOver) return;
 
-    const touch = e.touches?.[0];
-    const screenX = touch ? touch.clientX : e.clientX;
-    const screenY = touch ? touch.clientY : e.clientY;
-    const worldPos = camera.screenToWorld(screenX, screenY);
-
+    const { x, y } = getEventCoords(e);
+    const worldPos = camera.screenToWorld(x, y);
     draggingBlock.x = worldPos.x;
     draggingBlock.y = worldPos.y;
 }
 
-document.addEventListener('mousemove', moveEvent);
-document.addEventListener('touchmove', moveEvent, { passive: false });
+document.addEventListener('mousemove', moveEvent, { capture: true });
+document.addEventListener('touchmove', moveEvent, { passive: false, capture: true });
 
-function moveEnd(cancel = false) {
-    if (!draggingBlock) return;
+function moveEnd(shouldCancel = false) {
+    if (!draggingBlock || gameOver) return;
+
     const block = draggingBlock;
     draggingBlock = null;
-
-    if (gameOver) return;
-
-    if (typeof cancel === 'object') {
-        cancel.preventDefault();
-        cancel = false;
-    }
     hideModuleInfo();
 
-    if (cancel || !block.nearestBlock) {
+    if (shouldCancel || !block.nearestBlock) return;
+    if (!totalStorage().canFill(block.cost)) {
+        logStatus(`Not enough resources for ${block.name}`, 'warning');
         return;
     }
     buyBlock(block.cost);
@@ -577,11 +562,11 @@ function moveEnd(cancel = false) {
     logStatus(`${block.name} built`, 'success');
 }
 
-document.addEventListener('mouseup', moveEnd);
-document.addEventListener('touchend', moveEnd, { passive: false });
-document.addEventListener('touchcancel', () => moveEnd(true));
+document.addEventListener('mouseup', () => moveEnd(), { capture: true });
+document.addEventListener('touchend', () => moveEnd(), { capture: true });
+document.addEventListener('touchcancel', () => moveEnd(true), { capture: true });
 
-document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('contextmenu', e => e.preventDefault(), { capture: true });
 
 // ============================================================================
 // ALIEN SPAWNING
@@ -656,7 +641,7 @@ function fireSingularity(block) {
                     x: a.x, y: a.y,
                     angle: Math.random() * Math.PI * 2,
                     radius: Math.sqrt(d),
-                    speed: 0.08 + Math.random() * 0.06,
+                    speed: 0.005 + Math.random() * 0.00375,
                     brightness: 0.8 + Math.random() * 0.2,
                     size: 1.5 + Math.random() * 2,
                     life: 500 + Math.random() * 500, maxLife: 500 + Math.random() * 500,
@@ -796,8 +781,6 @@ function updateAtoms() {
 }
 
 function update() {
-    camera.update(elapsedTime);
-
     updateAtoms();
 
     if (draggingBlock && gameTime > draggingBlock.dragStartTime + 1000) {
@@ -811,11 +794,11 @@ function update() {
     for (let i = singularityParticles.length - 1; i >= 0; i--) {
         const p = singularityParticles[i];
         p.angle += p.speed * elapsedTime;
-        p.radius -= 1.5 * elapsedTime;
+        p.radius -= 0.09375 * elapsedTime;
         p.x = p.ownerX + Math.cos(p.angle) * Math.max(0, p.radius);
         p.y = p.ownerY + Math.sin(p.angle) * Math.max(0, p.radius);
         p.life -= elapsedTime;
-        p.brightness *= Math.pow(0.98, elapsedTime);
+        p.brightness *= Math.pow(0.98, elapsedTime / 16);
         if (p.life <= 0 || p.radius <= 0) {
             singularityParticles.splice(i, 1);
         }
@@ -827,7 +810,7 @@ function update() {
         if (voidRifts[i].life <= 0) {
             voidRifts.splice(i, 1);
         } else {
-            voidRifts[i].phase += 0.05 * elapsedTime;
+            voidRifts[i].phase += 0.05 * elapsedTime / 16;
         }
     }
 
@@ -881,20 +864,19 @@ function update() {
             }
         }
 
-        // Singularity
-        if (b.type === 'singularity') {
+        if (b.singularity) {
             b.triggerCooldown = b.triggerCooldown ?? 0;
             b.isCharging = b.isCharging ?? false;
             b.chargeLevel = b.chargeLevel ?? 0;
 
-            if (Math.random() < 0.3 * elapsedTime && !b.isCharging) {
+            if (Math.random() < 0.01875 * elapsedTime && !b.isCharging) {
                 const angle = Math.random() * Math.PI * 2;
                 const r = 25 + Math.random() * 15;
                 singularityParticles.push({
                     x: b.x + Math.cos(angle) * r,
                     y: b.y + Math.sin(angle) * r,
                     angle, radius: r,
-                    speed: 0.02 + Math.random() * 0.03,
+                    speed: 0.00125 + Math.random() * 0.001875,
                     brightness: 0.4 + Math.random() * 0.3,
                     size: 0.8 + Math.random() * 1.2,
                     life: 600 + Math.random() * 600, maxLife: 600 + Math.random() * 600,
@@ -907,10 +889,10 @@ function update() {
                 let count = 0;
                 for (const a of aliens) {
                     if (dist2(a.x, a.y, b.x, b.y) < range) {
-                        if (++count >= b.triggerThreshold) break;
+                        if (++count >= b.singularity.triggerThreshold) break;
                     }
                 }
-                if (count >= b.triggerThreshold) {
+                if (count >= b.singularity.triggerThreshold) {
                     b.isCharging = true;
                     b.chargeLevel = 0;
                     b.chargeStartTime = gameTime;
@@ -923,11 +905,11 @@ function update() {
             }
 
             if (b.isCharging) {
-                b.chargeLevel = Math.min(1, b.chargeLevel + 0.012 * elapsedTime);
+                b.chargeLevel = Math.min(1, b.chargeLevel + 0.00075 * elapsedTime);
                 b.animPulse = 1 + b.chargeLevel;
                 if (gameTime - b.chargeStartTime >= 3000) fireSingularity(b);
             } else {
-                b.chargeLevel = Math.max(0, b.chargeLevel - 0.02 * elapsedTime);
+                b.chargeLevel = Math.max(0, b.chargeLevel - 0.00125 * elapsedTime);
                 b.animPulse = 0.3 + 0.2 * Math.sin(gameTime * 0.00008 + b.animOffset);
             }
         }
@@ -973,13 +955,13 @@ function update() {
             b.animPulse = 0.4 + 0.3 * Math.sin(gameTime * 0.00004);
         }
 
-        b.animPulse = Math.max(0, (b.animPulse || 0) - 0.02 * elapsedTime);
+        b.animPulse = Math.max(0, (b.animPulse || 0) - 0.00125 * elapsedTime);
     }
 
     // Shockwaves
     for (let i = shockwaves.length - 1; i >= 0; i--) {
         const sw = shockwaves[i];
-        sw.radius += (sw.maxRadius - sw.radius) * 0.12 * elapsedTime;
+        sw.radius += (sw.maxRadius - sw.radius) * 0.0075 * elapsedTime;
         sw.life -= elapsedTime;
         sw.alpha = sw.life / (sw.type === 'singularity' ? 1500 : 1000);
         if (sw.life <= 0) {
@@ -999,7 +981,7 @@ function update() {
 
         for (const b of blocks) {
             if (b.hp > 0 && dist2(a.x, a.y, b.x, b.y) < range) {
-                b.hp -= a.damage * dt;
+                b.hp -= a.damage * dt / 1000;
                 break;
             }
         }
@@ -1149,14 +1131,14 @@ function render() {
     // Void rifts
     for (const rift of voidRifts) {
         const alpha = rift.life / rift.maxLife;
-        for (let i = 0; i < 48; i++) {
-            const angle = (i / 48) * Math.PI * 2 + rift.phase;
-            const wobble = Math.sin(rift.phase * 2 + i * 0.5) * 20;
-            const r = rift.radius * (0.9 + 0.1 * Math.sin(angle * 3 + rift.phase * 3)) + wobble;
+        for (let i = 0; i < 64; i++) {
+            const angle = (i / 64) * Math.PI * 2 + rift.phase;
+            const wobble = Math.sin(rift.phase * 2 + i * 0.5) * 30;
+            const r = rift.radius * (0.85 + 0.15 * Math.sin(angle * 3 + rift.phase * 3)) + wobble;
             const x1 = rift.x + Math.cos(angle) * r;
             const y1 = rift.y + Math.sin(angle) * r;
-            const c = bright(Colors.teal, alpha * (0.3 + 0.3 * Math.sin(rift.phase * 4 + i * 0.3)));
-            addQuad(x1, y1, B * 2, c);
+            const c = bright(Colors.teal, alpha * (0.5 + 0.5 * Math.sin(rift.phase * 4 + i * 0.3)));
+            addQuad(x1, y1, B * 3, c);
         }
     }
 
@@ -1214,7 +1196,7 @@ function render() {
 
     // Singularity range indicator
     for (const b of blocks) {
-        if (b.type === 'singularity' && b.operational) {
+        if (b.singularity && b.operational) {
             for (let i = 0; i < 48; i++) {
                 const angle = (i / 48) * Math.PI * 2 + gameTime * 0.00002;
                 for (let layer = 0; layer < 3; layer++) {
@@ -1237,7 +1219,7 @@ function render() {
 
     // Laser beams
     for (const b of blocks) {
-        if (b.laserTarget) {
+        if (b.laserTarget && b.operational) {
             const dx = b.laserTarget.x - b.x;
             const dy = b.laserTarget.y - b.y;
             const len = Math.hypot(dx, dy);
@@ -1359,13 +1341,18 @@ logStatus('Build modules to survive!', 'info');
 logStatus('Right-click or 2-finger drag to pan view', 'info');
 
 let initTime = 0;
+let lastTime = 0;
+let currentTime = 0;
+let elapsedTime = 0;
 
 function gameLoop(now) {
     if (!initTime) initTime = now;
+    lastTime = currentTime;
+    currentTime = now;
+    elapsedTime = Math.max(0, currentTime - lastTime);
+    camera.update(elapsedTime);
     if (!gameOver && !isPaused) {
-        const tmp = gameTime;
-        gameTime = now - initTime;
-        elapsedTime = gameTime - tmp;
+        gameTime = currentTime - initTime;
         if (elapsedTime > 0) update();
     }
     render();

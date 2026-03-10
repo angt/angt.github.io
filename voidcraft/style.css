@@ -7,6 +7,7 @@ html, body {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
+    overscroll-behavior: none;
 }
 canvas { display: block; touch-action: none; }
 
