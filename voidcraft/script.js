@@ -242,6 +242,21 @@ function updateShip() {
             }
         }
     }
+
+    // Auto-reconnect
+    for (const b of blocks) {
+        if (linked.has(b)) continue;
+        const nearest = findValidLinkTarget(b);
+        if (nearest) {
+            bridges.add({
+                from: nearest,
+                to: b,
+                reverse: b.energyProduce > nearest.energyProduce
+            });
+            linked.add(b);
+        }
+    }
+
     let totalPower = 0;
 
     for (const b of linked) {
