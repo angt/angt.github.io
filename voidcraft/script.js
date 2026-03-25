@@ -606,13 +606,13 @@ function spawnAlien() {
     spawnAngle += (Math.random() - 0.5) * 0.08;
     spawnDist += (Math.random() - 0.5) * 10;
     spawnDist = Math.max(WORLD_RADIUS + 100, Math.min(WORLD_RADIUS + 400, spawnDist));
-    const size = 1 + Math.random() * Math.random() * 4;
+    const alienSize = 1 + Math.random() * Math.random() * 4;
     aliens.add({
         x: Math.cos(spawnAngle) * spawnDist,
         y: Math.sin(spawnAngle) * spawnDist,
-        size,
-        hp: size * 20,
-        damage: size * 5,
+        size: alienSize,
+        hp: alienSize * 20,
+        damage: alienSize * 5,
         speed: 0.01 + Math.random() * 0.05,
         phase: Math.random() * Math.PI * 2,
         seed: Math.random(),
