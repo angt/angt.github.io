@@ -1073,6 +1073,7 @@ function update() {
 // ============================================================================
 
 function addQuad(px, py, size, c) {
+    if (quadCount >= MAX_QUADS) return;
     let c0 = c[0], c1 = c[1], c2 = c[2];
     if (gameOver) {
         c0 = Math.min(1, Math.sqrt(c0 * c0 + c1 * c1 + c2 * c2));
@@ -1324,6 +1325,14 @@ function render() {
             const c = bright(AlienColors[i % 8], 0.7 + 0.3 * Math.sin(gameTime * 0.005 + i * 0.4 + a.phase) + flicker);
             const sizeVar = 0.6 + Math.sin(a.seed + i * 4.1) * 0.4;
             addQuad(px, py, B * pulse * sizeVar, c);
+        }
+    }
+
+    // Kill aliens if we hit the buffer limit
+    if (quadCount >= MAX_QUADS) {
+        for (const a of aliens) {
+            aliens.delete(a);
+            break;
         }
     }
 

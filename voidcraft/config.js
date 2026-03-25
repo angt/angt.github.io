@@ -2,7 +2,7 @@
 
 const B = 5;
 const B2 = B * B;
-const MAX_VERTICES = 2000000;
+const MAX_VERTICES = 5000000;
 const GRID_SIZE = 10;
 const VIEW_HEIGHT = 800;
 const WORLD_RADIUS = 2 * VIEW_HEIGHT;
