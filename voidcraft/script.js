@@ -409,13 +409,15 @@ function renderModulePreview(type, canvas) {
 // ============================================================================
 
 function initMainPanel() {
-    for (const type of sidebarModuleOrder) {
+    sidebarModuleOrder.forEach((type, index) => {
         const def = BLOCKS[type];
-        if (!def) continue;
+        if (!def) return;
 
+        const keyNum = index + 1;
         const item = document.createElement('div');
         item.className = 'module-item';
         item.dataset.type = type;
+        item.dataset.key = keyNum;
 
         const previewCanvas = document.createElement('canvas');
         previewCanvas.width = 32;
@@ -425,14 +427,14 @@ function initMainPanel() {
         item.innerHTML = `
             <div class="module-preview"></div>
             <div class="module-details">
-                <div class="module-name">${def.name}</div>
+                <div class="module-name"><span class="module-key">[${keyNum}]</span> ${def.name}</div>
             </div>
         `;
 
         item.querySelector('.module-preview').appendChild(previewCanvas);
         item._blockType = type;
         moduleList.appendChild(item);
-    }
+    });
 
     updatePanelAffordability();
 }
@@ -582,6 +584,34 @@ document.addEventListener('touchend', () => moveEnd(), { capture: true });
 document.addEventListener('touchcancel', () => moveEnd(true), { capture: true });
 
 document.addEventListener('contextmenu', e => e.preventDefault(), { capture: true });
+
+document.addEventListener('keydown', e => {
+    if (gameOver) return;
+
+    // Escape to cancel selection
+    if (e.key === 'Escape') {
+        if (draggingBlock) {
+            draggingBlock = null;
+            hideModuleInfo();
+        }
+        return;
+    }
+
+    const keyNum = parseInt(e.key);
+    if (keyNum >= 1 && keyNum <= sidebarModuleOrder.length) {
+        const type = sidebarModuleOrder[keyNum - 1];
+        const def = BLOCKS[type];
+        if (!def) return;
+
+        // Create block at camera center
+        draggingBlock = createBlock(type, camera.x, camera.y);
+        draggingBlock.initialRotation = Math.floor(Math.random() * 4);
+        draggingBlock.rotation = draggingBlock.initialRotation;
+        draggingBlock.dragStartTime = gameTime;
+
+        showModuleInfo(type);
+    }
+});
 
 // ============================================================================
 // ALIEN SPAWNING

@@ -329,6 +329,12 @@ canvas { display: block; touch-action: none; }
     text-overflow: ellipsis;
 }
 
+.module-key {
+    color: #ff8;
+    opacity: 0.7;
+    font-size: 7px;
+}
+
 @media (orientation: landscape) {
     .module-preview { width: 28px; height: 28px; }
     .module-name { font-size: 9px; }
@@ -363,6 +369,31 @@ canvas { display: block; touch-action: none; }
         #module-info { right: 256px; width: 200px; }
         #status-bar { right: 240px; height: 80px; }
         #stats-bar { right: 240px; bottom: 80px; }
+    }
+}
+
+@media (min-width: 1400px) {
+    @media (orientation: landscape) {
+        #main-panel { width: 300px; }
+        #module-info { right: 316px; width: 240px; }
+        #status-bar { right: 300px; height: 90px; }
+        #stats-bar { right: 300px; bottom: 90px; height: 32px; }
+        .module-preview { width: 36px; height: 36px; }
+        .module-name { font-size: 11px; }
+        .module-key { font-size: 9px; }
+        .info-name { font-size: 12px; }
+        .info-desc { font-size: 10px; }
+    }
+}
+
+@media (min-width: 1800px) {
+    @media (orientation: landscape) {
+        #main-panel { width: 360px; }
+        #module-info { right: 376px; width: 280px; }
+        #status-bar { right: 360px; height: 100px; }
+        .module-preview { width: 44px; height: 44px; }
+        .module-name { font-size: 13px; }
+        .module-key { font-size: 10px; }
     }
 }
 
