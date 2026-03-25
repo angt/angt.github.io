@@ -146,5 +146,13 @@ function createInputHandler(camera, canvas) {
 
     canvas.addEventListener('touchcancel', resetTouch);
 
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
+            camera.targetX = 0;
+            camera.targetY = 0;
+            e.preventDefault();
+        }
+    });
+
     return state;
 }
