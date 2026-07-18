@@ -1,23 +1,378 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="generator" content="pandoc" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Adrien Gallouët</title>
-  <style type="text/css">
-      code{white-space: pre-wrap;}
-      span.smallcaps{font-variant: small-caps;}
-      span.underline{text-decoration: underline;}
-      div.column{display: inline-block; vertical-align: top; width: 50%;}
-  </style>
-  <link rel="stylesheet" href="my.css" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0e16" />
+<meta name="color-scheme" content="dark" />
+<title>Adrien Gallouët · @angt</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E" />
+<style>
+  :root {
+    --bg: #0b0e16; --bg-card: #151a26; --border: #232b3d;
+    --text: #e6edf3; --text-dim: #9aa6b8; --text-faint: #5d6778; --accent: #5b9dff;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; font-family: var(--sans); color: var(--text);
+    background:
+      radial-gradient(1200px 600px at 80% -10%, #1b2a4a40, transparent 60%),
+      radial-gradient(900px 500px at -10% 10%, #3a1f5a30, transparent 60%),
+      var(--bg);
+    line-height: 1.55; min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
+    padding: max(20px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom));
+  }
+  .card { width: 100%; max-width: 480px; margin: auto; padding: 28px 24px; text-align: center; }
+  .ava { width: 88px; height: 88px; border-radius: 50%; }
+  h1 { margin: 14px 0 2px; font-size: 1.3rem; font-weight: 600; }
+  .login { font-size: .9rem; color: var(--text-dim); }
+  .login a { color: var(--accent); text-decoration: none; touch-action: manipulation; }
+  .login a:hover { text-decoration: underline; }
+  .act, .links { border-top: 1px solid var(--border); }
+  .act { padding-top: 16px; margin-top: 24px; text-align: left; }
+  .act .label { color: var(--text-faint); font-size: .7rem; font-family: var(--mono); }
+  .act .row + .row { margin-top: 14px; }
+  .act a { display: block; color: var(--text); text-decoration: none; font-weight: 500;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; touch-action: manipulation; }
+  .act a:hover { color: var(--accent); }
+.act .meta { color: var(--text-faint); font-size: .76rem; margin-top: 3px; }
+.links { padding-top: 16px; margin-top: 24px; font-size: .8rem; }
+  .links a { color: var(--text-dim); text-decoration: none; margin: 0 6px; touch-action: manipulation; }
+  .links a:hover { color: var(--accent); }
+  .sk { background: linear-gradient(90deg, var(--bg-card), #1b2233, var(--bg-card)); background-size: 200% 100%;
+    animation: sh 1.2s ease-in-out infinite; border-radius: 6px; display: block; }
+  @keyframes sh { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+  .err { color: var(--text-faint); font-size: .85rem; }
+  @media (max-height: 480px) {
+    .card { padding: 20px 22px; }
+    .ava { width: 64px; height: 64px; }
+    h1 { margin: 10px 0 2px; font-size: 1.1rem; }
+    .act, .links { margin-top: 14px; padding-top: 12px; }
+    .act .row + .row { margin-top: 10px; }
+  }
+</style>
 </head>
 <body>
-<header id="title-block-header">
-<h1 class="title">Adrien Gallouët</h1>
-</header>
-<p>I love designing new software and I’m part of those who believe that simplicity is its most important quality. I have worked on several projects, some of them being <a href="oss.html">open source</a>.</p>
-<p>Don’t hesitate to <a href="mailto:adrien@gallouet.fr">contact me</a>.</p>
+<div class="card">
+  <img class="ava" id="ava" alt="Adrien Gallouët" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" />
+  <h1 id="name">Adrien Gallouët</h1>
+  <div class="login"><a id="login" href="https://github.com/angt">@angt</a></div>
+
+  <div class="act">
+    <div id="actBody">
+      <span class="sk" style="height:14px">&nbsp;</span>
+      <span class="sk" style="height:10px;margin-top:6px">&nbsp;</span>
+      <span class="sk" style="height:14px;margin-top:16px">&nbsp;</span>
+      <span class="sk" style="height:10px;margin-top:6px">&nbsp;</span>
+      <span class="sk" style="height:14px;margin-top:16px">&nbsp;</span>
+      <span class="sk" style="height:10px;margin-top:6px">&nbsp;</span>
+    </div>
+  </div>
+
+  <div class="links">
+    <a href="https://github.com/angt">github</a>·
+    <a href="https://huggingface.co/angt">huggingface</a>·
+    <a href="mailto:adrien@gallouet.fr">contact</a>
+  </div>
+</div>
+
+<script>
+'use strict';
+(function () {
+const USER = 'angt';
+    const REAL_NAME = 'Adrien Gallouët';
+    const TTL = 1000 * 60 * 10;       // soft freshness window for the cached feed
+    const RESOLVE_TTL = 1000 * 60 * 60 * 24; // commit/PR messages are immutable → cache 24h
+    const MAX = 10;                   // activities to show
+    const RESOLVE_CAP = 6;            // max commit-message fetches per refresh
+    const API = 'https://api.github.com';
+    const HDR = { 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const rel = (iso) => {
+      if (!iso) return '';
+      const s = Math.max(1, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+      if (s < 3600) return Math.floor(s / 60) + 'm ago';
+      if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+      if (s < 2592000) return Math.floor(s / 86400) + 'd ago';
+      if (s < 31536000) return Math.floor(s / 2592000) + 'mo ago';
+      return Math.floor(s / 31536000) + 'y ago';
+    };
+    const cacheGet = (k, ttl = TTL) => { try { const r = localStorage.getItem('ghc_' + k); if (!r) return null;
+      const { t, v } = JSON.parse(r); return Date.now() - t < ttl ? v : null; } catch { return null; } };
+    const cacheSet = (k, v) => { try { localStorage.setItem('ghc_' + k, JSON.stringify({ t: Date.now(), v })); } catch {} };
+    const metaGet = (k) => { try { return JSON.parse(localStorage.getItem('ghc_' + k) || 'null'); } catch { return null; } };
+    const metaSet = (k, v) => { try { localStorage.setItem('ghc_' + k, JSON.stringify(v)); } catch {} };
+
+    // Per-URL validators (etag/last-modified) so re-checks after the cache
+    // expires send If-None-Match/If-Modified-Since. A 304 keeps the cached
+    // body and — per GitHub's docs — does NOT count against the rate limit.
+    const condHdr = (path) => {
+      const m = metaGet('cond.' + path); if (!m) return { ...HDR };
+      const h = { ...HDR };
+      if (m.etag) h['If-None-Match'] = m.etag;
+      if (m.last) h['If-Modified-Since'] = m.last;
+      return h;
+    };
+    const condSave = (path, r) => {
+      const etag = r.headers.get('etag'); const last = r.headers.get('last-modified');
+      if (etag || last) metaSet('cond.' + path, { etag: etag, last: last });
+    };
+
+    // Floor for the next request: pushed out by x-ratelimit-reset / retry-after
+    // when we're limited, so we stop hammering the API during a lockout.
+    let rateUntil = 0;
+
+    // gh() returns { status, body, notModified }. On 304 it keeps the cached
+    // body; the caller decides what to do. Network/other errors throw.
+    async function ghCached (path, cachedBody) {
+      const r = await fetch(API + path, { headers: condHdr(path) });
+      if (r.status === 304) { condSave(path, r); return { status: 304, body: cachedBody, notModified: true }; }
+      const ra = r.headers.get('retry-after'); const reset = r.headers.get('x-ratelimit-reset');
+      const rem = r.headers.get('x-ratelimit-remaining');
+      if (ra) rateUntil = Math.max(rateUntil, Date.now() + Number(ra) * 1000);
+      else if (rem === '0' && reset) rateUntil = Math.max(rateUntil, Number(reset) * 1000);
+      if (r.status === 403 && (rem === '0' || ra)) {
+        const e = Object.assign(new Error('rate-limited'), { status: 403, rateLimited: true });
+        condSave(path, r); throw e;
+      }
+      if (!r.ok) { condSave(path, r); throw Object.assign(new Error('HTTP ' + r.status), { status: r.status }); }
+      condSave(path, r);
+      return { status: r.status, body: await r.json(), notModified: false };
+    }
+
+    // Plain (non-conditional) fetch for resolves: commits/PRs are immutable, so
+    // the RESOLVE_TTL cache prevents re-fetching within 24h; after that we just
+    // GET again (a 304 would lose the message, so conditional isn't useful here).
+    async function gh (path) {
+      const r = await fetch(API + path, { headers: HDR });
+      const ra = r.headers.get('retry-after'); const reset = r.headers.get('x-ratelimit-reset');
+      const rem = r.headers.get('x-ratelimit-remaining');
+      if (ra) rateUntil = Math.max(rateUntil, Date.now() + Number(ra) * 1000);
+      else if (rem === '0' && reset) rateUntil = Math.max(rateUntil, Number(reset) * 1000);
+      if (r.status === 403 && (rem === '0' || ra)) {
+        condSave(path, r); throw Object.assign(new Error('rate-limited'), { status: 403, rateLimited: true });
+      }
+      if (!r.ok) { condSave(path, r); throw Object.assign(new Error('HTTP ' + r.status), { status: r.status }); }
+      condSave(path, r);
+      return r.json();
+    }
+
+  // From the user's public event feed (newest first), gather up to N pushes
+  // (commits) and pull-request events. Consecutive pushes to the same branch
+  // collapse to the latest; each PR number appears once. A push to a branch
+  // that is the head of a PR is shown as that PR (real title + PR link) rather
+  // than as the head commit — otherwise the row would display the last commit
+  // message on the branch (e.g. "Cleanup"), not the PR title. The public
+  // events API omits payload.commits and PullRequestEvent titles/html_url, so
+  // those are fetched separately in resolveCommit / resolvePR.
+  function collectActivity (events, n) {
+    const out = [];
+    if (!Array.isArray(events)) return out;
+
+    // "forkOwner/name|headBranch" -> { num, prRepo } for every PR whose head
+    // lives on a fork (the user's push target). A push to that branch IS the
+    // PR. Newest event wins (events are newest-first).
+    const prHeads = new Map();
+    for (const e of events) {
+      if (e.type !== 'PullRequestEvent') continue;
+      const pr = e.payload && e.payload.pull_request;
+      if (!pr || !pr.head) continue;
+      const headRepo = pr.head.repo && pr.head.repo.url; // .../repos/{owner}/{name}
+      const headBranch = pr.head.ref;
+      if (!headRepo || !headBranch) continue;
+      const key = headRepo.replace(/^.*\/repos\//, '') + '|' + headBranch;
+      if (!prHeads.has(key)) prHeads.set(key, { num: pr.number, prRepo: (e.repo && e.repo.name) || '' });
+    }
+
+    const seenPush = new Set(); // repo|branch
+    const seenPR = new Set();   // pr number
+    for (const e of events) {
+      if (out.length >= n) break;
+      const repo = (e.repo && e.repo.name) || '';
+      const p = e.payload || {};
+      if (e.type === 'PushEvent' && repo && p.head) {
+        const branch = (p.ref || '').replace(/^refs\/heads\//, '');
+        const key = repo + '|' + branch;
+        if (seenPush.has(key)) continue; // keep the newest push for a branch
+        seenPush.add(key);
+        const prHead = prHeads.get(key);
+        if (prHead) {
+          // Push to a PR head branch — show the PR, not the head commit.
+          if (seenPR.has(prHead.num)) continue;
+          seenPR.add(prHead.num);
+          out.push({
+            kind: 'pr', text: null, num: prHead.num,
+            url: 'https://github.com/' + prHead.prRepo + '/pull/' + prHead.num,
+            sha: null, branch: null,
+            repo: prHead.prRepo, time: e.created_at,
+          });
+        } else {
+          out.push({
+            kind: 'commit', text: null, sha: p.head, branch,
+            url: 'https://github.com/' + repo + '/commit/' + p.head, // placeholder until resolved
+            repo, time: e.created_at,
+          });
+        }
+        continue;
+      }
+      if (e.type === 'PullRequestEvent' && p.pull_request) {
+        const pr = p.pull_request;
+        const num = pr.number;
+        if (seenPR.has(num)) continue;
+        seenPR.add(num);
+        out.push({
+          kind: 'pr',
+          text: pr.title || null, num,
+          url: pr.html_url || ('https://github.com/' + repo + '/pull/' + num),
+          sha: null, branch: null,
+          repo, time: e.created_at,
+        });
+      }
+    }
+    return out;
+  }
+
+  // Fill in the commit message + canonical URL for a push activity. Best-effort:
+  // on failure (rate-limit / 404 / network) fall back to the branch view.
+  // Commit messages are immutable, so resolved text is cached 24h per repo+sha.
+  async function resolveCommit (act) {
+    if (!act.repo || !act.sha) return act;
+    const ck = 'c.' + act.repo + '/' + act.sha;
+    const hit = cacheGet(ck, RESOLVE_TTL);
+    if (hit) { act.text = hit.text; act.url = hit.url; return act; }
+    try {
+      const c = await gh('/repos/' + act.repo + '/commits/' + act.sha);
+      act.text = ((c && c.commit && c.commit.message) || '').split('\n')[0] || 'commit';
+      act.url = c && c.html_url ? c.html_url : ('https://github.com/' + act.repo + '/commit/' + act.sha);
+      cacheSet(ck, { text: act.text, url: act.url });
+    } catch (e) {
+      if (e && e.rateLimited) throw e; // let the refresh back off, keep fallback for later
+      act.text = act.branch ? 'push to ' + act.branch : 'push';
+      act.url = act.branch ? 'https://github.com/' + act.repo + '/commits/' + act.branch
+                           : 'https://github.com/' + act.repo;
+    }
+    return act;
+  }
+
+  // The public events feed omits the PR title + html_url; fetch them. Best-effort:
+  // on failure fall back to "pull request #N" linked to the web PR view.
+  // Titles are immutable enough to cache 24h per repo+num.
+  async function resolvePR (act) {
+    if (!act.repo || !act.num) return act;
+    const ck = 'p.' + act.repo + '/' + act.num;
+    const hit = cacheGet(ck, RESOLVE_TTL);
+    if (hit) { act.text = hit.text; act.url = hit.url; return act; }
+    try {
+      const pr = await gh('/repos/' + act.repo + '/pulls/' + act.num);
+      act.text = (pr && pr.title) || ('pull request #' + act.num);
+      act.url = (pr && pr.html_url) || act.url;
+      cacheSet(ck, { text: act.text, url: act.url });
+    } catch (e) {
+      if (e && e.rateLimited) throw e;
+      act.text = 'pull request #' + act.num;
+    }
+    return act;
+  }
+
+  function renderUser (user) {
+    if (!user) return;
+    if (user.avatar_url) $('ava').src = user.avatar_url;
+    $('name').textContent = user.name || REAL_NAME;
+    $('login').textContent = '@' + user.login;
+    $('login').href = user.html_url || ('https://github.com/' + USER);
+  }
+  function renderActs (acts) {
+    if (!acts || !acts.length || !acts.some((a) => a.text)) {
+      $('actBody').innerHTML = '<span class="err">no recent activity</span>'; return;
+    }
+    $('actBody').innerHTML = acts.map((a) => {
+      if (!a.text) return ''; // unresolved push that we couldn't fill in — skip
+      const meta = (a.repo ? esc(a.repo) + ' · ' : '') + rel(a.time);
+      return '<div class="row">' +
+        '<a href="' + esc(a.url) + '" target="_blank" rel="noopener" title="' + esc(a.text) + '">' + esc(a.text) + '</a>' +
+        '<div class="meta">' + meta + '</div></div>';
+    }).join('');
+  }
+
+  async function refresh () {
+    // Instant-render whatever we already have (any age) so the page never
+    // flashes back to the skeleton on a refresh.
+    const mu = metaGet('body.user'), ma = metaGet('body.acts');
+    if (mu) renderUser(mu);
+    if (ma) renderActs(ma);
+
+    // If we're in a known rate-limit window, don't even try — just back off.
+    if (Date.now() < rateUntil) return Math.max(TTL, rateUntil - Date.now() + 1000);
+
+    const userPath = '/users/' + USER;
+    const eventsPath = '/users/' + USER + '/events/public?per_page=100';
+    try {
+      // Serialize to dodge GitHub's secondary (concurrency) rate limit —
+      // no Promise.all on network. 304s reuse the stored body and don't bill.
+      const u = await ghCached(userPath, metaGet('body.user'));
+      if (!u.notModified && u.body) metaSet('body.user', u.body);
+      if (u.body) renderUser(u.body);
+
+      const ev = await ghCached(eventsPath, metaGet('body.events'));
+      let acts;
+      if (ev.notModified) {
+        acts = metaGet('body.acts') || collectActivity(ev.body, MAX);
+      } else if (ev.body) {
+        metaSet('body.events', ev.body);
+        acts = collectActivity(ev.body, MAX);
+      } else {
+        acts = metaGet('body.acts') || [];
+      }
+
+      // Resolve missing titles/messages serially (PRs first). Each resolve fn
+      // sets a fallback on ordinary failure and only rethrows on rate-limit.
+      const jobs = acts.filter((a) => !a.text);
+      const prs = jobs.filter((a) => a.kind === 'pr').slice(0, RESOLVE_CAP);
+      const commits = jobs.filter((a) => a.kind === 'commit')
+        .slice(0, Math.max(0, RESOLVE_CAP - prs.length));
+      let rateHit = false;
+      for (const a of prs.concat(commits)) {
+        try {
+          if (a.kind === 'pr') await resolvePR(a); else await resolveCommit(a);
+        } catch (e) {
+          if (e && e.rateLimited) { rateHit = true; break; } // back off; keep fallbacks
+        }
+      }
+
+      metaSet('body.acts', acts);
+      renderActs(acts);
+      return rateHit ? Math.max(TTL, rateUntil - Date.now() + 1000)
+                     : Math.max(TTL, rateUntil - Date.now());
+    } catch (e) {
+      if (ma) renderActs(ma); else if (!mu) $('actBody').innerHTML = '<span class="err">couldn\'t reach github</span>';
+      if (e && e.rateLimited) return Math.max(TTL, rateUntil - Date.now() + 1000);
+      return TTL;
+    }
+  }
+
+  // Single-flight, self-rescheduling timer. Pauses while the tab is hidden and
+  // refreshes on return if stale, so a backgrounded tab isn't burning the API.
+  let timer = null, inFlight = false, lastRun = 0;
+  const schedule = (ms) => { if (timer) clearTimeout(timer); timer = setTimeout(tick, Math.max(0, ms)); };
+  async function tick () {
+    if (document.hidden) return;               // visibility handler will resume
+    if (inFlight) return;                       // already running — skip
+    inFlight = true;
+    try { const d = await refresh(); lastRun = Date.now(); schedule(d); }
+    finally { inFlight = false; }
+  }
+  const refreshNow = () => { if (!inFlight) schedule(0); };
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { if (timer) { clearTimeout(timer); timer = null; } return; }
+    if (Date.now() - lastRun >= TTL) refreshNow(); else schedule(TTL - (Date.now() - lastRun));
+  });
+  refreshNow();
+})();
+</script>
 </body>
 </html>
