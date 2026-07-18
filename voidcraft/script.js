@@ -126,9 +126,16 @@ camera.setMaxRadius(WORLD_RADIUS);
 function handleResize() {
     const W = document.documentElement.clientWidth;
     const H = document.documentElement.clientHeight;
-    canvas.width = W;
-    canvas.height = H;
-    gl.viewport(0, 0, W, H);
+    // Render at device pixel ratio for crisp output on high-DPI screens,
+    // capped at 2x to keep fill rate sane on retina phones/tablets.
+    // camera.setSize stays in CSS px: touch/mouse coords are in CSS px
+    // and the aspect ratio is unaffected by the backing-store scale.
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    gl.viewport(0, 0, canvas.width, canvas.height);
     camera.setSize(W, H);
 }
 
@@ -1403,7 +1410,7 @@ function gameLoop(now) {
     if (!initTime) initTime = now;
     lastTime = currentTime;
     currentTime = now;
-    elapsedTime = Math.max(0, currentTime - lastTime);
+    elapsedTime = Math.min(Math.max(0, currentTime - lastTime), 100);
     camera.update(elapsedTime);
     if (!gameOver && !isPaused) {
         gameTime = currentTime - initTime;
