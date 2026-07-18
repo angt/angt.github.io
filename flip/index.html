@@ -4,29 +4,78 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Flip</title>
-        <script src="https://cdn.tailwindcss.com"></script>
         <style>
+        :root {
+            --flip-duration: 600ms;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #f3f4f6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: 1.875rem;
+            line-height: 1.2;
+            font-weight: 700;
+            color: #6b21a8;
+            margin: 0 0 0.5rem;
+        }
+
+        #instruction {
+            color: #4b5563;
+            min-height: 1.5em;
+        }
+
         .card {
             perspective: 1000px;
             width: 150px;
             height: 220px;
+            margin-bottom: 2rem;
+            border: 0;
+            background: none;
+            padding: 0;
             cursor: pointer;
         }
+        .card:focus-visible {
+            outline: 3px solid #6b46c1;
+            outline-offset: 6px;
+            border-radius: 22px;
+        }
+
         .card-inner {
             position: relative;
             width: 100%;
             height: 100%;
             transform-style: preserve-3d;
-            transition: transform 0.6s;
+            transition: transform var(--flip-duration) ease;
         }
         .card.flipped .card-inner {
             transform: rotateY(180deg);
         }
+
         .card-front,
         .card-back {
             position: absolute;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             backface-visibility: hidden;
             border-radius: 16px;
             display: flex;
@@ -36,6 +85,7 @@
             font-weight: bold;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
         }
+
         .card-front {
             color: white;
             background:
@@ -51,130 +101,194 @@
             background:
                 repeating-linear-gradient(45deg, #f6d365, #f6d365 10px, #fda085 10px, #fda085 20px),
                 repeating-linear-gradient(-45deg, #a1c4fd, #a1c4fd 10px, #c2e9fb 10px, #c2e9fb 20px);
-                background-blend-mode: overlay;
+            background-blend-mode: overlay;
             color: #6b46c1;
             transform: rotateY(180deg);
         }
+
         @keyframes gradient {
             0%   { background-position:   0% 50%; }
             50%  { background-position: 100% 50%; }
             100% { background-position:   0% 50%; }
         }
+
+        #message {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #7e22ce;
+            min-height: 1.75rem;
+            text-align: center;
+            padding: 0 1rem;
+        }
+
         .confetti {
             position: fixed;
-            width: 10px;
-            height: 10px;
-            background-color: #f00;
+            top: -20px;
+            z-index: 10;
+            pointer-events: none;
             opacity: 0;
-            animation: confetti-fall 3s ease-in-out;
+            animation-name: confetti-fall;
+            animation-timing-function: ease-in-out;
+            animation-fill-mode: forwards;
         }
         @keyframes confetti-fall {
             0% {
-                transform: translateY(-100vh) rotate(0deg);
+                transform: translateY(-10vh) rotate(0deg);
                 opacity: 1;
             }
             100% {
-                transform: translateY(100vh) rotate(360deg);
+                transform: translateY(110vh) rotate(360deg);
                 opacity: 0;
             }
         }
+
+        @media (prefers-reduced-motion: reduce) {
+            .card-front { animation: none; }
+            .card-inner { transition: none; }
+            .confetti { display: none; }
+        }
         </style>
     </head>
-    <body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
-        <div class="text-center mb-6">
-            <h1 class="text-3xl font-bold text-purple-800 mb-2">Number Flip</h1>
-            <p class="text-gray-600" id="instruction">Tap the card to reveal</p>
-        </div>
+    <body>
+        <header>
+            <h1>Number Flip</h1>
+            <p id="instruction">Tap the card to reveal</p>
+        </header>
 
-        <div class="card mb-8" id="card">
+        <button class="card" id="card" type="button" aria-label="Reveal a number. Activate to flip the card.">
             <div class="card-inner">
                 <div class="card-front">?</div>
                 <div class="card-back" id="card-back"></div>
             </div>
-        </div>
+        </button>
 
-        <div id="message" class="text-lg font-semibold text-purple-700 h-8 text-center px-4"></div>
+        <div id="message" role="status" aria-live="polite"></div>
 
         <script>
-            const card = document.getElementById('card');
-            const cardBack = document.getElementById('card-back');
-            const messageEl = document.getElementById('message');
-            const instructionEl = document.getElementById('instruction');
+        (function () {
+            "use strict";
+
+            const card = document.getElementById("card");
+            const cardBack = document.getElementById("card-back");
+            const messageEl = document.getElementById("message");
+            const instructionEl = document.getElementById("instruction");
+
+            // Single source of truth for the flip timing: defined as a CSS custom
+            // property on :root so the JS animation lock stays in sync with the
+            // visual transition even if the value is tweaked later.
+            const FLIP_MS = Number(
+                getComputedStyle(document.documentElement)
+                    .getPropertyValue("--flip-duration")
+                    .match(/\d+/)[0]
+            );
 
             const messages = {
                 0: "Zero! The circle of life!",
                 1: "One is the loneliest number...",
+                2: "Two for the show!",
+                3: "Three is a charm!",
+                4: "Four... solid and steady.",
+                5: "High five! ✋",
+                6: "Six, half a dozen of the other.",
                 7: "Lucky number seven! 🍀",
+                8: "Eight, the great and infinite!",
                 9: "Nine! Almost perfect!"
             };
 
+            const reduceMotion = window.matchMedia(
+                "(prefers-reduced-motion: reduce)"
+            );
+
             let currentNumber = getRandomNumber();
             let cardFlipped = false;
-            let isAnimating = false;
+            let busy = false;
+            let flipTimer = null;
 
             function getRandomNumber() {
                 return Math.floor(Math.random() * 10);
             }
 
-            function toggleCard() {
-                if (isAnimating) return;
-
-                if (!cardFlipped) {
-                    // Flip to reveal
-                    isAnimating = true;
-                    card.classList.add('flipped');
-                    cardBack.textContent = currentNumber;
-                    cardFlipped = true;
-                    instructionEl.textContent = 'Tap again for a new number';
-
-                    setTimeout(() => {
-                        isAnimating = false;
-                    }, 600);
-
-                    if (messages[currentNumber]) {
-                        messageEl.textContent = messages[currentNumber];
-                    }
-                    if (currentNumber === 7) {
-                        createConfetti();
-                    }
-                } else {
-                    // Flip back and get new number
-                    isAnimating = true;
-                    card.classList.remove('flipped');
-                    cardFlipped = false;
-                    messageEl.textContent = '';
-                    instructionEl.textContent = 'Tap the card to reveal';
-
-                    const onTransitionEnd = () => {
-                        card.removeEventListener('transitionend', onTransitionEnd);
-                        currentNumber = getRandomNumber();
-                        cardBack.textContent = '';
-                        isAnimating = false;
-                    };
-                    card.addEventListener('transitionend', onTransitionEnd);
+            function clearFlipTimer() {
+                if (flipTimer !== null) {
+                    clearTimeout(flipTimer);
+                    flipTimer = null;
                 }
+            }
+
+            function flipBack() {
+                // Revert to the hidden face, then pick a fresh number once the
+                // (possibly reduced-motion) transition is done. We use a timer
+                // instead of transitionend so an interrupted animation can never
+                // leave the card locked.
+                card.classList.remove("flipped");
+                cardFlipped = false;
+                messageEl.textContent = "";
+                instructionEl.textContent = "Tap the card to reveal";
+
+                clearFlipTimer();
+                flipTimer = setTimeout(() => {
+                    currentNumber = getRandomNumber();
+                    cardBack.textContent = "";
+                    busy = false;
+                    flipTimer = null;
+                }, FLIP_MS);
+            }
+
+            function flipFront() {
+                card.classList.add("flipped");
+                cardBack.textContent = currentNumber;
+                cardFlipped = true;
+                instructionEl.textContent = "Tap again for a new number";
+
+                clearFlipTimer();
+                flipTimer = setTimeout(() => {
+                    busy = false;
+                    flipTimer = null;
+                }, FLIP_MS);
+
+                const flavor = messages[currentNumber];
+                if (flavor) {
+                    // aria-live on #message announces the number plus its flavor;
+                    // keep the visible text identical so sighted and screen-reader
+                    // users hear/see the same thing, once.
+                    messageEl.textContent = `${currentNumber}. ${flavor}`;
+                }
+                if (currentNumber === 7) {
+                    createConfetti();
+                }
+            }
+
+            function toggleCard() {
+                if (busy) return;
+                busy = true;
+                if (cardFlipped) flipBack();
+                else flipFront();
             }
 
             function createConfetti() {
-                const colors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
+                if (reduceMotion.matches) return;
+                const colors = ["#f00", "#0f0", "#00f", "#ff0", "#f0f", "#0ff"];
                 for (let i = 0; i < 50; i++) {
-                    const confetti = document.createElement('div');
-                    confetti.className = 'confetti';
-                    confetti.style.left = `${Math.random() * 100}vw`;
-                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                    confetti.style.width = `${Math.random() * 10 + 5}px`;
-                    confetti.style.height = `${Math.random() * 10 + 5}px`;
-                    confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
-                    document.body.appendChild(confetti);
-                    setTimeout(() => confetti.remove(), 3000);
+                    const piece = document.createElement("div");
+                    piece.className = "confetti";
+                    const duration = Math.random() * 3 + 2;
+                    piece.style.left = `${Math.random() * 100}vw`;
+                    piece.style.backgroundColor =
+                        colors[Math.floor(Math.random() * colors.length)];
+                    piece.style.width = `${Math.random() * 10 + 5}px`;
+                    piece.style.height = `${Math.random() * 10 + 5}px`;
+                    piece.style.animationDuration = `${duration}s`;
+                    document.body.appendChild(piece);
+                    // Clean up based on the same randomized duration so no piece
+                    // lingers (and none is removed mid-animation).
+                    setTimeout(() => piece.remove(), duration * 1000);
                 }
             }
 
-            card.addEventListener('click', toggleCard);
-            card.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                toggleCard();
-            }, { passive: false });
+            card.addEventListener("click", toggleCard);
+            // keyboard activation is native to <button>, so Enter/Space already work;
+            // nothing extra needed for a11y.
+        })();
         </script>
     </body>
 </html>
