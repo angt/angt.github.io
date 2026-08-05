@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0a2540" />
+<title>YeuPecheQuand — Pêche à pied à l'Île d'Yeu</title>
+<meta name="description" content="Les meilleurs moments pour la pêche à pied (crabes, crevettes, palourdes…) à l'Île d'Yeu, selon les marées." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A6%80%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ======= Hero / animated sea background + floating emojis ======= -->
+  <header class="hero">
+    <div class="hero-art" id="heroArt" aria-hidden="true"></div>
+    <div class="hero-text">
+      <h1>Yeu<span>Peche</span>Quand</h1>
+      <p class="tagline">Les meilleurs moments pour la <strong>pêche à pied</strong> à l'<strong>Île d'Yeu</strong> — crabes, crevettes, palourdes &amp; bigorneaux.</p>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ======= Live status banner ======= -->
+    <section class="now-card" id="nowCard">
+      <div class="now-left">
+        <div class="now-badge" id="nowBadge">…</div>
+        <div class="now-info">
+          <div class="now-title" id="nowTitle">Chargement…</div>
+          <div class="now-sub" id="nowSub"></div>
+        </div>
+      </div>
+      <div class="now-tide">
+        <svg viewBox="0 0 60 60" class="tide-ring">
+          <circle cx="30" cy="30" r="26" class="ring-bg"/>
+          <circle cx="30" cy="30" r="26" class="ring-fg" id="ringFg"/>
+        </svg>
+        <div class="now-tide-txt">
+          <span id="nowHeight">–</span>
+          <small>hauteur</small>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======= Today & Tomorrow ======= -->
+    <div class="grid" id="dayGrid">
+      <!-- cards injected by JS -->
+    </div>
+
+    <!-- ======= Tide curve ======= -->
+    <section class="panel">
+      <h2>Courbe de marée <span class="muted" id="curveDate"></span></h2>
+      <div class="curve-wrap">
+        <canvas id="tideCurve" height="180"></canvas>
+        <div class="curve-legend">
+          <span class="dot pm"></span> Pleine mer
+          <span class="dot bm"></span> Basse mer
+          <span class="dot fish"></span> Fenêtre de pêche
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p>YeuPecheQuand · Fait avec <span aria-hidden="true">🌊</span> pour l'Île d'Yeu · <span id="year"></span></p>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

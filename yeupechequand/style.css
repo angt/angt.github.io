@@ -1,0 +1,169 @@
+/* ===== YeuPecheQuand — island & sea theme ===== */
+:root{
+  --deep:#0a2540;        /* deep sea */
+  --sea:#12557a;         /* mid sea */
+  --sea2:#1b7fa6;        /* light sea */
+  --foam:#eaf6fb;
+  --sand:#f4e9d3;
+  --coral:#ff6b5e;
+  --coral-d:#e1503f;
+  --gold:#ffc24b;
+  --ink:#0b2239;
+  --ink-soft:#3d5a75;
+  --card:#ffffff;
+  --line:#dfeaf0;
+  --good:#1f9d6c;
+  --shadow:0 10px 30px rgba(10,37,64,.12);
+  --r:18px;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;font-family:var(--sans);color:var(--ink);
+  background:linear-gradient(180deg,#eaf6fb 0%,#f4fbfd 40%,#eef7fa 100%);
+  line-height:1.55;-webkit-tap-highlight-color:transparent;
+}
+h1,h2,h3{line-height:1.15;margin:0}
+.muted{color:var(--ink-soft);font-weight:500;font-size:.8em}
+
+/* ---------- Hero : animated sea gradient + floating emojis ---------- */
+.hero{
+  position:relative;overflow:hidden;color:#fff;
+  background:linear-gradient(160deg,#0a2540,#12557a 45%,#1b7fa6 75%,#2c97c0);
+  background-size:200% 200%;
+  animation:seaShift 16s ease-in-out infinite;
+  padding:calc(30px + env(safe-area-inset-top)) 20px 118px;
+  text-align:center;
+}
+@keyframes seaShift{0%,100%{background-position:0% 0%}50%{background-position:100% 100%}}
+.hero-art{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.hero-art .f{
+  position:absolute;bottom:-60px;display:inline-block;
+  filter:drop-shadow(0 3px 6px rgba(0,0,0,.25));
+  animation:floatUp linear infinite;
+  will-change:transform;
+}
+@keyframes floatUp{
+  from{transform:translateY(0) rotate(-8deg)}
+  to{transform:translateY(-120vh) rotate(10deg)}
+}
+.hero-text{position:relative;z-index:2;max-width:760px;margin:0 auto}
+.hero h1{
+  font-size:clamp(2.1rem,7vw,3.6rem);font-weight:800;letter-spacing:-.5px;
+  text-shadow:0 3px 14px rgba(0,0,0,.3);
+}
+.hero h1 span{color:var(--gold)}
+.tagline{margin:.6em auto 0;max-width:560px;font-size:clamp(.98rem,2.6vw,1.15rem);color:#dff0f7}
+.tagline strong{color:#fff}
+
+/* ---------- Layout ---------- */
+.container{max-width:980px;margin:0 auto;padding:0 18px calc(40px + env(safe-area-inset-bottom))}
+.panel{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);padding:22px;margin-top:22px;
+}
+.panel h2{font-size:1.25rem;margin-bottom:14px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+
+/* ---------- Now card ---------- */
+.now-card{
+  margin-top:-58px;position:relative;z-index:3;
+  background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);
+  border:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:center;gap:16px;
+  padding:18px 20px;flex-wrap:wrap;
+}
+.now-left{display:flex;align-items:center;gap:16px;min-width:0}
+.now-badge{
+  flex:none;width:64px;height:64px;border-radius:16px;display:grid;place-items:center;
+  font-size:2rem;background:linear-gradient(160deg,var(--sea2),var(--sea));color:#fff;
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.12);
+}
+.now-title{font-weight:800;font-size:1.15rem}
+.now-sub{color:var(--ink-soft);font-size:.92rem}
+.now-tide{display:flex;align-items:center;gap:12px}
+.tide-ring{width:60px;height:60px;transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--line);stroke-width:7}
+.ring-fg{fill:none;stroke:var(--sea2);stroke-width:7;stroke-linecap:round;
+  stroke-dasharray:163.3;stroke-dashoffset:163.3;transition:stroke-dashoffset 1s ease}
+.now-tide-txt{display:flex;flex-direction:column;line-height:1.1}
+.now-tide-txt span{font-weight:800;font-size:1.2rem}
+.now-tide-txt small{color:var(--ink-soft)}
+
+/* status colors */
+.st-good .now-badge{background:linear-gradient(160deg,#2fbf86,#1f9d6c)}
+.st-mid  .now-badge{background:linear-gradient(160deg,#ffc24b,#ff9d2e)}
+.st-bad  .now-badge{background:linear-gradient(160deg,#9db6c7,#6e8ca0)}
+
+/* ---------- Day cards ---------- */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px}
+@media(max-width:680px){.grid{grid-template-columns:1fr}}
+.day-card{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);padding:20px;position:relative;overflow:hidden;
+}
+.day-card::before{content:"";position:absolute;top:0;left:0;right:0;height:6px;
+  background:linear-gradient(90deg,var(--sea2),var(--gold))}
+.day-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.day-name{font-size:1.05rem;font-weight:800;text-transform:capitalize}
+.coef-pill{font-size:.78rem;font-weight:700;padding:3px 10px;border-radius:999px;color:#fff;white-space:nowrap}
+.coef-pill.ne{background:#6e8ca0}
+.coef-pill.ve{background:#1f9d6c}
+.coef-pill.gm{background:var(--coral-d)}
+.verdict{margin:10px 0 4px;font-size:1.5rem;font-weight:800;display:flex;align-items:center;gap:10px}
+.verdict .emoji{font-size:1.7rem}
+.verdict-sub{color:var(--ink-soft);font-size:.92rem;margin-bottom:14px}
+
+.window{
+  display:flex;align-items:center;gap:12px;background:linear-gradient(160deg,#f0f9ff,#e6f4fb);
+  border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:10px;
+}
+.window .ico{font-size:1.6rem}
+.window .t{font-weight:800;font-size:1.2rem;font-variant-numeric:tabular-nums}
+.window .lbl{font-size:.78rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px}
+.window.best{background:linear-gradient(160deg,#fff6e6,#ffefd2);border-color:#f3d9a8}
+
+.tides{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.tide-chip{flex:1;min-width:120px;background:#f6fafc;border:1px solid var(--line);
+  border-radius:12px;padding:8px 12px;font-size:.85rem}
+.tide-chip b{display:block;font-size:1rem;font-variant-numeric:tabular-nums}
+.tide-chip.pm b{color:var(--sea)}
+.tide-chip.bm b{color:var(--coral-d)}
+.tide-chip .k{font-size:.72rem;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-soft)}
+
+/* ---------- Curve ---------- */
+.curve-wrap{position:relative}
+#tideCurve{width:100%;height:180px;display:block}
+.curve-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.82rem;color:var(--ink-soft);margin-top:8px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.dot.pm{background:var(--sea)}
+.dot.bm{background:var(--coral-d)}
+.dot.fish{background:var(--gold)}
+
+footer{text-align:center;color:var(--ink-soft);font-size:.85rem;padding:26px 0 6px}
+
+/* ---------- Smartphone polish ---------- */
+@media(max-width:680px){
+  .container{padding:0 14px calc(32px + env(safe-area-inset-bottom))}
+  .now-card{padding:16px;gap:12px}
+  .now-badge{width:56px;height:56px;font-size:1.7rem;border-radius:14px}
+  .now-title{font-size:1.05rem}
+  .now-sub{font-size:.85rem}
+  .tide-ring{width:52px;height:52px}
+  .verdict{font-size:1.3rem}
+  .panel{padding:18px 16px}
+  .day-card{padding:16px}
+  .window .t{font-size:1.1rem}
+  .tide-chip{min-width:calc(50% - 5px);flex:1 1 calc(50% - 5px)}
+  #tideCurve{height:150px}
+}
+@media(max-width:380px){
+  .now-card{flex-direction:column;align-items:flex-start}
+  .now-tide{align-self:stretch;justify-content:flex-end}
+  .tide-chip{min-width:100%;flex:1 1 100%}
+}
+/* Respect reduced motion */
+@media(prefers-reduced-motion:reduce){
+  .hero{animation:none}
+  *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+}
