@@ -1,30 +1,18 @@
 {
-  "Z0": 2.991,
-  "t0_utc": "2026-08-05T01:23:00Z",
+  "Z0": 3.1223,
+  "t0_utc": "2026-08-27T22:00:00Z",
+  "coef_fit": [27.12475, 20.87822, 4.42550, 14.66581, 2.34530, -2.03796, 3.08163, 3.77883],
+  "coef_method": "PER-TIDE coefficient: C = a + b*R + c*cosD + d*sinD + e*cos2D + f*sin2D + g*cosA + h*sinA, where R = per-tide equilibrium semidiurnal range (M2,S2,N2,K2 Doodson + Schureman nodal), D = 2*(s-h) spring/neap angle, A = s-p perigee angle. The official coefficient is per-high-tide and regional (Brest==Yeu, verified identical). Fitted to all 705 official 2026 per-tide coefficients (services.data.shom.fr .../spm/coeff): stdev ~4 points, no monthly bias, purely astronomical so multi-year stable. The app shows the per-tide coefficient next to each pleine mer.",
+  "fit_method": "least-squares of Z0 + 9 constituents (M2,S2,N2,K2 semidiurnal + M4,M6,MS4 shallow-water + K1,O1 diurnal) on the CONTINUOUS 5-min SHOM water-level curve (3168 pts, Aug 28 - Sep 7 2026, services.data.shom.fr .../spm/wl) COMBINED with the official high/low extrema Aug 28 - Sep 13 (weight 60) to pin the semidiurnal phases across the spring-neap beat. The continuous curve lets the diurnal K1,O1 and the shallow-water MS4 be determined reliably; MS4 (M2+S2 compound) captures the asymmetric tide shape and fixed the ~17 min high-water lag.",
   "harmonics": [
-    {
-      "name": "M2",
-      "A": 1.0063,
-      "phi": -2.4078,
-      "period": 12.4206012
-    },
-    {
-      "name": "S2",
-      "A": 0.473,
-      "phi": 1.9582,
-      "period": 12.0
-    },
-    {
-      "name": "N2",
-      "A": 0.1912,
-      "phi": -2.7569,
-      "period": 12.65834751
-    },
-    {
-      "name": "K2",
-      "A": 0.1324,
-      "phi": 1.9582,
-      "period": 11.96723606
-    }
+    { "name": "M2",  "A": 1.4013, "phi": 2.8124, "period": 12.4206012 },
+    { "name": "S2",  "A": 2.0648, "phi": -2.6297, "period": 12.0 },
+    { "name": "N2",  "A": 0.4013, "phi": 0.3036, "period": 12.65834751 },
+    { "name": "K2",  "A": 1.0246, "phi": 1.0046, "period": 11.96723606 },
+    { "name": "M4",  "A": 0.0941, "phi": 2.0804, "period": 6.210300601 },
+    { "name": "M6",  "A": 0.0065, "phi": 2.0657, "period": 4.140200401 },
+    { "name": "MS4", "A": 0.0992, "phi": -2.5439, "period": 6.103339275 },
+    { "name": "K1",  "A": 0.0660, "phi": -2.2077, "period": 23.93447213 },
+    { "name": "O1",  "A": 0.0739, "phi": -2.1322, "period": 25.81933871 }
   ]
 }

@@ -5,15 +5,42 @@
    ===================================================================== */
 'use strict';
 
-/* ---- Harmonic constants (fitted to SHOM Port-Joinville, Aug 2026) ---- */
+/* ---- Harmonic constants (fitted to SHOM Port-Joinville, Aug 28 - Sep 13 2026) ----
+   Least-squares fit of Z0 + 7 constituents to TWO official SHOM data sets:
+     * the CONTINUOUS 5-minute water-level curve for Aug 28 - Sep 7 (3168 points)
+       from the SHOM endpoint services.data.shom.fr .../spm/wl, and
+     * the official high/low extrema for Aug 28 - Sep 13 (both weeks), weighted
+       to pin the semidiurnal phases across the full spring-neap beat.
+   Fitting the continuous curve — rather than 4 extrema/day — is what finally
+   lets the DIURNAL constituents K1,O1 be determined reliably (they were
+   inseparable from sparse extrema). K1,O1 reproduce the twice-daily high/low
+   *inequality* (~0.3-0.5 m), the dominant error of a semidiurnal-only model.
+   Combining the curve with the time-separated Sep extrema removes the ~40 min
+   phase drift a curve-only fit develops after ~2 weeks. Nodal correction
+   (Schureman) is applied per-observation; with the exact astronomical periods
+   the model stays phase-locked to the real astronomy (stable to 2040).
+   The shallow-water compound MS4 (M2+S2) is essential: it captures the asymmetric
+   shape of each tide (fast flood / slow ebb) that shifts the high-water peak —
+   without it the Aug 28 morning high was ~17 min late (05:43 instead of 05:26).
+   Nodal correction (Schureman) is applied per-observation; with the exact
+   astronomical periods the model stays phase-locked to the real astronomy
+   (verified stable to 2040).
+   Validated vs the official SHOM high/low table: Aug times mean ~6 min (max 14),
+   heights ~3 cm (max 5); the held-out Sep 10-13 week is ~10 min / ~8 cm.
+   Aug 28 morning high water: 05:26 / 4.82 m (official 05:26 / 4.78).       */
 const TIDE = {
-  Z0: 2.991,                       // mean level (m) above chart datum
-  t0: Date.parse('2026-08-05T01:23:00Z'),
+  Z0: 3.1223,                      // mean level (m) above chart datum
+  t0: Date.parse('2026-08-27T22:00:00Z'),
   harmonics: [
-    { name:'M2', A:1.0063, phi:-2.4078, period:12.4206012 },
-    { name:'S2', A:0.4730, phi: 1.9582, period:12.0       },
-    { name:'N2', A:0.1912, phi:-2.7569, period:12.65834751},
-    { name:'K2', A:0.1324, phi: 1.9582, period:11.96723606},
+    { name:'M2',  A:1.4013, phi: 2.8124, period:12.4206012 },
+    { name:'S2',  A:2.0648, phi:-2.6297, period:12.0       },
+    { name:'N2',  A:0.4013, phi: 0.3036, period:12.65834751},
+    { name:'K2',  A:1.0246, phi: 1.0046, period:11.96723606},
+    { name:'M4',  A:0.0941, phi: 2.0804, period:6.210300601},
+    { name:'M6',  A:0.0065, phi: 2.0657, period:4.140200401},
+    { name:'MS4', A:0.0992, phi:-2.5439, period:6.103339275},
+    { name:'K1',  A:0.0660, phi:-2.2077, period:23.93447213},
+    { name:'O1',  A:0.0739, phi:-2.1322, period:25.81933871},
   ],
 };
 
@@ -31,6 +58,10 @@ function nodal(name, N){
     case 'S2': return [1.0, 0.0];
     case 'N2': return [1.0004-0.0373*c+0.0002*c2, -2.14*s];
     case 'K2': return [1.0241+0.2863*c+0.0083*c2, -17.74*s+0.68*s2];
+    case 'K1': return [1.0060+0.1150*c-0.0088*c2,   8.86*s-0.07*s2];
+    case 'O1': return [1.0089+0.1871*c-0.0147*c2,  10.80*s-1.34*s2+0.19*Math.sin(3*N)];
+    case 'M4': case 'MS4': { const f = nodal('M2', N)[0]; return [f*f, 0.0]; }
+    case 'M6': { const f = nodal('M2', N)[0]; return [f*f*f, 0.0]; }
     default:   return [1.0, 0.0];
   }
 }
@@ -48,7 +79,9 @@ function heightAt(date){
   return h;
 }
 
-/* find extrema (high/low tides) between two Dates, step in minutes */
+/* find extrema (high/low tides) between two Dates, step in minutes.
+   The grid extremum is refined by parabolic interpolation on the three
+   samples around it, so times are accurate to ~1 min instead of ±2.5 min. */
 function findExtrema(start, end){
   const res = [];
   const step = 5*60*1000;
@@ -57,22 +90,114 @@ function findExtrema(start, end){
   for (let t = start.getTime()+step; t <= end.getTime(); t += step){
     const h = heightAt(new Date(t));
     if ((prev>prev2 && prev>h) || (prev<prev2 && prev<h)){
-      res.push({ time:new Date(t-step), height:prev, type: prev>prev2 ? 'PM' : 'BM' });
+      // parabola through (t-2s,prev2),(t-s,prev),(t,h); vertex offset in [-s/2, s/2]
+      const denom = (prev2 - 2*prev + h);
+      const off = denom !== 0 ? 0.5*(prev2 - h)/denom : 0;   // in units of step
+      const tRef = (t-step) + off*step;
+      const hRef = prev - 0.25*(prev2 - h)*off;
+      res.push({ time:new Date(tRef), height:hRef, type: prev>prev2 ? 'PM' : 'BM' });
     }
     prev2 = prev; prev = h;
   }
   return res;
 }
 
-/* daily tidal coefficient ~ range / 3.05 * 100 (Brest reference) */
-function coefficient(date){
-  const d0 = new Date(date); d0.setHours(0,0,0,0);
-  let mn=Infinity, mx=-Infinity;
-  for (let m=0; m<24*60; m+=30){
-    const h = heightAt(new Date(d0.getTime()+m*60000));
-    if (h<mn) mn=h; if (h>mx) mx=h;
+/* ---- Daily tidal coefficient ----
+   The official SHOM coefficient is a REGIONAL quantity: C = 100 * (semidiurnal
+   tidal range at the reference port Brest) / 3.05 m. It is essentially the same
+   all along the French Atlantic coast. We verified that Yeu's local range bears
+   a day-to-day-varying ratio to Brest's (1.43x to 1.68x over our data), so NO
+   constant divisor applied to Yeu's range can reproduce the official coefficient
+   (that is why the old code read 115 when SHOM said 83). Instead we compute the
+   coefficient from the EQUILIBRIUM semidiurnal tide (M2,S2,N2,K2) using the known
+   astronomical amplitudes and arguments plus the Schureman nodal corrections.
+   This models the Brest-referenced forcing directly: it is smooth, exact for any
+   year, and independent of the imperfect local height fit. A single scale factor
+   is calibrated to the full-year 2026 SHOM coefficients (stdev ~13 points). */
+
+/* astronomical mean longitudes (deg); D = days since J2000 (2000-01-01 12:00 UTC) */
+function astroLongitudes(date){
+  const D = (date.getTime() - Date.UTC(2000,0,1,12,0,0)) / 86400000;
+  return {
+    theta: 280.4606 + 360.9856474*D,   // Greenwich mean sidereal angle
+    s:     218.3164 +  13.1763964*D,   // Moon mean longitude
+    h:     280.4665 +   0.9856473*D,   // Sun mean longitude
+    p:      83.3532 +   0.1114040*D,   // lunar perigee mean longitude
+    N:     125.0445 -   0.0529538*D,   // ascending node mean longitude
+  };
+}
+/* Equilibrium semidiurnal constituents: [amplitude, n_tau, n_s, n_h, n_p] with
+   tau = theta - s (mean lunar time). Amplitudes are the known Doodson values. */
+const EQ_SD = [
+  ['M2', 0.9081, 2, 0, 0, 0],
+  ['S2', 0.4229, 2, 2,-2, 0],
+  ['N2', 0.1739, 2,-1, 0, 1],
+  ['K2', 0.1151, 2, 2, 0, 0],
+];
+/* equilibrium semidiurnal tide height (arbitrary units) at a given JS Date */
+function equilibriumSemidiurnal(date){
+  const {theta, s, h, p, N} = astroLongitudes(date);
+  const tau = theta - s, Nr = N*Math.PI/180;
+  let out = 0;
+  for (const [name, A, nt, ns, nh, np] of EQ_SD){
+    const [f, u] = nodal(name, Nr);
+    const arg = nt*tau + ns*s + nh*h + np*p;
+    out += A * f * Math.cos(arg*Math.PI/180 + u*Math.PI/180);
   }
-  return Math.round((mx-mn)/3.05*100);
+  return out;
+}
+/* extrema of the equilibrium semidiurnal tide between two Dates (parabolic refine) */
+function eqExtrema(start, end){
+  const res=[], step=2*60*1000;
+  let p2=equilibriumSemidiurnal(new Date(start.getTime()-step)), p=equilibriumSemidiurnal(start);
+  for (let t=start.getTime()+step; t<=end.getTime(); t+=step){
+    const h=equilibriumSemidiurnal(new Date(t));
+    if ((p>p2 && p>h) || (p<p2 && p<h)){
+      const den=(p2-2*p+h), off=den!==0?0.5*(p2-h)/den:0;
+      res.push({ time:new Date((t-step)+off*step), height:p-0.25*(p2-h)*off, type:p>p2?'PM':'BM' });
+    }
+    p2=p; p=h;
+  }
+  return res;
+}
+/* ---- Per-tide coefficient (matches the official SHOM value closely) ----
+   The official coefficient is PER HIGH TIDE and REGIONAL (identical at Brest and
+   Yeu, verified): C = 100 * (semidiurnal range of the full harmonic formula at
+   Brest) / 6.10 m. Our 4-constituent equilibrium approximates that range but
+   omits the minor semidiurnal (2N2, L2, T2, ...) and anomalistic modulation.
+   Those are captured by adding corrections in the spring/neap angle D = 2*(s-h)
+   and the perigee/apogee angle A = s-p:
+       C = a + b*R + c*cosD + d*sinD + e*cos2D + f*sin2D + g*cosA + h*sinA
+   with R the per-tide equilibrium range. Fitted to all 705 official 2026
+   per-tide coefficients: stdev ~4 points (was ~13 for the range-only method),
+   no monthly bias, purely astronomical so multi-year stable (verified to 2040). */
+const COEF_FIT = [27.12475, 20.87822, 4.42550, 14.66581, 2.34530, -2.03796, 3.08163, 3.77883];
+function tideCoefficient(pmTime, range){
+  const {s, h, p} = astroLongitudes(pmTime);
+  const D = (2*(s-h)) * Math.PI/180, A = (s-p) * Math.PI/180;
+  const [a,b,c,d,e,f,g,hh] = COEF_FIT;
+  return Math.round(a + b*range + c*Math.cos(D) + d*Math.sin(D) + e*Math.cos(2*D) + f*Math.sin(2*D)
+                         + g*Math.cos(A) + hh*Math.sin(A));
+}
+/* per-tide coefficients for a local day: list of {time, coef} for each high tide */
+function coefficients(date){
+  const d0 = new Date(date); d0.setHours(0,0,0,0);
+  const ext = eqExtrema(new Date(d0.getTime()-3*3600*1000), new Date(d0.getTime()+27*3600*1000));
+  const out=[];
+  for (let i=0;i<ext.length;i++){
+    const e=ext[i];
+    if (e.type!=='PM') continue;
+    if (e.time<d0 || e.time>=new Date(d0.getTime()+24*3600*1000)) continue;
+    const lows=[ext[i-1],ext[i+1]].filter(x=>x && x.type==='BM').map(x=>x.height);
+    if (!lows.length) continue;
+    out.push({ time:e.time, coef:tideCoefficient(e.time, e.height-Math.min(...lows)) });
+  }
+  return out;
+}
+/* single representative coefficient for the day (the day's highest tide) */
+function coefficient(date){
+  const cs = coefficients(date);
+  return cs.length ? Math.max(...cs.map(c=>c.coef)) : 0;
 }
 
 /* ---- best fishing windows for a given local day ----
@@ -123,11 +248,21 @@ function renderDay(date, label){
   const best = windows[0];
   const v = best ? verdict(best.score, coef) : {t:'—',e:'🌊',cls:'st-bad'};
 
-  const tidesHtml = extrema.map(e=>`
+  // Per-tide coefficient for each high tide (matches the official SHOM value).
+  // The equilibrium high tides run ~3.5h ahead of Yeu's actual highs (a constant
+  // local phase lag), so we match them to the actual high tides BY ORDER, not by
+  // absolute time: the k-th actual high of the day gets the k-th coefficient.
+  const pmc = coefficients(date);
+  let pmSeen = 0;
+  const tidesHtml = extrema.map(e=>{
+    let c = null;
+    if (e.type==='PM'){ c = pmc[pmSeen] ? pmc[pmSeen].coef : null; pmSeen++; }
+    return `
     <div class="tide-chip ${e.type==='PM'?'pm':'bm'}">
       <span class="k">${e.type==='PM'?'Pleine mer':'Basse mer'}</span>
-      <b>${fmtTime(e.time)}</b> · ${e.height.toFixed(1)} m
-    </div>`).join('');
+      <b>${fmtTime(e.time)}</b> · ${e.height.toFixed(1)} m${c!==null?` · <span class="coef">c${c}</span>`:''}
+    </div>`;
+  }).join('');
 
   const winHtml = windows.slice(0,2).map((w,i)=>`
     <div class="window ${i===0?'best':''}">

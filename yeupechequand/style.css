@@ -130,6 +130,7 @@ h1,h2,h3{line-height:1.15;margin:0}
 .tide-chip.pm b{color:var(--sea)}
 .tide-chip.bm b{color:var(--coral-d)}
 .tide-chip .k{font-size:.72rem;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-soft)}
+.tide-chip .coef{font-size:.72rem;font-weight:700;color:var(--sea);background:#e3f0f7;border-radius:6px;padding:0 4px;margin-left:2px}
 
 /* ---------- Curve ---------- */
 .curve-wrap{position:relative}
