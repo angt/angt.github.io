@@ -27,26 +27,12 @@ body{
 h1,h2,h3{line-height:1.15;margin:0}
 .muted{color:var(--ink-soft);font-weight:500;font-size:.8em}
 
-/* ---------- Hero : animated sea gradient + floating emojis ---------- */
+/* ---------- Hero : sea gradient ---------- */
 .hero{
   position:relative;overflow:hidden;color:#fff;
   background:linear-gradient(160deg,#0a2540,#12557a 45%,#1b7fa6 75%,#2c97c0);
-  background-size:200% 200%;
-  animation:seaShift 16s ease-in-out infinite;
   padding:calc(30px + env(safe-area-inset-top)) 20px 118px;
   text-align:center;
-}
-@keyframes seaShift{0%,100%{background-position:0% 0%}50%{background-position:100% 100%}}
-.hero-art{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-.hero-art .f{
-  position:absolute;bottom:-60px;display:inline-block;
-  filter:drop-shadow(0 3px 6px rgba(0,0,0,.25));
-  animation:floatUp linear infinite;
-  will-change:transform;
-}
-@keyframes floatUp{
-  from{transform:translateY(0) rotate(-8deg)}
-  to{transform:translateY(-120vh) rotate(10deg)}
 }
 .hero-text{position:relative;z-index:2;max-width:760px;margin:0 auto}
 .hero h1{
@@ -85,7 +71,7 @@ h1,h2,h3{line-height:1.15;margin:0}
 .tide-ring{width:60px;height:60px;transform:rotate(-90deg)}
 .ring-bg{fill:none;stroke:var(--line);stroke-width:7}
 .ring-fg{fill:none;stroke:var(--sea2);stroke-width:7;stroke-linecap:round;
-  stroke-dasharray:163.3;stroke-dashoffset:163.3;transition:stroke-dashoffset 1s ease}
+  stroke-dasharray:163.3;stroke-dashoffset:163.3}
 .now-tide-txt{display:flex;flex-direction:column;line-height:1.1}
 .now-tide-txt span{font-weight:800;font-size:1.2rem}
 .now-tide-txt small{color:var(--ink-soft)}
@@ -162,9 +148,4 @@ footer{text-align:center;color:var(--ink-soft);font-size:.85rem;padding:26px 0 6
   .now-card{flex-direction:column;align-items:flex-start}
   .now-tide{align-self:stretch;justify-content:flex-end}
   .tide-chip{min-width:100%;flex:1 1 100%}
-}
-/* Respect reduced motion */
-@media(prefers-reduced-motion:reduce){
-  .hero{animation:none}
-  *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
 }

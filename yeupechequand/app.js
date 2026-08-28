@@ -390,33 +390,8 @@ function drawCurve(date){
   for(let hh=0;hh<=24;hh+=6){ ctx.fillText(hh+'h', hh/24*W, H-8); }
 }
 
-/* ---- floating emoji background (hand-fishing theme) ---- */
-function buildHeroArt(){
-  const host = $('heroArt');
-  if (!host) return;
-  const EMOJI = ['🦐','🦀','🐚','🪨','☀️','🌊','🦪','🐟'];
-  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const count = window.innerWidth < 600 ? 12 : 18;
-  const frag = document.createDocumentFragment();
-  for (let i=0;i<count;i++){
-    const s = document.createElement('span');
-    s.className = 'f';
-    s.textContent = EMOJI[(Math.random()*EMOJI.length)|0];
-    s.style.left = (Math.random()*100).toFixed(1)+'%';
-    s.style.fontSize = (18+Math.random()*30).toFixed(0)+'px';
-    s.style.opacity = (0.35+Math.random()*0.5).toFixed(2);
-    const dur = 9+Math.random()*14;
-    s.style.animationDuration = dur.toFixed(1)+'s';
-    s.style.animationDelay = (-Math.random()*dur).toFixed(1)+'s';
-    if (reduce) s.style.animation = 'none';
-    frag.appendChild(s);
-  }
-  host.appendChild(frag);
-}
-
 /* ======================= INIT ======================= */
 function init(){
-  buildHeroArt();
   const today = new Date();
   const tomorrow = new Date(today.getTime()+86400000);
 
