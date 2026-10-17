@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Grand QCM des Petits Génies de la Science</title>
+<style>
+  :root {
+    --violet: #6c5ce7;
+    --violet-dark: #5a4bd4;
+    --rose: #e84393;
+    --vert: #00b894;
+    --rouge: #e74c3c;
+    --jaune: #fdcb6e;
+    --fond1: #a29bfe;
+    --fond2: #74b9ff;
+    --texte: #2d3436;
+    --carte: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Trebuchet MS", "Segoe UI", Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--fond1) 0%, var(--fond2) 100%);
+    min-height: 100vh;
+    color: var(--texte);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+  }
+
+  .conteneur {
+    width: 100%;
+    max-width: 820px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: #fff;
+    flex-wrap: wrap;
+  }
+  header h1 {
+    font-size: 1.15rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,.2);
+  }
+  .compteur {
+    background: rgba(255,255,255,.25);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-weight: bold;
+    font-size: .95rem;
+    white-space: nowrap;
+  }
+
+  .barre-progression {
+    height: 10px;
+    background: rgba(255,255,255,.35);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .barre-progression .rempli {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--jaune), var(--rose));
+    border-radius: 999px;
+    transition: width .35s ease;
+  }
+
+  .carte {
+    background: var(--carte);
+    border-radius: 24px;
+    padding: 28px 26px;
+    box-shadow: 0 18px 40px rgba(0,0,0,.18);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    animation: apparition .35s ease;
+    overflow-y: auto;
+  }
+  @keyframes apparition {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .badge-partie {
+    align-self: flex-start;
+    background: #eee9ff;
+    color: var(--violet-dark);
+    font-weight: bold;
+    font-size: .85rem;
+    padding: 6px 14px;
+    border-radius: 999px;
+  }
+
+  .type-ligne {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .numero-question {
+    font-size: .95rem;
+    font-weight: bold;
+    color: var(--violet-dark);
+    background: #f1edff;
+    padding: 6px 14px;
+    border-radius: 999px;
+  }
+
+  .question-texte {
+    font-size: 1.55rem;
+    line-height: 1.35;
+    font-weight: bold;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    text-align: left;
+    background: #f7f8fc;
+    border: 3px solid #e4e7f2;
+    border-radius: 16px;
+    padding: 14px 16px;
+    font-size: 1.08rem;
+    font-family: inherit;
+    color: var(--texte);
+    cursor: pointer;
+    transition: transform .12s ease, border-color .12s ease, background .12s ease;
+  }
+  .option:hover:not(.verrouillee) {
+    transform: translateY(-2px);
+    border-color: var(--violet);
+    background: #f0edff;
+  }
+  .option .lettre {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: var(--violet);
+    color: #fff;
+    font-weight: bold;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .option.choisie {
+    border-color: var(--violet);
+    background: #ede9ff;
+  }
+  .option.bonne {
+    border-color: var(--vert);
+    background: #e6fff7;
+  }
+  .option.bonne .lettre { background: var(--vert); }
+  .option.fausse {
+    border-color: var(--rouge);
+    background: #ffecec;
+  }
+  .option.fausse .lettre { background: var(--rouge); }
+  .option.verrouillee { cursor: default; }
+
+  .etiquette-reponse {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.15rem;
+    font-weight: bold;
+    padding: 10px 18px;
+    border-radius: 14px;
+    background: #e6fff7;
+    color: #00785f;
+  }
+  .etiquette-reponse.rate {
+    background: #ffecec;
+    color: #b0392e;
+  }
+
+  .explication {
+    background: #fff8e6;
+    border-left: 6px solid var(--jaune);
+    border-radius: 12px;
+    padding: 16px 18px;
+    font-size: 1.08rem;
+    line-height: 1.55;
+  }
+  .explication strong { color: #b07d17; }
+
+  .bloc-final {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+  }
+  .grand-score {
+    font-size: 3.2rem;
+    font-weight: bold;
+    color: var(--violet-dark);
+  }
+  .mention {
+    font-size: 1.35rem;
+    font-weight: bold;
+    padding: 10px 22px;
+    border-radius: 999px;
+    background: #f1edff;
+    color: var(--violet-dark);
+  }
+  .bareme {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .98rem;
+  }
+  .bareme th, .bareme td {
+    border: 1px solid #e4e7f2;
+    padding: 9px 12px;
+    text-align: left;
+  }
+  .bareme th { background: #f1edff; }
+
+  .zone-bonus {
+    width: 100%;
+    background: #eef6ff;
+    border: 2px dashed var(--fond2);
+    border-radius: 16px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: left;
+  }
+  .zone-bonus h3 { font-size: 1.15rem; }
+  .reponse-bonus {
+    display: none;
+    background: #fff;
+    border-radius: 10px;
+    padding: 12px 14px;
+    line-height: 1.5;
+    border-left: 5px solid var(--vert);
+  }
+
+  .navigation {
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    padding-bottom: 10px;
+  }
+  .bouton {
+    border: none;
+    border-radius: 999px;
+    padding: 15px 26px;
+    font-size: 1.08rem;
+    font-weight: bold;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform .12s ease, opacity .12s ease;
+  }
+  .bouton:hover { transform: translateY(-2px); }
+  .bouton:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+  .bouton.primaire {
+    background: var(--violet);
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(108, 92, 231, .4);
+    flex: 1;
+    max-width: 62%;
+  }
+  .bouton.secondaire {
+    background: rgba(255,255,255,.85);
+    color: var(--violet-dark);
+  }
+
+  .astuce-clavier {
+    color: rgba(255,255,255,.9);
+    font-size: .85rem;
+    text-align: center;
+    padding-bottom: 6px;
+  }
+  kbd {
+    background: rgba(255,255,255,.3);
+    border-radius: 6px;
+    padding: 1px 7px;
+    font-family: inherit;
+  }
+
+  .intro-liste {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 1.12rem;
+    line-height: 1.5;
+  }
+  .intro-liste li { list-style: none; background: #f7f8fc; border-radius: 12px; padding: 12px 16px; }
+
+  @media (max-width: 560px) {
+    .question-texte { font-size: 1.25rem; }
+    .carte { padding: 20px 16px; }
+    .bouton { padding: 13px 18px; font-size: 1rem; }
+    .bouton.primaire { max-width: 58%; }
+  }
+</style>
+</head>
+<body>
+  <div class="conteneur">
+    <header>
+      <h1>🔬 Le Grand QCM des Petits Génies de la Science</h1>
+      <div class="compteur" id="compteur">Bienvenue !</div>
+    </header>
+
+    <div class="barre-progression" aria-hidden="true">
+      <div class="rempli" id="progression"></div>
+    </div>
+
+    <main class="carte" id="carte" aria-live="polite"></main>
+
+    <div class="navigation">
+      <button class="bouton secondaire" id="btnPrecedent">← Précédent</button>
+      <button class="bouton primaire" id="btnSuivant">Commencer le quiz 🚀</button>
+    </div>
+
+    <p class="astuce-clavier">Astuce : utilise les flèches <kbd>←</kbd> <kbd>→</kbd> du clavier pour naviguer.</p>
+  </div>
+
+<script>
+"use strict";
+
+/* ---------------- Les questions du quiz ---------------- */
+
+const PARTIES = [
+  "🚀 Espace et astronomie",
+  "🧬 Le corps humain et le vivant",
+  "⚡ La physique et la matière",
+  "🌍 La Terre, la lumière et la chimie"
+];
+
+const QUESTIONS = [
+  {
+    partie: 0,
+    question: "Pourquoi a-t-on des saisons sur Terre ?",
+    options: [
+      { texte: "Parce que la Terre est inclinée sur son axe", correct: true },
+      { texte: "Parce que la Terre se rapproche du Soleil en été", correct: false },
+      { texte: "Parce que le Soleil devient plus chaud en été", correct: false },
+      { texte: "Parce que la Lune nous protège du froid en hiver", correct: false }
+    ],
+    explication: "C'est l'inclinaison de la Terre (23,5°) qui change l'ensoleillement au cours de l'année, pas la distance au Soleil. En décembre, l'hémisphère nord est incliné à l'opposé du Soleil : c'est l'hiver."
+  },
+  {
+    partie: 0,
+    question: "Combien de temps met la lumière du Soleil pour arriver jusqu'à nous ?",
+    options: [
+      { texte: "8 minutes", correct: true },
+      { texte: "8 secondes", correct: false },
+      { texte: "8 heures", correct: false },
+      { texte: "Instantanément", correct: false }
+    ],
+    explication: "La lumière parcourt environ 150 millions de km en 8 minutes (8 min 20 s exactement). Si le Soleil disparaissait, on ne le saurait que 8 minutes plus tard !"
+  },
+  {
+    partie: 0,
+    question: "Que devient une étoile très massive quand elle meurt, dans le cas le plus extrême ?",
+    options: [
+      { texte: "Un trou noir", correct: true },
+      { texte: "Une comète", correct: false },
+      { texte: "Une planète", correct: false },
+      { texte: "Une nébuleuse verte", correct: false }
+    ],
+    explication: "Une étoile très massive s'effondre sur elle-même à sa mort et peut former un trou noir, dont même la lumière ne peut pas s'échapper."
+  },
+  {
+    partie: 0,
+    question: "Pourquoi les astronautes flottent-ils à l'intérieur de la Station spatiale internationale ?",
+    options: [
+      { texte: "Parce qu'ils tombent en permanence autour de la Terre, tout comme la station", correct: true },
+      { texte: "Parce qu'il n'y a aucune gravité dans l'espace", correct: false },
+      { texte: "Parce que leurs combinaisons contiennent des aimants", correct: false },
+      { texte: "Parce que l'air de la station les pousse vers le haut", correct: false }
+    ],
+    explication: "Il y a bien de la gravité là-haut (environ 90 % de celle de la Terre !). Mais la station tombe en permanence autour de la Terre, et les astronautes tombent avec elle : c'est l'apesanteur."
+  },
+  {
+    partie: 0,
+    question: "Pourquoi voit-on la Lune briller la nuit ?",
+    options: [
+      { texte: "Elle reflète la lumière du Soleil", correct: true },
+      { texte: "Elle produit sa propre lumière", correct: false },
+      { texte: "Elle reflète la lumière des étoiles", correct: false },
+      { texte: "Elle brûle lentement comme un feu", correct: false }
+    ],
+    explication: "La Lune ne produit aucune lumière : elle réfléchit celle du Soleil, comme un miroir gris."
+  },
+  {
+    partie: 0,
+    question: "Quel objet contient la matière la plus dense que l'on connaisse ?",
+    options: [
+      { texte: "Une étoile à neutrons", correct: true },
+      { texte: "Le Soleil", correct: false },
+      { texte: "Un diamant géant", correct: false },
+      { texte: "Le cœur de la Terre", correct: false }
+    ],
+    explication: "Une cuillère à café de la matière d'une étoile à neutrons pèserait environ un milliard de tonnes sur Terre ! Un trou noir est un cas à part : sa masse est concentrée dans un point de densité « infinie », ce qu'on appelle une singularité. C'est pour cela que la réponse attendue est l'étoile à neutrons."
+  },
+  {
+    partie: 0,
+    question: "Quelle est l'étoile la plus proche de la Terre (après le Soleil) ?",
+    options: [
+      { texte: "Proxima du Centaure", correct: true },
+      { texte: "Sirius", correct: false },
+      { texte: "Bételgeuse", correct: false },
+      { texte: "Véga", correct: false }
+    ],
+    explication: "Proxima du Centaure, à environ 4,2 années-lumière. Sirius est bien plus loin (8,6 années-lumière)."
+  },
+  {
+    partie: 1,
+    question: "Quel élément les plantes captent-elles dans l'air pour fabriquer leur nourriture ?",
+    options: [
+      { texte: "Le dioxyde de carbone (CO₂)", correct: true },
+      { texte: "L'oxygène", correct: false },
+      { texte: "L'azote", correct: false },
+      { texte: "L'hélium", correct: false }
+    ],
+    explication: "Le CO₂ entre par de minuscules trous dans les feuilles (les stomates) pour fabriquer du sucre grâce à la lumière du Soleil."
+  },
+  {
+    partie: 1,
+    question: "Combien d'os possède le corps humain adulte ?",
+    options: [
+      { texte: "206", correct: true },
+      { texte: "106", correct: false },
+      { texte: "306", correct: false },
+      { texte: "506", correct: false }
+    ],
+    explication: "206 os chez l'adulte. Les bébés en ont bien plus (environ 270 à 300), car certains os fusionnent en grandissant."
+  },
+  {
+    partie: 1,
+    question: "Où se trouve l'ADN dans une cellule ?",
+    options: [
+      { texte: "Dans le noyau", correct: true },
+      { texte: "Dans la membrane", correct: false },
+      { texte: "Dans le cytoplasme uniquement", correct: false },
+      { texte: "Dans les mitochondries uniquement", correct: false }
+    ],
+    explication: "Dans le noyau de la cellule, sous forme de chromosomes."
+  },
+  {
+    partie: 1,
+    question: "Quel est le plus grand organe du corps humain ?",
+    options: [
+      { texte: "La peau", correct: true },
+      { texte: "Le foie", correct: false },
+      { texte: "Le cerveau", correct: false },
+      { texte: "L'intestin grêle", correct: false }
+    ],
+    explication: "La peau ! Chez un adulte, elle peut peser 3 à 4 kg et couvrir environ 2 m²."
+  },
+  {
+    partie: 1,
+    question: "À quoi servent les globules blancs ?",
+    options: [
+      { texte: "À se battre contre les microbes", correct: true },
+      { texte: "À transporter l'oxygène", correct: false },
+      { texte: "À faire coaguler le sang", correct: false },
+      { texte: "À transporter le sucre", correct: false }
+    ],
+    explication: "Ce sont les défenseurs du corps : ils attaquent virus, bactéries et corps étrangers."
+  },
+  {
+    partie: 1,
+    question: "Combien de temps faut-il environ à une goutte de sang pour faire le tour complet du corps humain ?",
+    options: [
+      { texte: "1 minute", correct: true },
+      { texte: "1 seconde", correct: false },
+      { texte: "1 heure", correct: false },
+      { texte: "24 heures", correct: false }
+    ],
+    explication: "Environ 1 minute (plutôt 45 à 60 secondes) pour faire tout le circuit sanguin."
+  },
+  {
+    partie: 1,
+    question: "Lequel de ces animaux est un mammifère ?",
+    options: [
+      { texte: "Le dauphin", correct: true },
+      { texte: "Le requin", correct: false },
+      { texte: "Le pingouin", correct: false },
+      { texte: "Le thon", correct: false }
+    ],
+    explication: "Le dauphin respire avec des poumons, allaite ses petits et a du sang chaud. Le requin et le thon sont des poissons, le pingouin est un oiseau."
+  },
+  {
+    partie: 1,
+    question: "Que produit la photosynthèse, en plus du sucre ?",
+    options: [
+      { texte: "De l'oxygène", correct: true },
+      { texte: "Du dioxyde de carbone", correct: false },
+      { texte: "De l'azote", correct: false },
+      { texte: "Du méthane", correct: false }
+    ],
+    explication: "La photosynthèse consomme du CO₂ et rejette de l'oxygène : c'est grâce aux plantes que l'on respire !"
+  },
+  {
+    partie: 2,
+    question: "Dans le vide de l'espace, que se passe-t-il si tu cries ?",
+    options: [
+      { texte: "Le son ne se propage pas du tout", correct: true },
+      { texte: "On t'entend très fort", correct: false },
+      { texte: "On t'entend très faiblement", correct: false },
+      { texte: "Le son se propage plus vite que dans l'air", correct: false }
+    ],
+    explication: "Le son a besoin d'un milieu (air, eau, solide) pour se propager : dans le vide, aucun son ne voyage."
+  },
+  {
+    partie: 2,
+    question: "Pourquoi un ballon se dégonfle-t-il un peu quand il fait très froid ?",
+    options: [
+      { texte: "L'air froid à l'intérieur occupe moins de place que l'air chaud", correct: true },
+      { texte: "Le caoutchouc devient poreux", correct: false },
+      { texte: "Le ballon fuit toujours un peu", correct: false },
+      { texte: "La gravité tire l'air vers le bas du ballon", correct: false }
+    ],
+    explication: "Quand l'air se refroidit, il se rétracte : il occupe moins de place que l'air chaud (les molécules s'agitent moins). Le ballon se dégonfle donc un peu. S'il se réchauffe, il reprend sa forme !"
+  },
+  {
+    partie: 2,
+    question: "Quelle est la vitesse de la lumière dans le vide ?",
+    options: [
+      { texte: "300 000 km/s", correct: true },
+      { texte: "340 km/s", correct: false },
+      { texte: "3 000 km/s", correct: false },
+      { texte: "3 000 000 km/s", correct: false }
+    ],
+    explication: "300 000 km par seconde : soit environ 7,5 fois le tour de la Terre... en une seule seconde."
+  },
+  {
+    partie: 2,
+    question: "Pourquoi la glace flotte-t-elle sur l'eau ?",
+    options: [
+      { texte: "Parce que la glace est moins dense que l'eau liquide", correct: true },
+      { texte: "Parce que la glace contient de l'air", correct: false },
+      { texte: "Parce que la glace est plus lourde", correct: false },
+      { texte: "Parce que l'eau liquide est en fait un gaz dissous", correct: false }
+    ],
+    explication: "En gelant, les molécules d'eau s'organisent en cristaux avec des « trous » : la glace est moins dense que l'eau liquide. C'est très rare dans la nature, et vital pour la vie : les lacs gèlent par le haut, les poissons survivent dessous."
+  },
+  {
+    partie: 2,
+    question: "Deux objets de masses différentes tombent d'une même hauteur, sans air autour. Lequel touche le sol en premier ?",
+    options: [
+      { texte: "Ils touchent le sol en même temps", correct: true },
+      { texte: "Le plus lourd", correct: false },
+      { texte: "Le plus léger", correct: false },
+      { texte: "Ça dépend de leur couleur", correct: false }
+    ],
+    explication: "Sans air, ils tombent en même temps. Galilée l'a montré : la masse ne change pas la vitesse de chute. Seul l'air freine les objets légers (une plume, par exemple)."
+  },
+  {
+    partie: 2,
+    question: "Quel est l'élément chimique le plus abondant dans l'univers observable ?",
+    options: [
+      { texte: "L'hydrogène", correct: true },
+      { texte: "L'oxygène", correct: false },
+      { texte: "Le carbone", correct: false },
+      { texte: "Le fer", correct: false }
+    ],
+    explication: "L'hydrogène : il représente environ 75 % de la matière visible de l'univers."
+  },
+  {
+    partie: 2,
+    question: "Un aimant attire...",
+    options: [
+      { texte: "Seulement certains métaux, comme le fer, le nickel et le cobalt", correct: true },
+      { texte: "Tous les métaux", correct: false },
+      { texte: "Le bois et le plastique", correct: false },
+      { texte: "L'eau", correct: false }
+    ],
+    explication: "Un aimant n'attire pas tous les métaux : l'aluminium ou le cuivre, par exemple, ne sont pas attirés. Seuls les matériaux ferromagnétiques (fer, nickel, cobalt...) le sont fortement."
+  },
+  {
+    partie: 2,
+    question: "Que devient l'eau quand elle passe de l'état liquide à l'état gazeux ?",
+    options: [
+      { texte: "Elle devient de la vapeur d'eau (un gaz invisible)", correct: true },
+      { texte: "Elle disparaît complètement", correct: false },
+      { texte: "Elle se transforme en CO₂", correct: false },
+      { texte: "Elle devient plus lourde", correct: false }
+    ],
+    explication: "L'eau devient vapeur d'eau, un gaz invisible : elle ne disparaît pas, elle reste dans l'air (c'est ce qui forme les nuages !)."
+  },
+  {
+    partie: 3,
+    question: "Quelle est la cause principale des tremblements de terre ?",
+    options: [
+      { texte: "Le déplacement des plaques tectoniques", correct: true },
+      { texte: "Le vent très fort", correct: false },
+      { texte: "Les marées", correct: false },
+      { texte: "Les éruptions volcaniques uniquement", correct: false }
+    ],
+    explication: "Les plaques tectoniques, ces immenses morceaux de la croûte terrestre, bougent très lentement et frottent les unes contre les autres. Quand elles se bloquent puis se libèrent d'un coup... ça secoue !"
+  },
+  {
+    partie: 3,
+    question: "Le diamant et la mine de crayon (graphite) sont faits du même élément. Lequel ?",
+    options: [
+      { texte: "Le carbone", correct: true },
+      { texte: "Le calcium", correct: false },
+      { texte: "Le silicium", correct: false },
+      { texte: "Le cuivre", correct: false }
+    ],
+    explication: "Dans le diamant, les atomes de carbone sont rangés en réseau très solide ; dans le graphite, en feuillets qui glissent les uns sur les autres. Mêmes atomes, organisation différente : propriétés opposées !"
+  },
+  {
+    partie: 3,
+    question: "Quel gaz est le principal responsable de l'effet de serre dû aux activités humaines ?",
+    options: [
+      { texte: "Le dioxyde de carbone (CO₂)", correct: true },
+      { texte: "L'oxygène", correct: false },
+      { texte: "L'hélium", correct: false },
+      { texte: "Le diazote (N₂)", correct: false }
+    ],
+    explication: "Le CO₂ (avec le méthane et la vapeur d'eau) piège une partie de la chaleur dans l'atmosphère. Il en faut un peu (sinon la Terre serait gelée), mais trop réchauffe la planète."
+  },
+  {
+    partie: 3,
+    question: "À quoi correspond un pH de 7 ?",
+    options: [
+      { texte: "Neutre (comme l'eau pure)", correct: true },
+      { texte: "Très acide", correct: false },
+      { texte: "Très basique (alcalin)", correct: false },
+      { texte: "Ça n'existe pas", correct: false }
+    ],
+    explication: "7 = neutre (eau pure). En dessous, c'est acide (citron ≈ 2, vinaigre ≈ 3). Au-dessus, c'est basique (savon ≈ 10, eau de javel ≈ 13)."
+  },
+  {
+    partie: 3,
+    question: "Pourquoi le ciel est-il bleu le jour ?",
+    options: [
+      { texte: "Parce que l'air diffuse surtout la lumière bleue dans toutes les directions", correct: true },
+      { texte: "Parce que l'océan est bleu et qu'il se reflète dans le ciel", correct: false },
+      { texte: "Parce que l'ozone est bleu", correct: false },
+      { texte: "Parce que le Soleil est bleu", correct: false }
+    ],
+    explication: "L'air diffuse la lumière bleue (qui a une petite longueur d'onde) dans toutes les directions, plus que les autres couleurs. Astuce : le violet est diffusé encore plus, mais nos yeux sont plus sensibles au bleu — et le Soleil émet moins de violet que de bleu."
+  },
+  {
+    partie: 3,
+    question: "Qu'est-ce qu'une année-lumière ?",
+    options: [
+      { texte: "Une distance : celle parcourue par la lumière en un an", correct: true },
+      { texte: "Une durée : le temps que met la lumière pour voyager", correct: false },
+      { texte: "Une vitesse : la vitesse de la lumière", correct: false },
+      { texte: "Un poids : la masse de la lumière", correct: false }
+    ],
+    explication: "Une année-lumière est une distance, pas une durée : c'est ce que la lumière parcourt en un an, soit environ 9 460 milliards de km."
+  },
+  {
+    partie: 3,
+    question: "Les anneaux de Saturne sont surtout composés de...",
+    options: [
+      { texte: "Glace, poussière et petits rochers", correct: true },
+      { texte: "Gaz brûlant", correct: false },
+      { texte: "Or et diamants", correct: false },
+      { texte: "Nuages colorés", correct: false }
+    ],
+    explication: "Des milliards de morceaux de glace, de poussière et de petits rochers, de la taille d'un grain de sable à une maison."
+  }
+];
+
+const BONUS = {
+  question: "Pourquoi voit-on le Soleil rouge au coucher, alors qu'il est jaune en pleine journée ?",
+  reponse: "Au coucher, la lumière du Soleil traverse beaucoup plus d'air pour arriver jusqu'à nos yeux. L'air disperse (éparpille) les couleurs bleues et vertes sur le trajet ; il ne reste surtout que le rouge, qui arrive jusqu'à nous. C'est la même raison pour laquelle le ciel est bleu le jour : l'air disperse surtout le bleu."
+};
+
+/* ---------------- Préparation des diapositives ---------------- */
+
+function melanger(liste) {
+  const copie = liste.slice();
+  for (let i = copie.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = copie[i];
+    copie[i] = copie[j];
+    copie[j] = tmp;
+  }
+  return copie;
+}
+
+// Ordre des propositions mélangé pour chaque question (la lettre change donc à chaque partie)
+QUESTIONS.forEach(function (q) {
+  q.optionsAffichees = melanger(q.options);
+  q.choix = null; // index de l'option choisie par l'enfant
+});
+
+const LETTRES = ["A", "B", "C", "D"];
+
+// Diapositives : intro, puis (question, réponse) × 30, puis l'écran final
+const DIAPOS = [{ type: "intro" }];
+QUESTIONS.forEach(function (q, i) {
+  DIAPOS.push({ type: "question", index: i });
+  DIAPOS.push({ type: "reponse", index: i });
+});
+DIAPOS.push({ type: "final" });
+
+let position = 0;
+
+/* ---------------- Éléments de la page ---------------- */
+
+const carte = document.getElementById("carte");
+const compteur = document.getElementById("compteur");
+const progression = document.getElementById("progression");
+const btnPrecedent = document.getElementById("btnPrecedent");
+const btnSuivant = document.getElementById("btnSuivant");
+
+function scoreActuel() {
+  let score = 0;
+  QUESTIONS.forEach(function (q) {
+    if (q.choix !== null && q.optionsAffichees[q.choix].correct) score++;
+  });
+  return score;
+}
+
+function mention(score) {
+  if (score >= 28) return { titre: "🧪 Prix Nobel en herbe", texte: "Franchement impressionnant !" };
+  if (score >= 23) return { titre: "🔬 Jeune scientifique", texte: "Très solide, encore quelques notions à explorer." };
+  if (score >= 16) return { titre: "🌱 Chercheur en herbe", texte: "Bonne base, continue à poser des questions !" };
+  return { titre: "🚀 Astronaute en formation", texte: "Chaque scientifique a commencé quelque part !" };
+}
+
+/* ---------------- Rendu des diapositives ---------------- */
+
+function rendreIntro() {
+  return `
+    <div class="type-ligne"><span class="badge-partie">🔬 Présentation</span></div>
+    <h2 class="question-texte">Prêt(e) pour le défi science ?</h2>
+    <ul class="intro-liste">
+      <li>📝 <strong>30 questions</strong> sur l'espace, le vivant, la physique et la Terre.</li>
+      <li>👀 Tu vois <strong>une question</strong>, puis sur l'écran suivant <strong>la réponse expliquée</strong>.</li>
+      <li>🖱️ Clique sur la bonne réponse avant de passer à la suite (c'est pour ton score, mais on ne voit rien tout de suite !).</li>
+      <li>🏆 À la fin : ton score, ta mention, et un <strong>défi bonus</strong>.</li>
+    </ul>
+    <div class="explication"><strong>Pas de triche !</strong> L'important, c'est de comprendre les explications. Même les scientifiques se trompent parfois... et c'est comme ça qu'on apprend.</div>`;
+}
+
+function rendreQuestion(i) {
+  const q = QUESTIONS[i];
+  let html = `
+    <div class="type-ligne">
+      <span class="badge-partie">${PARTIES[q.partie]}</span>
+      <span class="numero-question">Question ${i + 1} / ${QUESTIONS.length}</span>
+    </div>
+    <h2 class="question-texte">${q.question}</h2>
+    <div class="options">`;
+
+  q.optionsAffichees.forEach(function (opt, j) {
+    const choisie = q.choix === j ? " choisie" : "";
+    html += `
+      <button class="option${choisie}" data-option="${j}">
+        <span class="lettre">${LETTRES[j]}</span>
+        <span>${opt.texte}</span>
+      </button>`;
+  });
+
+  html += `
+    </div>
+    <div class="explication"><strong>Astuce :</strong> choisis ta réponse, puis clique sur « Voir la réponse » pour découvrir l'explication.</div>`;
+  return html;
+}
+
+function rendreReponse(i) {
+  const q = QUESTIONS[i];
+  const aChoisi = q.choix !== null;
+  const juste = aChoisi && q.optionsAffichees[q.choix].correct;
+
+  let etiquette;
+  if (!aChoisi) {
+    etiquette = `<div class="etiquette-reponse rate">🤔 Pas de réponse choisie pour cette question</div>`;
+  } else if (juste) {
+    etiquette = `<div class="etiquette-reponse">✅ Bravo, c'est correct !</div>`;
+  } else {
+    etiquette = `<div class="etiquette-reponse rate">❌ Pas tout à fait... on apprend avec ses erreurs !</div>`;
+  }
+
+  let html = `
+    <div class="type-ligne">
+      <span class="badge-partie">${PARTIES[q.partie]}</span>
+      <span class="numero-question">Réponse ${i + 1} / ${QUESTIONS.length}</span>
+    </div>
+    ${etiquette}
+    <h2 class="question-texte">${q.question}</h2>
+    <div class="options">`;
+
+  q.optionsAffichees.forEach(function (opt, j) {
+    let classe = "option verrouillee";
+    if (opt.correct) {
+      classe += " bonne";
+    } else if (q.choix === j) {
+      classe += " fausse";
+    }
+    html += `
+      <div class="${classe}">
+        <span class="lettre">${LETTRES[j]}</span>
+        <span>${opt.texte}</span>
+      </div>`;
+  });
+
+  html += `
+    </div>
+    <div class="explication"><strong>Pourquoi ?</strong> ${q.explication}</div>`;
+  return html;
+}
+
+function rendreFinal() {
+  const score = scoreActuel();
+  const m = mention(score);
+  return `
+    <div class="bloc-final">
+      <div class="type-ligne"><span class="badge-partie">🏆 Résultat final</span></div>
+      <div class="grand-score">${score} / ${QUESTIONS.length}</div>
+      <div class="mention">${m.titre}</div>
+      <p style="font-size:1.15rem; line-height:1.5;">${m.texte}</p>
+      <table class="bareme">
+        <tr><th>Score</th><th>Niveau</th></tr>
+        <tr><td>28–30</td><td>🧪 Prix Nobel en herbe</td></tr>
+        <tr><td>23–27</td><td>🔬 Jeune scientifique</td></tr>
+        <tr><td>16–22</td><td>🌱 Chercheur en herbe</td></tr>
+        <tr><td>0–15</td><td>🚀 Astronaute en formation</td></tr>
+      </table>
+      <div class="zone-bonus">
+        <h3>🌟 Défi bonus (pour les plus rapides)</h3>
+        <p>${BONUS.question}</p>
+        <button class="bouton secondaire" id="btnBonus">Voir la réponse du bonus</button>
+        <div class="reponse-bonus" id="reponseBonus"><strong>Réponse :</strong> ${BONUS.reponse}</div>
+      </div>
+      <button class="bouton primaire" id="btnRecommencer" style="max-width:100%;">🔄 Recommencer le quiz</button>
+    </div>`;
+}
+
+function rendre() {
+  const dia = DIAPOS[position];
+
+  if (dia.type === "intro") {
+    carte.innerHTML = rendreIntro();
+    compteur.textContent = "Bienvenue !";
+  } else if (dia.type === "question") {
+    carte.innerHTML = rendreQuestion(dia.index);
+    compteur.textContent = "Question " + (dia.index + 1) + " / " + QUESTIONS.length;
+    carte.querySelectorAll(".option").forEach(function (bouton) {
+      bouton.addEventListener("click", function () {
+        QUESTIONS[dia.index].choix = parseInt(bouton.getAttribute("data-option"), 10);
+        rendre();
+      });
+    });
+  } else if (dia.type === "reponse") {
+    carte.innerHTML = rendreReponse(dia.index);
+    compteur.textContent = "Réponse " + (dia.index + 1) + " / " + QUESTIONS.length;
+  } else {
+    carte.innerHTML = rendreFinal();
+    compteur.textContent = "Terminé !";
+    const btnBonus = document.getElementById("btnBonus");
+    btnBonus.addEventListener("click", function () {
+      const bloc = document.getElementById("reponseBonus");
+      bloc.style.display = "block";
+      btnBonus.style.display = "none";
+    });
+    document.getElementById("btnRecommencer").addEventListener("click", recommencer);
+  }
+
+  // Barre de progression : intro = 0 %, écran final = 100 %
+  const pourcentage = Math.round((position / (DIAPOS.length - 1)) * 100);
+  progression.style.width = pourcentage + "%";
+
+  // Bouton précédent
+  btnPrecedent.disabled = position === 0;
+
+  // Libellé du bouton suivant
+  if (dia.type === "intro") {
+    btnSuivant.textContent = "Commencer le quiz 🚀";
+    btnSuivant.style.display = "";
+  } else if (dia.type === "question") {
+    btnSuivant.textContent = "Voir la réponse →";
+    btnSuivant.style.display = "";
+  } else if (dia.type === "reponse") {
+    const derniere = dia.index === QUESTIONS.length - 1;
+    btnSuivant.textContent = derniere ? "Voir mon score 🏆" : "Question suivante →";
+    btnSuivant.style.display = "";
+  } else {
+    btnSuivant.style.display = "none";
+  }
+
+  carte.scrollTop = 0;
+}
+
+function avancer() {
+  if (position < DIAPOS.length - 1) {
+    position++;
+    rendre();
+  }
+}
+
+function reculer() {
+  if (position > 0) {
+    position--;
+    rendre();
+  }
+}
+
+function recommencer() {
+  QUESTIONS.forEach(function (q) { q.choix = null; });
+  position = 0;
+  rendre();
+}
+
+/* ---------------- Événements ---------------- */
+
+btnSuivant.addEventListener("click", avancer);
+btnPrecedent.addEventListener("click", reculer);
+
+document.addEventListener("keydown", function (e) {
+  if (e.key === "ArrowRight" || e.key === " ") {
+    if (DIAPOS[position].type !== "final" && btnSuivant.style.display !== "none") {
+      e.preventDefault();
+      avancer();
+    }
+  } else if (e.key === "ArrowLeft") {
+    e.preventDefault();
+    reculer();
+  }
+});
+
+rendre();
+</script>
+</body>
+</html>
