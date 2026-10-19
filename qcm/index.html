@@ -202,6 +202,11 @@
     line-height: 1.55;
   }
   .explication strong { color: #b07d17; }
+  .explication.erreur {
+    background: #ffecec;
+    border-left-color: var(--rouge);
+  }
+  .explication.erreur strong { color: #b0392e; }
 
   .bloc-final {
     text-align: center;
@@ -346,18 +351,22 @@ const PARTIES = [
   "🚀 Espace et astronomie",
   "🧬 Le corps humain et le vivant",
   "⚡ La physique et la matière",
-  "🌍 La Terre, la lumière et la chimie"
+  "🌍 La Terre, la lumière et la chimie",
+  "🌱 L'écologie et l'environnement",
+  "🧮 Les maths, l'informatique et la technologie"
 ];
 
+// Chaque proposition fausse porte un « pourquoi » : il est montré à l'enfant
+// sur l'écran de réponse, pour expliquer SON erreur en particulier.
 const QUESTIONS = [
   {
     partie: 0,
     question: "Pourquoi a-t-on des saisons sur Terre ?",
     options: [
       { texte: "Parce que la Terre est inclinée sur son axe", correct: true },
-      { texte: "Parce que la Terre se rapproche du Soleil en été", correct: false },
-      { texte: "Parce que le Soleil devient plus chaud en été", correct: false },
-      { texte: "Parce que la Lune nous protège du froid en hiver", correct: false }
+      { texte: "Parce que la Terre se rapproche du Soleil en été", correct: false, pourquoi: "C'est même le contraire : la Terre est légèrement plus loin du Soleil en juillet !" },
+      { texte: "Parce que le Soleil devient plus chaud en été", correct: false, pourquoi: "Le Soleil ne change pas : c'est la Terre qui tourne inclinée autour de lui." },
+      { texte: "Parce que la Lune nous protège du froid en hiver", correct: false, pourquoi: "La Lune n'a aucune action sur la température sur Terre." }
     ],
     explication: "C'est l'inclinaison de la Terre (23,5°) qui change l'ensoleillement au cours de l'année, pas la distance au Soleil. En décembre, l'hémisphère nord est incliné à l'opposé du Soleil : c'est l'hiver."
   },
@@ -366,20 +375,20 @@ const QUESTIONS = [
     question: "Combien de temps met la lumière du Soleil pour arriver jusqu'à nous ?",
     options: [
       { texte: "8 minutes", correct: true },
-      { texte: "8 secondes", correct: false },
-      { texte: "8 heures", correct: false },
-      { texte: "Instantanément", correct: false }
+      { texte: "8 secondes", correct: false, pourquoi: "C'est 60 fois trop court : la lumière met 499 secondes à faire le trajet." },
+      { texte: "8 heures", correct: false, pourquoi: "8 heures, c'est le temps d'un long voyage en voiture, pas celui d'un rayon de lumière !" },
+      { texte: "Instantanément", correct: false, pourquoi: "Même la lumière met du temps : rien ne va plus vite qu'elle, mais elle n'est pas instantanée." }
     ],
-    explication: "La lumière parcourt environ 150 millions de km en 8 minutes (8 min 20 s exactement). Si le Soleil disparaissait, on ne le saurait que 8 minutes plus tard !"
+    explication: "La lumière parcourt les 150 millions de km qui nous séparent du Soleil en 8 minutes et 19 secondes exactement (499 secondes). Si le Soleil disparaissait, on ne le saurait que 8 minutes plus tard !"
   },
   {
     partie: 0,
     question: "Que devient une étoile très massive quand elle meurt, dans le cas le plus extrême ?",
     options: [
       { texte: "Un trou noir", correct: true },
-      { texte: "Une comète", correct: false },
-      { texte: "Une planète", correct: false },
-      { texte: "Une nébuleuse verte", correct: false }
+      { texte: "Une comète", correct: false, pourquoi: "Une comète est un bloc de glace qui tourne autour du Soleil, pas un reste d'étoile." },
+      { texte: "Une planète", correct: false, pourquoi: "Les planètes ne naissent pas de la mort d'une étoile." },
+      { texte: "Une nébuleuse verte", correct: false, pourquoi: "Une nébuleuse est un nuage de gaz, pas un objet compact comme ce que devient une étoile morte." }
     ],
     explication: "Une étoile très massive s'effondre sur elle-même à sa mort et peut former un trou noir, dont même la lumière ne peut pas s'échapper."
   },
@@ -388,20 +397,20 @@ const QUESTIONS = [
     question: "Pourquoi les astronautes flottent-ils à l'intérieur de la Station spatiale internationale ?",
     options: [
       { texte: "Parce qu'ils tombent en permanence autour de la Terre, tout comme la station", correct: true },
-      { texte: "Parce qu'il n'y a aucune gravité dans l'espace", correct: false },
-      { texte: "Parce que leurs combinaisons contiennent des aimants", correct: false },
-      { texte: "Parce que l'air de la station les pousse vers le haut", correct: false }
+      { texte: "Parce qu'il n'y a aucune gravité dans l'espace", correct: false, pourquoi: "Faux : à 400 km d'altitude, la gravité est encore environ 88 % de celle de la surface !" },
+      { texte: "Parce que leurs combinaisons contiennent des aimants", correct: false, pourquoi: "Les combinaisons n'ont pas d'aimants, et l'apesanteur règne aussi sans combinaison." },
+      { texte: "Parce que l'air de la station les pousse vers le haut", correct: false, pourquoi: "L'air pousse dans toutes les directions, jamais vers le haut uniquement." }
     ],
-    explication: "Il y a bien de la gravité là-haut (environ 90 % de celle de la Terre !). Mais la station tombe en permanence autour de la Terre, et les astronautes tombent avec elle : c'est l'apesanteur."
+    explication: "Il y a bien de la gravité là-haut (environ 88 % de celle de la surface !). Mais la station tombe en permanence autour de la Terre, et les astronautes tombent avec elle : c'est l'apesanteur."
   },
   {
     partie: 0,
     question: "Pourquoi voit-on la Lune briller la nuit ?",
     options: [
       { texte: "Elle reflète la lumière du Soleil", correct: true },
-      { texte: "Elle produit sa propre lumière", correct: false },
-      { texte: "Elle reflète la lumière des étoiles", correct: false },
-      { texte: "Elle brûle lentement comme un feu", correct: false }
+      { texte: "Elle produit sa propre lumière", correct: false, pourquoi: "Seules les étoiles produisent leur propre lumière, pas les lunes ni les planètes." },
+      { texte: "Elle reflète la lumière des étoiles", correct: false, pourquoi: "Les étoiles sont bien trop loin : c'est la lumière du Soleil, tout près, qui éclaire la Lune." },
+      { texte: "Elle brûle lentement comme un feu", correct: false, pourquoi: "La Lune est un monde de roche froide : elle ne brûle pas." }
     ],
     explication: "La Lune ne produit aucune lumière : elle réfléchit celle du Soleil, comme un miroir gris."
   },
@@ -410,31 +419,207 @@ const QUESTIONS = [
     question: "Quel objet contient la matière la plus dense que l'on connaisse ?",
     options: [
       { texte: "Une étoile à neutrons", correct: true },
-      { texte: "Le Soleil", correct: false },
-      { texte: "Un diamant géant", correct: false },
-      { texte: "Le cœur de la Terre", correct: false }
+      { texte: "Le Soleil", correct: false, pourquoi: "Le Soleil est immense mais gazeux : sa densité est même inférieure à celle de l'eau." },
+      { texte: "Un diamant géant", correct: false, pourquoi: "Le diamant est dense pour une pierre, mais des milliards de fois moins qu'une étoile à neutrons." },
+      { texte: "Le cœur de la Terre", correct: false, pourquoi: "Le cœur de la Terre est du fer très dense... mais rien à voir avec une étoile à neutrons." }
     ],
-    explication: "Une cuillère à café de la matière d'une étoile à neutrons pèserait environ un milliard de tonnes sur Terre ! Un trou noir est un cas à part : sa masse est concentrée dans un point de densité « infinie », ce qu'on appelle une singularité. C'est pour cela que la réponse attendue est l'étoile à neutrons."
+    explication: "Une cuillère à café de la matière d'une étoile à neutrons pèserait environ deux milliards de tonnes sur Terre ! Un trou noir est un cas à part : sa masse est concentrée dans un point de densité « infinie », ce qu'on appelle une singularité. C'est pour cela que la réponse attendue est l'étoile à neutrons."
   },
   {
     partie: 0,
     question: "Quelle est l'étoile la plus proche de la Terre (après le Soleil) ?",
     options: [
       { texte: "Proxima du Centaure", correct: true },
-      { texte: "Sirius", correct: false },
-      { texte: "Bételgeuse", correct: false },
-      { texte: "Véga", correct: false }
+      { texte: "Sirius", correct: false, pourquoi: "Sirius est l'étoile la plus brillante de notre ciel de nuit, mais elle est 2 fois plus loin (8,6 années-lumière)." },
+      { texte: "Bételgeuse", correct: false, pourquoi: "Bételgeuse est une géante rouge située à des centaines d'années-lumière." },
+      { texte: "Véga", correct: false, pourquoi: "Véga est une belle étoile brillante, mais elle est à 25 années-lumière." }
     ],
     explication: "Proxima du Centaure, à environ 4,2 années-lumière. Sirius est bien plus loin (8,6 années-lumière)."
+  },
+  {
+    partie: 0,
+    question: "Combien de planètes compte notre système solaire ?",
+    options: [
+      { texte: "8", correct: true },
+      { texte: "5", correct: false, pourquoi: "Trop peu : de Mercure à Neptune, on en compte déjà 8 !" },
+      { texte: "12", correct: false, pourquoi: "Trop : depuis que Pluton est classée planète naine, il n'y en a que 8." },
+      { texte: "103", correct: false, pourquoi: "Les planètes naines sont bien plus nombreuses, mais les grandes planètes ne sont que 8." }
+    ],
+    explication: "8 planètes : Mercure, Vénus, Terre, Mars, Jupiter, Saturne, Uranus et Neptune. Pluton est trop petite : depuis 2006, c'est une « planète naine »."
+  },
+  {
+    partie: 0,
+    question: "Quel est le plus grand volcan connu du système solaire ?",
+    options: [
+      { texte: "Olympus Mons, sur Mars", correct: true },
+      { texte: "Le Mauna Loa, à Hawaï", correct: false, pourquoi: "C'est le plus grand volcan de la Terre, mais il est deux fois moins haut qu'Olympus Mons." },
+      { texte: "Le Vésuve, en Italie", correct: false, pourquoi: "Le Vésuve est célèbre pour avoir enseveli Pompéi, mais il ne mesure « que » 1 280 m de haut." },
+      { texte: "Un volcan de Vénus", correct: false, pourquoi: "Vénus a des volcans, mais aucun n'approche la taille colossale d'Olympus Mons." }
+    ],
+    explication: "Olympus Mons, sur Mars, mesure environ 22 km de haut — près de deux fois et demie la hauteur de l'Everest — et 600 km de large, avec des pentes si douces que tu pourrais y marcher sans voir le sommet. Il a pu devenir si géant parce que la croûte de Mars ne bouge pas : le volcan est resté assis au même endroit pendant des millions d'années."
+  },
+  {
+    partie: 0,
+    question: "Que se passe-t-il pendant une éclipse de Soleil ?",
+    options: [
+      { texte: "La Lune passe entre la Terre et le Soleil", correct: true },
+      { texte: "La Terre passe entre la Lune et le Soleil", correct: false, pourquoi: "C'est une éclipse de Lune : la Lune passe alors dans l'ombre de la Terre." },
+      { texte: "Le Soleil s'éteint pendant quelques minutes", correct: false, pourquoi: "Le Soleil ne s'éteint jamais : c'est son ombre qui passe sur nous." },
+      { texte: "Une comète vient masquer le Soleil", correct: false, pourquoi: "Les comètes sont bien trop petites et bien trop loin pour cacher le Soleil." }
+    ],
+    explication: "La Lune se glisse devant le Soleil et projette son ombre sur la Terre. Quand c'est la Terre qui passe entre le Soleil et la Lune, c'est une éclipse de Lune."
+  },
+  {
+    partie: 0,
+    question: "Pourquoi Mars est-elle surnommée la « planète rouge » ?",
+    options: [
+      { texte: "Parce que son sol est riche en oxyde de fer, c'est de la rouille", correct: true },
+      { texte: "Parce qu'elle est recouverte de feux géants", correct: false, pourquoi: "Mars est un monde froid et mort : il n'y a pas de feu à sa surface." },
+      { texte: "Parce qu'elle est très proche du Soleil", correct: false, pourquoi: "Mars est même plus loin du Soleil que la Terre." },
+      { texte: "Parce que ses nuages sont rouges", correct: false, pourquoi: "Ses nuages sont pâles et minces : c'est le sol qui est rouge." }
+    ],
+    explication: "Son sol contient beaucoup d'oxyde de fer... exactement de la rouille, comme sur un vieux vélo !"
+  },
+  {
+    partie: 0,
+    question: "Comment s'appelle la galaxie dans laquelle se trouve la Terre ?",
+    options: [
+      { texte: "La Voie lactée", correct: true },
+      { texte: "Andromède", correct: false, pourquoi: "Andromède est une autre galaxie, la voisine de la nôtre." },
+      { texte: "Orion", correct: false, pourquoi: "Orion est une constellation : un dessin d'étoiles de notre ciel." },
+      { texte: "La Grande Ourse", correct: false, pourquoi: "La Grande Ourse est aussi une constellation, pas une galaxie." }
+    ],
+    explication: "Nous vivons dans la Voie lactée, une immense spirale de plus de 100 milliards d'étoiles. Andromède est une autre galaxie, la plus proche de la nôtre."
+  },
+  {
+    partie: 0,
+    question: "Qui a marché le premier sur la Lune ?",
+    options: [
+      { texte: "Neil Armstrong", correct: true },
+      { texte: "Youri Gagarine", correct: false, pourquoi: "Gagarine a été le premier humain dans l'espace (1961), mais il n'est jamais allé sur la Lune." },
+      { texte: "Thomas Pesquet", correct: false, pourquoi: "Thomas Pesquet est un astronaute français qui a vécu dans la station spatiale." },
+      { texte: "Galilée", correct: false, pourquoi: "Galilée a observé la Lune avec sa lunette... plus de 350 ans avant les missions Apollo !" }
+    ],
+    explication: "En juillet 1969, Neil Armstrong a posé le premier pied sur la Lune (mission Apollo 11). Youri Gagarine a été le premier humain dans l'espace, et Thomas Pesquet est un astronaute français contemporain."
+  },
+  {
+    partie: 0,
+    question: "Qu'est-ce qu'une comète ?",
+    options: [
+      { texte: "Un bloc de glace et de poussière qui tourne autour du Soleil", correct: true },
+      { texte: "Une étoile qui tombe du ciel", correct: false, pourquoi: "Une « étoile filante » est un grain de poussière qui brûle dans l'atmosphère." },
+      { texte: "Un morceau détaché de la Lune", correct: false, pourquoi: "Les comètes viennent du fond du système solaire, pas de la Lune." },
+      { texte: "Un nuage de feu dans l'espace", correct: false, pourquoi: "Une comète est glacée ; sa belle queue est faite de gaz et de poussière." }
+    ],
+    explication: "Une comète est un gros « boulet de neige sale ». Quand elle approche du Soleil, sa glace se transforme en gaz et lui fait une magnifique queue brillante."
+  },
+  {
+    partie: 0,
+    question: "Pourquoi les étoiles semblent-elles scintiller la nuit ?",
+    options: [
+      { texte: "Parce que leur lumière traverse l'air, qui bouge sans arrêt", correct: true },
+      { texte: "Parce qu'elles s'allument et s'éteignent vraiment", correct: false, pourquoi: "Une étoile brille sans interruption pendant des millions d'années." },
+      { texte: "Parce qu'elles tremblent dans le ciel", correct: false, pourquoi: "Elles sont immenses et fixes : c'est leur lumière qui tremble, pas elles." },
+      { texte: "Parce que la Lune les fait clignoter", correct: false, pourquoi: "La Lune n'a aucune action sur la lumière des étoiles." }
+    ],
+    explication: "Notre atmosphère est en mouvement et dévie un peu la lumière des étoiles : on dirait qu'elles clignotent. Vu depuis l'espace, elles ne scintillent pas du tout."
+  },
+  {
+    partie: 0,
+    question: "Pourquoi la Lune change-t-elle de forme au cours du mois ?",
+    options: [
+      { texte: "Parce qu'on voit une partie différente de sa face éclairée par le Soleil", correct: true },
+      { texte: "Parce qu'elle se déforme comme une boule de pâte", correct: false, pourquoi: "La Lune est un globe de roche solide : elle ne change jamais de forme, seulement d'éclairage." },
+      { texte: "Parce qu'un nuage passe devant elle", correct: false, pourquoi: "Un nuage peut masquer la Lune, mais il ne lui donne pas une forme de croissant." },
+      { texte: "Parce qu'elle tourne très vite sur elle-même", correct: false, pourquoi: "La Lune met un mois à faire un tour sur elle-même : ce n'est pas cela qui fait apparaître les phases." }
+    ],
+    explication: "La Lune ne produit pas de lumière : elle reflète celle du Soleil. Selon sa position autour de la Terre, on voit une petite ou une grande partie de sa face éclairée : croissant, demi-Lune, pleine Lune... ce sont les phases de la Lune."
+  },
+  {
+    partie: 0,
+    question: "Quelle est la planète la plus chaude du système solaire ?",
+    options: [
+      { texte: "Vénus, avec environ 460 °C en surface", correct: true },
+      { texte: "Mercure, pourtant la plus proche du Soleil", correct: false, pourquoi: "Mercure est plus proche du Soleil, mais elle n'a presque pas d'atmosphère pour garder la chaleur." },
+      { texte: "Mars, à cause de ses grands volcans", correct: false, pourquoi: "Ses volcans sont éteints depuis longtemps : Mars est même une planète froide (environ −60 °C)." },
+      { texte: "Jupiter, parce qu'elle est énorme", correct: false, pourquoi: "Sa taille ne fait pas sa chaleur : très loin du Soleil, la haute atmosphère de Jupiter est glacée (environ −140 °C)." }
+    ],
+    explication: "Vénus ! Son atmosphère très épaisse piège la chaleur, comme une couverture géante : il y fait environ 460 °C, jour et nuit, alors que Mercure n'a qu'une fine enveloppe de gaz."
+  },
+  {
+    partie: 0,
+    question: "Quand on observe une étoile très lointaine, que voit-on en réalité ?",
+    options: [
+      { texte: "Son passé : sa lumière a mis des années, voire des millions d'années, à nous arriver", correct: true },
+      { texte: "Son présent, car la lumière arrive instantanément", correct: false, pourquoi: "La lumière est rapide, mais pas instantanée : elle met des années à franchir ces distances." },
+      { texte: "Une des planètes qui tournent autour d'elle", correct: false, pourquoi: "Même nos meilleurs télescopes ne voient presque jamais les planètes des autres étoiles comme des points clairs." },
+      { texte: "Juste une illusion créée par notre atmosphère", correct: false, pourquoi: "L'atmosphère fait scintiller les étoiles, mais elles existent bien : leur lumière nous parvient vraiment." }
+    ],
+    explication: "La lumière voyage à environ 300 000 km/s, mais les étoiles sont si loin que leur lumière met des années à nous arriver. Regarder le ciel, c'est regarder dans le passé !"
+  },
+  {
+    partie: 0,
+    question: "Quelle planète tourne si lentement sur elle-même qu'un tour complet dure plus longtemps qu'un tour autour du Soleil ?",
+    options: [
+      { texte: "Vénus : 243 jours pour tourner sur elle-même, 225 jours autour du Soleil", correct: true },
+      { texte: "Mercure", correct: false, pourquoi: "Mercure tourne très lentement aussi (59 jours pour un tour), mais son année ne dure que 88 jours : elle va plus vite autour du Soleil." },
+      { texte: "Mars", correct: false, pourquoi: "Une journée sur Mars dure 24 h 37, presque comme sur Terre : très loin de son année de 687 jours." },
+      { texte: "Jupiter", correct: false, pourquoi: "C'est même l'inverse : Jupiter tourne si vite qu'une journée n'y dure que 10 heures, pour une année de 12 ans." }
+    ],
+    explication: "Vénus tourne si lentement qu'elle met 243 jours terrestres pour faire un tour sur elle-même... alors qu'elle fait le tour du Soleil en seulement 225 jours ! En plus, elle tourne à l'envers des autres planètes : sur Vénus, le Soleil se lève à l'ouest."
+  },
+  {
+    partie: 0,
+    question: "À quoi sert un télescope spatial comme Hubble ou James Webb ?",
+    options: [
+      { texte: "À capter la lumière des objets très lointains pour voir au plus profond de l'espace", correct: true },
+      { texte: "À photographier la Terre en très gros plan", correct: false, pourquoi: "Ce sont les satellites d'observation de la Terre qui font ce travail." },
+      { texte: "À emmener des astronautes plus loin", correct: false, pourquoi: "Ce sont des observatoires, pas des fusées : ils ne transportent personne." },
+      { texte: "À écouter les sons des autres planètes", correct: false, pourquoi: "Dans le vide de l'espace, le son ne se propage pas : il n'y a rien à écouter." }
+    ],
+    explication: "Au-dessus des nuages et de l'atmosphère, ces télescopes captent la lumière venue de très loin (parfois l'infrarouge, invisible à l'œil) : ils nous montrent des galaxies vieilles de milliards d'années."
+  },
+  {
+    partie: 0,
+    question: "Le Soleil, c'est quoi exactement ?",
+    options: [
+      { texte: "Une étoile : une énorme boule de gaz très chaude, comme des milliards d'autres dans l'univers", correct: true },
+      { texte: "Une planète géante en feu", correct: false, pourquoi: "Une planète tourne autour d'une étoile ; le Soleil, lui, est l'étoile autour de laquelle tout tourne." },
+      { texte: "Une boule de lave en fusion", correct: false, pourquoi: "La lave vient du manteau des planètes ; le Soleil est fait de gaz portés à très haute température." },
+      { texte: "Un nuage de lumière sans matière", correct: false, pourquoi: "Le Soleil a une masse énorme : sa gravité tient tout le système solaire ensemble." }
+    ],
+    explication: "Le Soleil est une étoile de taille moyenne, une boule de gaz (surtout de l'hydrogène) si chaude qu'elle brille. Les autres étoiles sont des soleils... mais beaucoup plus loin !"
+  },
+  {
+    partie: 0,
+    question: "Quelle planète est la plus proche du Soleil ?",
+    options: [
+      { texte: "Mercure", correct: true },
+      { texte: "Vénus", correct: false, pourquoi: "Vénus est la deuxième planète, juste après Mercure." },
+      { texte: "La Terre", correct: false, pourquoi: "La Terre est la troisième : deux planètes se trouvent entre elle et le Soleil." },
+      { texte: "Mars", correct: false, pourquoi: "Mars est la quatrième planète : le Soleil y paraît déjà plus petit." }
+    ],
+    explication: "Mercure est la plus proche du Soleil : son année (un tour complet autour du Soleil) ne dure que 88 jours terrestres ! Sur Mercure, l'année passe plus vite que le mois sur Terre."
+  },
+  {
+    partie: 0,
+    question: "Quelle planète tourne presque couchée sur le côté ?",
+    options: [
+      { texte: "Uranus", correct: true },
+      { texte: "Vénus", correct: false, pourquoi: "Vénus tourne très lentement, et dans le sens inverse de la plupart des planètes... mais elle est droite sur son axe." },
+      { texte: "Saturne", correct: false, pourquoi: "Saturne tourne droite, avec ses célèbres anneaux autour d'elle." },
+      { texte: "Mercure", correct: false, pourquoi: "Mercure tourne droite aussi : c'est Uranus qui est inclinée à près de 98°." }
+    ],
+    explication: "Uranus est inclinée à presque 98° : elle « roule » sur son orbite, sans doute après un choc géant dans son passé. Résultat, ses saisons sont très étranges : 42 ans de jour puis 42 ans de nuit à chaque pôle."
   },
   {
     partie: 1,
     question: "Quel élément les plantes captent-elles dans l'air pour fabriquer leur nourriture ?",
     options: [
       { texte: "Le dioxyde de carbone (CO₂)", correct: true },
-      { texte: "L'oxygène", correct: false },
-      { texte: "L'azote", correct: false },
-      { texte: "L'hélium", correct: false }
+      { texte: "L'oxygène", correct: false, pourquoi: "C'est le contraire : les plantes rejettent de l'oxygène." },
+      { texte: "L'azote", correct: false, pourquoi: "L'azote est le gaz principal de l'air, mais les plantes ne s'en servent pas pour fabriquer leur sucre." },
+      { texte: "L'hélium", correct: false, pourquoi: "L'hélium est très rare dans l'air et ne sert pas aux plantes." }
     ],
     explication: "Le CO₂ entre par de minuscules trous dans les feuilles (les stomates) pour fabriquer du sucre grâce à la lumière du Soleil."
   },
@@ -443,9 +628,9 @@ const QUESTIONS = [
     question: "Combien d'os possède le corps humain adulte ?",
     options: [
       { texte: "206", correct: true },
-      { texte: "106", correct: false },
-      { texte: "306", correct: false },
-      { texte: "506", correct: false }
+      { texte: "106", correct: false, pourquoi: "Bien trop peu : même un bébé en a bien plus que ça." },
+      { texte: "306", correct: false, pourquoi: "C'est presque le nombre d'os d'un bébé (270 à 300), pas celui d'un adulte." },
+      { texte: "506", correct: false, pourquoi: "Aucun humain n'a autant d'os." }
     ],
     explication: "206 os chez l'adulte. Les bébés en ont bien plus (environ 270 à 300), car certains os fusionnent en grandissant."
   },
@@ -454,9 +639,9 @@ const QUESTIONS = [
     question: "Où se trouve l'ADN dans une cellule ?",
     options: [
       { texte: "Dans le noyau", correct: true },
-      { texte: "Dans la membrane", correct: false },
-      { texte: "Dans le cytoplasme uniquement", correct: false },
-      { texte: "Dans les mitochondries uniquement", correct: false }
+      { texte: "Dans la membrane", correct: false, pourquoi: "La membrane entoure la cellule : elle ne contient pas l'ADN." },
+      { texte: "Dans le cytoplasme uniquement", correct: false, pourquoi: "Le cytoplasme est le liquide de la cellule ; l'ADN est rangé dans le noyau." },
+      { texte: "Dans les mitochondries uniquement", correct: false, pourquoi: "Les mitochondries ont un tout petit peu d'ADN, mais l'essentiel se trouve dans le noyau." }
     ],
     explication: "Dans le noyau de la cellule, sous forme de chromosomes."
   },
@@ -465,9 +650,9 @@ const QUESTIONS = [
     question: "Quel est le plus grand organe du corps humain ?",
     options: [
       { texte: "La peau", correct: true },
-      { texte: "Le foie", correct: false },
-      { texte: "Le cerveau", correct: false },
-      { texte: "L'intestin grêle", correct: false }
+      { texte: "Le foie", correct: false, pourquoi: "Le foie est le plus grand organe interne, mais la peau couvre tout le corps." },
+      { texte: "Le cerveau", correct: false, pourquoi: "Le cerveau est impressionnant, mais il pèse environ 1,4 kg : bien moins que la peau." },
+      { texte: "L'intestin grêle", correct: false, pourquoi: "L'intestin grêle est très long (environ 7 m), mais ce n'est pas le plus grand organe." }
     ],
     explication: "La peau ! Chez un adulte, elle peut peser 3 à 4 kg et couvrir environ 2 m²."
   },
@@ -476,9 +661,9 @@ const QUESTIONS = [
     question: "À quoi servent les globules blancs ?",
     options: [
       { texte: "À se battre contre les microbes", correct: true },
-      { texte: "À transporter l'oxygène", correct: false },
-      { texte: "À faire coaguler le sang", correct: false },
-      { texte: "À transporter le sucre", correct: false }
+      { texte: "À transporter l'oxygène", correct: false, pourquoi: "C'est le travail des globules rouges." },
+      { texte: "À faire coaguler le sang", correct: false, pourquoi: "C'est le travail des plaquettes." },
+      { texte: "À transporter le sucre", correct: false, pourquoi: "Le sucre voyage dissous dans le plasma sanguin." }
     ],
     explication: "Ce sont les défenseurs du corps : ils attaquent virus, bactéries et corps étrangers."
   },
@@ -487,9 +672,9 @@ const QUESTIONS = [
     question: "Combien de temps faut-il environ à une goutte de sang pour faire le tour complet du corps humain ?",
     options: [
       { texte: "1 minute", correct: true },
-      { texte: "1 seconde", correct: false },
-      { texte: "1 heure", correct: false },
-      { texte: "24 heures", correct: false }
+      { texte: "1 seconde", correct: false, pourquoi: "Trop court : le sang doit parcourir les 100 000 km de vaisseaux du corps !" },
+      { texte: "1 heure", correct: false, pourquoi: "Trop lent : le sang circule beaucoup plus vite que ça." },
+      { texte: "24 heures", correct: false, pourquoi: "En une journée, la même goutte fait déjà plus de 1 000 tours du corps !" }
     ],
     explication: "Environ 1 minute (plutôt 45 à 60 secondes) pour faire tout le circuit sanguin."
   },
@@ -498,9 +683,9 @@ const QUESTIONS = [
     question: "Lequel de ces animaux est un mammifère ?",
     options: [
       { texte: "Le dauphin", correct: true },
-      { texte: "Le requin", correct: false },
-      { texte: "Le pingouin", correct: false },
-      { texte: "Le thon", correct: false }
+      { texte: "Le requin", correct: false, pourquoi: "Le requin est un poisson : il respire avec des branchies." },
+      { texte: "Le pingouin", correct: false, pourquoi: "Le pingouin est un oiseau, même s'il ne vole pas." },
+      { texte: "Le thon", correct: false, pourquoi: "Le thon est un poisson à sang presque chaud, mais ce n'est pas un mammifère." }
     ],
     explication: "Le dauphin respire avec des poumons, allaite ses petits et a du sang chaud. Le requin et le thon sont des poissons, le pingouin est un oiseau."
   },
@@ -509,20 +694,196 @@ const QUESTIONS = [
     question: "Que produit la photosynthèse, en plus du sucre ?",
     options: [
       { texte: "De l'oxygène", correct: true },
-      { texte: "Du dioxyde de carbone", correct: false },
-      { texte: "De l'azote", correct: false },
-      { texte: "Du méthane", correct: false }
+      { texte: "Du dioxyde de carbone", correct: false, pourquoi: "C'est le contraire : les plantes consomment du CO₂." },
+      { texte: "De l'azote", correct: false, pourquoi: "Les plantes n'émettent pas de gaz azote." },
+      { texte: "Du méthane", correct: false, pourquoi: "Le méthane vient de la décomposition, pas de la photosynthèse." }
     ],
     explication: "La photosynthèse consomme du CO₂ et rejette de l'oxygène : c'est grâce aux plantes que l'on respire !"
+  },
+  {
+    partie: 1,
+    question: "Quelle est la vraie couleur du sang qui circule dans les veines ?",
+    options: [
+      { texte: "Rouge foncé : il paraît bleu à travers la peau", correct: true },
+      { texte: "Bleu : sans oxygène, le sang est vraiment bleu", correct: false, pourquoi: "Le sang n'est jamais bleu : même dans les veines, il reste rouge. C'est la peau qui lui donne cet air bleuté." },
+      { texte: "Vert, comme chez certains animaux", correct: false, pourquoi: "Certains vers ou lézards ont du sang vert, mais le sang humain est toujours rouge." },
+      { texte: "Transparent, comme de l'eau", correct: false, pourquoi: "Le sang contient des milliards de globules rouges qui le colorent fortement." }
+    ],
+    explication: "Le sang des veines est rouge foncé, presque grenat. Il paraît bleu à travers la peau parce que la peau filtre la lumière : le bleu remonte vers nos yeux, alors que le rouge est absorbé. Si tu te fais prélever du sang, tu le vois bien : rouge !"
+  },
+  {
+    partie: 1,
+    question: "Combien de chambres possède le cœur humain ?",
+    options: [
+      { texte: "4", correct: true },
+      { texte: "2", correct: false, pourquoi: "Les poissons ont un cœur à 2 chambres ; l'humain, lui, en a 4." },
+      { texte: "6", correct: false, pourquoi: "Aucun cœur de mammifère n'a 6 chambres." },
+      { texte: "1", correct: false, pourquoi: "Une seule chambre ne permettrait pas de séparer le sang des poumons du sang du reste du corps." }
+    ],
+    explication: "Deux oreillettes en haut et deux ventricules en bas. Le cœur fait deux circuits : d'abord vers les poumons, puis vers tout le corps."
+  },
+  {
+    partie: 1,
+    question: "Pourquoi a-t-on la « chair de poule » quand on a froid ?",
+    options: [
+      { texte: "De minuscules muscles tirent les poils de la peau : un héritage de nos ancêtres poilus", correct: true },
+      { texte: "L'air froid se coince sous la peau et la gonfle", correct: false, pourquoi: "L'air ne s'infiltre pas sous la peau : ce sont de petits muscles qui font ce travail." },
+      { texte: "La peau fabrique des boutons pour se protéger", correct: false, pourquoi: "La peau ne fabrique rien du tout : ce sont les poils, déjà là, qui se dressent." },
+      { texte: "Le sang se fige dans les petits vaisseaux", correct: false, pourquoi: "Le sang ne se fige pas ! Il circule moins près de la peau pour garder sa chaleur, mais il reste liquide." }
+    ],
+    explication: "Chaque petit poil de ta peau est relié à un minuscule muscle. Quand tu as froid, il se contracte et dresse le poil : c'est la chair de poule. Chez nos ancêtres couverts de poils, cela emprisonnait de l'air chaud contre la peau, comme un manteau. Chez l'humain, il ne reste que les boutons ! Les oiseaux, eux, gonflent leurs plumes pour la même raison."
+  },
+  {
+    partie: 1,
+    question: "Quel animal peut atteindre près de 390 km/h en plongeon ?",
+    options: [
+      { texte: "Le faucon pèlerin", correct: true },
+      { texte: "Le guépard", correct: false, pourquoi: "Le guépard est le plus rapide sur terre (environ 110 km/h), mais à pied, pas en vol." },
+      { texte: "Le poisson voile", correct: false, pourquoi: "Le poisson voile est le plus rapide des poissons (environ 100 km/h), bien loin des 390 km/h." },
+      { texte: "L'autruche", correct: false, pourquoi: "L'autruche court vite pour un oiseau (environ 70 km/h), mais elle ne vole même pas !" }
+    ],
+    explication: "Le faucon pèlerin fond sur sa proie en repliant ses ailes : il devient une véritable flèche vivante et dépasse 350 km/h, parfois près de 390 km/h ! C'est l'animal le plus rapide du monde. À cette vitesse, il ferme ses paupières... heureusement, une troisième paupière transparente le protège et lui laisse voir sa cible."
+  },
+  {
+    partie: 1,
+    question: "Pourquoi les flamants roses sont-ils roses ?",
+    options: [
+      { texte: "Parce qu'ils mangent des crevettes et des algues riches en pigments orange", correct: true },
+      { texte: "Parce qu'ils sont nés avec des plumes roses", correct: false, pourquoi: "Les bébés flamants naissent gris ou blancs : ils deviennent roses en grandissant, grâce à leur nourriture." },
+      { texte: "Parce que le soleil a teinté leurs plumes", correct: false, pourquoi: "Le soleil éclaircit parfois les plumes, mais il ne leur donne pas leur couleur rose." },
+      { texte: "Parce qu'ils se rougissent dans la boue rouge des lacs", correct: false, pourquoi: "La boue ne colore pas leurs plumes : seuls les pigments de leur nourriture le font." }
+    ],
+    explication: "Les crevettes et les petites algues dont se nourrissent les flamants contiennent des pigments orange (de la famille du carotène — celui des carottes !). Ces pigments se déposent dans leurs plumes : sans cette nourriture, les flamants d'un zoo deviennent presque blancs."
+  },
+  {
+    partie: 1,
+    question: "Quel est le plus grand animal de la Terre ?",
+    options: [
+      { texte: "La baleine bleue", correct: true },
+      { texte: "L'éléphant", correct: false, pourquoi: "L'éléphant est le plus grand animal terrestre (environ 6 tonnes), mais la baleine bleue pèse 25 fois plus." },
+      { texte: "Le grand requin blanc", correct: false, pourquoi: "Le grand requin blanc mesure environ 5 mètres : six fois moins long que la baleine bleue." },
+      { texte: "La girafe", correct: false, pourquoi: "La girafe est la plus grande par sa taille debout (5 à 6 m), mais elle ne pèse qu'environ une tonne." }
+    ],
+    explication: "La baleine bleue peut atteindre 30 mètres de long et peser près de 150 tonnes : même les plus grands dinosaures étaient plus petits ! Et pourtant, elle mange de minuscules crevettes (le krill)."
+  },
+  {
+    partie: 1,
+    question: "Comment appelle-t-on la transformation de la chenille en papillon ?",
+    options: [
+      { texte: "La métamorphose", correct: true },
+      { texte: "La migration", correct: false, pourquoi: "La migration, c'est un long voyage, comme celui des papillons monarques." },
+      { texte: "La germination", correct: false, pourquoi: "La germination, c'est quand une graine devient une plante." },
+      { texte: "La respiration", correct: false, pourquoi: "La respiration, c'est l'entrée de l'air dans le corps." }
+    ],
+    explication: "La chenille fabrique une chrysalide, et à l'intérieur son corps se réorganise complètement : elle en ressort en papillon. C'est la métamorphose."
+  },
+  {
+    partie: 1,
+    question: "À quoi sert le squelette ?",
+    options: [
+      { texte: "À soutenir le corps et à protéger les organes", correct: true },
+      { texte: "À stocker l'oxygène", correct: false, pourquoi: "L'oxygène est transporté par le sang, pas par les os." },
+      { texte: "À digérer les aliments", correct: false, pourquoi: "La digestion est le travail de l'estomac et des intestins." },
+      { texte: "À faire circuler le sang", correct: false, pourquoi: "C'est le cœur qui fait circuler le sang." }
+    ],
+    explication: "Les os tiennent le corps debout, protègent le cerveau (le crâne) et les organes (les côtes), et servent de points d'attache aux muscles pour bouger."
+  },
+  {
+    partie: 1,
+    question: "À quoi servent les racines d'une plante ?",
+    options: [
+      { texte: "À puiser l'eau et les minéraux du sol, et à tenir la plante bien accrochée", correct: true },
+      { texte: "À capter la lumière du Soleil", correct: false, pourquoi: "Ce sont les feuilles qui captent la lumière : les racines vivent enfouies dans le noir." },
+      { texte: "À attirer les insectes pour la pollinisation", correct: false, pourquoi: "Ce sont les fleurs, avec leurs couleurs et leur parfum, qui attirent les insectes." },
+      { texte: "À respirer l'air de la surface", correct: false, pourquoi: "Ce sont les feuilles qui échangent des gaz avec l'air ; les racines, elles, travaillent dans le sol." }
+    ],
+    explication: "Les racines sont comme des tuyaux : elles puisent l'eau et les minéraux dans le sol et les font monter dans la plante. Elles l'empêchent aussi de tomber !"
+  },
+  {
+    partie: 1,
+    question: "Quel organe permet de penser, d'apprendre et de rêver ?",
+    options: [
+      { texte: "Le cerveau", correct: true },
+      { texte: "Le cœur", correct: false, pourquoi: "Le cœur pompe le sang : il ne réfléchit pas." },
+      { texte: "Le foie", correct: false, pourquoi: "Le foie trie et transforme ce qu'il y a dans le sang, mais il ne pense pas." },
+      { texte: "Les muscles", correct: false, pourquoi: "Les muscles font bouger le corps, mais c'est le cerveau qui leur donne les ordres." }
+    ],
+    explication: "Protégé par le crâne, le cerveau est le centre de contrôle : il reçoit les informations des yeux, des oreilles, de la peau... il commande les muscles, garde tes souvenirs et fabrique tes rêves."
+  },
+  {
+    partie: 1,
+    question: "Comment les poissons respirent-ils sous l'eau ?",
+    options: [
+      { texte: "Avec leurs branchies, qui captent l'oxygène dissous dans l'eau", correct: true },
+      { texte: "Avec des poumons, comme les dauphins", correct: false, pourquoi: "Les dauphins sont des mammifères : ils remontent respirer l'air de la surface, pas les poissons." },
+      { texte: "En buvant l'eau par la bouche", correct: false, pourquoi: "L'eau traverse bien leurs branchies, mais ce n'est pas en la buvant qu'ils respirent." },
+      { texte: "Ils n'ont pas besoin d'oxygène", correct: false, pourquoi: "Si ! Comme nous, ils ont besoin d'oxygène : ils le prennent directement dans l'eau." }
+    ],
+    explication: "L'eau contient de l'oxygène dissous. Le poisson fait entrer l'eau par la bouche et la fait sortir par ses branchies, des lames rouges qui récupèrent l'oxygène — un peu comme nos poumons avec l'air."
+  },
+  {
+    partie: 1,
+    question: "À quoi sert la fièvre quand on est malade ?",
+    options: [
+      { texte: "Le corps monte sa température pour aider à combattre les microbes", correct: true },
+      { texte: "C'est une maladie à part entière", correct: false, pourquoi: "La fièvre n'est pas une maladie : c'est un signal que le corps se défend." },
+      { texte: "C'est le corps qui a trop chaud à l'extérieur", correct: false, pourquoi: "La fièvre arrive aussi en plein hiver : c'est une réaction interne du corps." },
+      { texte: "C'est pour nous forcer à dormir", correct: false, pourquoi: "Le repos aide à guérir, mais la fièvre a un rôle précis : gêner les microbes." }
+    ],
+    explication: "La fièvre est une réaction de défense : en montant sa température, le corps ralentit les microbes et active ses soldats, les globules blancs. Elle redescend dès que la bataille est gagnée."
+  },
+  {
+    partie: 1,
+    question: "Les plantes respirent-elles ?",
+    options: [
+      { texte: "Oui : elles respirent jour et nuit, et font aussi la photosynthèse le jour", correct: true },
+      { texte: "Non : les plantes ne sont pas des êtres vivants", correct: false, pourquoi: "Les plantes sont bien des êtres vivants : elles naissent, grandissent, se nourrissent et se reproduisent." },
+      { texte: "Seulement la nuit, quand il n'y a plus de soleil", correct: false, pourquoi: "Elles respirent aussi le jour : c'est la photosynthèse, elle, qui a besoin de lumière." },
+      { texte: "Exactement comme nous, sans rien faire d'autre", correct: false, pourquoi: "En plus de respirer, les plantes fabriquent leur nourriture grâce à la lumière : la photosynthèse." }
+    ],
+    explication: "Oui, les plantes respirent en permanence (elles consomment de l'oxygène et rejettent du CO₂). Mais le jour, la photosynthèse produit bien plus d'oxygène qu'elles n'en consomment : le bilan est qu'elles en rejettent."
+  },
+  {
+    partie: 1,
+    question: "Que transportent les globules rouges dans le sang ?",
+    options: [
+      { texte: "L'oxygène, capté dans les poumons", correct: true },
+      { texte: "Les microbes à combattre", correct: false, pourquoi: "Ce sont les globules blancs qui s'occupent des microbes." },
+      { texte: "De l'eau uniquement", correct: false, pourquoi: "L'eau du sang sert de transport, mais les globules rouges, eux, portent l'oxygène." },
+      { texte: "Les morceaux d'os à réparer", correct: false, pourquoi: "Les os sont réparés par leurs propres cellules, pas par les globules rouges." }
+    ],
+    explication: "Les globules rouges sont de minuscules disques remplis d'hémoglobine, une molécule qui attrape l'oxygène dans les poumons et le dépose partout dans le corps. C'est elle qui rend le sang rouge !"
+  },
+  {
+    partie: 1,
+    question: "Combien de dents a un adulte ?",
+    options: [
+      { texte: "32", correct: true },
+      { texte: "20", correct: false, pourquoi: "20, c'est le nombre de dents de lait d'un enfant." },
+      { texte: "56", correct: false, pourquoi: "Trop ! Même avec les dents de sagesse, on ne dépasse pas 32." },
+      { texte: "64", correct: false, pourquoi: "Cela fait penser aux requins, qui fabriquent des centaines de dents au cours de leur vie !" }
+    ],
+    explication: "Un adulte a 32 dents : 8 incisives pour couper, 4 canines pour déchirer, 8 prémolaires et 12 molaires pour broyer (les « dents de sagesse » font partie des molaires)."
+  },
+  {
+    partie: 1,
+    question: "Que sont les bactéries ?",
+    options: [
+      { texte: "Des êtres vivants microscopiques, souvent formés d'une seule cellule", correct: true },
+      { texte: "Des virus", correct: false, pourquoi: "Les virus sont différents : ils ne sont même pas considérés comme des êtres vivants, car ils ne peuvent se multiplier qu'en parasitant des cellules." },
+      { texte: "Des produits chimiques dangereux", correct: false, pourquoi: "Ce sont de vrais êtres vivants, pas des molécules : certaines rendent malade, mais beaucoup nous sont utiles." },
+      { texte: "Des déchets fabriqués par nos cellules", correct: false, pourquoi: "Ce ne sont pas des déchets : ce sont des organismes complets, avec leur propre ADN." }
+    ],
+    explication: "Invisibles à l'œil nu, les bactéries vivent partout : dans le sol, l'eau, et même dans notre corps, où elles aident à digérer. Le yaourt, par exemple, est fabriqué grâce à des bactéries !"
   },
   {
     partie: 2,
     question: "Dans le vide de l'espace, que se passe-t-il si tu cries ?",
     options: [
       { texte: "Le son ne se propage pas du tout", correct: true },
-      { texte: "On t'entend très fort", correct: false },
-      { texte: "On t'entend très faiblement", correct: false },
-      { texte: "Le son se propage plus vite que dans l'air", correct: false }
+      { texte: "On t'entend très fort", correct: false, pourquoi: "Impossible : sans air, aucun son ne peut sortir de ta bouche." },
+      { texte: "On t'entend très faiblement", correct: false, pourquoi: "Même un son très faible a besoin d'air pour voyager." },
+      { texte: "Le son se propage plus vite que dans l'air", correct: false, pourquoi: "Le vide ne transmet pas le son, ni vite ni lentement." }
     ],
     explication: "Le son a besoin d'un milieu (air, eau, solide) pour se propager : dans le vide, aucun son ne voyage."
   },
@@ -531,9 +892,9 @@ const QUESTIONS = [
     question: "Pourquoi un ballon se dégonfle-t-il un peu quand il fait très froid ?",
     options: [
       { texte: "L'air froid à l'intérieur occupe moins de place que l'air chaud", correct: true },
-      { texte: "Le caoutchouc devient poreux", correct: false },
-      { texte: "Le ballon fuit toujours un peu", correct: false },
-      { texte: "La gravité tire l'air vers le bas du ballon", correct: false }
+      { texte: "Le caoutchouc devient poreux", correct: false, pourquoi: "Le caoutchouc reste étanche : c'est le volume de l'air qui change." },
+      { texte: "Le ballon fuit toujours un peu", correct: false, pourquoi: "Un ballon bien fermé ne fuit pas : il se regonfle dès qu'il réchauffe." },
+      { texte: "La gravité tire l'air vers le bas du ballon", correct: false, pourquoi: "L'air est attiré vers le bas, mais il remplit toujours tout le ballon." }
     ],
     explication: "Quand l'air se refroidit, il se rétracte : il occupe moins de place que l'air chaud (les molécules s'agitent moins). Le ballon se dégonfle donc un peu. S'il se réchauffe, il reprend sa forme !"
   },
@@ -541,21 +902,21 @@ const QUESTIONS = [
     partie: 2,
     question: "Quelle est la vitesse de la lumière dans le vide ?",
     options: [
-      { texte: "300 000 km/s", correct: true },
-      { texte: "340 km/s", correct: false },
-      { texte: "3 000 km/s", correct: false },
-      { texte: "3 000 000 km/s", correct: false }
+      { texte: "299 792 km/s", correct: true },
+      { texte: "340 km/s", correct: false, pourquoi: "340 mètres par seconde, c'est la vitesse du son dans l'air ; la lumière est presque un million de fois plus rapide !" },
+      { texte: "3 000 km/s", correct: false, pourquoi: "Trop lent : la lumière va 100 fois plus vite." },
+      { texte: "3 000 000 km/s", correct: false, pourquoi: "Trop rapide : c'est 10 fois la vraie vitesse." }
     ],
-    explication: "300 000 km par seconde : soit environ 7,5 fois le tour de la Terre... en une seule seconde."
+    explication: "Exactement 299 792 km par seconde dans le vide (on arrondit souvent à 300 000 km/s). C'est environ 7,5 fois le tour de la Terre... en une seule seconde !"
   },
   {
     partie: 2,
     question: "Pourquoi la glace flotte-t-elle sur l'eau ?",
     options: [
       { texte: "Parce que la glace est moins dense que l'eau liquide", correct: true },
-      { texte: "Parce que la glace contient de l'air", correct: false },
-      { texte: "Parce que la glace est plus lourde", correct: false },
-      { texte: "Parce que l'eau liquide est en fait un gaz dissous", correct: false }
+      { texte: "Parce que la glace contient de l'air", correct: false, pourquoi: "Des bulles peuvent s'y coincer, mais la glace pure flotte aussi." },
+      { texte: "Parce que la glace est plus lourde", correct: false, pourquoi: "Si elle était plus dense, elle coulerait : or, elle flotte, donc elle est moins dense." },
+      { texte: "Parce que l'eau liquide est en fait un gaz dissous", correct: false, pourquoi: "L'eau liquide reste de l'eau : ce n'est pas un gaz." }
     ],
     explication: "En gelant, les molécules d'eau s'organisent en cristaux avec des « trous » : la glace est moins dense que l'eau liquide. C'est très rare dans la nature, et vital pour la vie : les lacs gèlent par le haut, les poissons survivent dessous."
   },
@@ -564,9 +925,9 @@ const QUESTIONS = [
     question: "Deux objets de masses différentes tombent d'une même hauteur, sans air autour. Lequel touche le sol en premier ?",
     options: [
       { texte: "Ils touchent le sol en même temps", correct: true },
-      { texte: "Le plus lourd", correct: false },
-      { texte: "Le plus léger", correct: false },
-      { texte: "Ça dépend de leur couleur", correct: false }
+      { texte: "Le plus lourd", correct: false, pourquoi: "C'est l'intuition de Galilée... qu'il a réfutée : sans air, la masse ne change rien." },
+      { texte: "Le plus léger", correct: false, pourquoi: "Sans air pour le freiner, l'objet léger tombe aussi vite que l'autre." },
+      { texte: "Ça dépend de leur couleur", correct: false, pourquoi: "La couleur n'a aucune influence sur la chute !" }
     ],
     explication: "Sans air, ils tombent en même temps. Galilée l'a montré : la masse ne change pas la vitesse de chute. Seul l'air freine les objets légers (une plume, par exemple)."
   },
@@ -575,9 +936,9 @@ const QUESTIONS = [
     question: "Quel est l'élément chimique le plus abondant dans l'univers observable ?",
     options: [
       { texte: "L'hydrogène", correct: true },
-      { texte: "L'oxygène", correct: false },
-      { texte: "Le carbone", correct: false },
-      { texte: "Le fer", correct: false }
+      { texte: "L'oxygène", correct: false, pourquoi: "L'oxygène est abondant sur Terre, mais minoritaire dans l'univers." },
+      { texte: "Le carbone", correct: false, pourquoi: "Le carbone est essentiel à la vie, mais rare en comparaison." },
+      { texte: "Le fer", correct: false, pourquoi: "Le fer est fabriqué au cœur des étoiles : il reste minoritaire." }
     ],
     explication: "L'hydrogène : il représente environ 75 % de la matière visible de l'univers."
   },
@@ -586,9 +947,9 @@ const QUESTIONS = [
     question: "Un aimant attire...",
     options: [
       { texte: "Seulement certains métaux, comme le fer, le nickel et le cobalt", correct: true },
-      { texte: "Tous les métaux", correct: false },
-      { texte: "Le bois et le plastique", correct: false },
-      { texte: "L'eau", correct: false }
+      { texte: "Tous les métaux", correct: false, pourquoi: "L'aluminium et le cuivre, par exemple, ne sont pas attirés." },
+      { texte: "Le bois et le plastique", correct: false, pourquoi: "Ces matériaux ne contiennent pas de fer : aucune attraction." },
+      { texte: "L'eau", correct: false, pourquoi: "L'eau n'est pas un matériau magnétique : elle n'est pas attirée." }
     ],
     explication: "Un aimant n'attire pas tous les métaux : l'aluminium ou le cuivre, par exemple, ne sont pas attirés. Seuls les matériaux ferromagnétiques (fer, nickel, cobalt...) le sont fortement."
   },
@@ -597,20 +958,196 @@ const QUESTIONS = [
     question: "Que devient l'eau quand elle passe de l'état liquide à l'état gazeux ?",
     options: [
       { texte: "Elle devient de la vapeur d'eau (un gaz invisible)", correct: true },
-      { texte: "Elle disparaît complètement", correct: false },
-      { texte: "Elle se transforme en CO₂", correct: false },
-      { texte: "Elle devient plus lourde", correct: false }
+      { texte: "Elle disparaît complètement", correct: false, pourquoi: "Rien ne se perd : elle est devenue invisible, mais elle est bien là." },
+      { texte: "Elle se transforme en CO₂", correct: false, pourquoi: "Le CO₂ est un autre gaz : l'eau reste de l'eau (H₂O)." },
+      { texte: "Elle devient plus lourde", correct: false, pourquoi: "Un gaz est même beaucoup plus léger que le liquide." }
     ],
     explication: "L'eau devient vapeur d'eau, un gaz invisible : elle ne disparaît pas, elle reste dans l'air (c'est ce qui forme les nuages !)."
+  },
+  {
+    partie: 2,
+    question: "Quelle est la température la plus basse qu'il soit possible d'atteindre ?",
+    options: [
+      { texte: "Environ −273 °C : le fameux « zéro absolu »", correct: true },
+      { texte: "−100 °C", correct: false, pourquoi: "Déjà dépassé : au cœur de l'Antarctique, il descend parfois jusqu'à −89 °C !" },
+      { texte: "−1 000 °C", correct: false, pourquoi: "Une telle température n'existe pas : −273,15 °C est la limite absolue." },
+      { texte: "Il n'y a pas de limite", correct: false, pourquoi: "Si ! En dessous de −273,15 °C, il n'y a plus rien à refroidir : les molécules ne bougent quasiment plus." }
+    ],
+    explication: "La température, c'est en fait l'agitation des molécules. À −273,15 °C (0 kelvin), elles ne bougent presque plus : c'est le zéro absolu, et aucun froid ne peut exister plus bas. Les scientifiques s'en approchent à quelques millièmes de degré près pour fabriquer de la matière extraordinaire, comme les supraconducteurs."
+  },
+  {
+    partie: 2,
+    question: "Pourquoi voit-on notre reflet dans un miroir ?",
+    options: [
+      { texte: "Parce que la lumière rebondit sur sa surface", correct: true },
+      { texte: "Parce que le miroir fabrique de la lumière", correct: false, pourquoi: "Un miroir n'émet aucune lumière : il la renvoie." },
+      { texte: "Parce qu'il y a une fenêtre derrière le miroir", correct: false, pourquoi: "Même dans le noir complet, un miroir reste un miroir." },
+      { texte: "Parce que le verre est très froid", correct: false, pourquoi: "La température du verre n'a rien à voir là-dedans." }
+    ],
+    explication: "La lumière se réfléchit sur le miroir comme une balle qui rebondit sur un mur, et nos yeux la reçoivent : c'est la réflexion."
+  },
+  {
+    partie: 2,
+    question: "Pourquoi une pomme tombée d'un arbre tombe-t-elle vers le sol ?",
+    options: [
+      { texte: "Parce que la Terre l'attire : c'est la gravité", correct: true },
+      { texte: "Parce que le vent la pousse vers le bas", correct: false, pourquoi: "Même par temps parfaitement calme, la pomme tombe." },
+      { texte: "Parce qu'elle devient lourde en mûrissant", correct: false, pourquoi: "Même une pomme verte tombe : c'est la gravité, pas le poids du fruit." },
+      { texte: "Parce que les branches la laissent partir", correct: false, pourquoi: "La tige finit par céder, mais c'est la Terre qui attire la pomme." }
+    ],
+    explication: "La gravité attire tous les objets vers le centre de la Terre, tout le temps. Sans elle, la pomme... et nous ! — flotterions dans les airs."
+  },
+  {
+    partie: 2,
+    question: "Quel état de la matière garde toujours le même volume mais prend la forme du récipient ?",
+    options: [
+      { texte: "Le liquide", correct: true },
+      { texte: "Le solide", correct: false, pourquoi: "Un solide garde sa propre forme (un glaçon reste un glaçon)." },
+      { texte: "Le gaz", correct: false, pourquoi: "Un gaz, lui, remplit tout le récipient : son volume change." },
+      { texte: "La lumière", correct: false, pourquoi: "La lumière n'est pas un état de la matière." }
+    ],
+    explication: "Un solide garde sa propre forme, et un gaz remplit tout le récipient en changeant de volume. Le liquide, lui, garde le même volume mais épouse la forme du récipient."
+  },
+  {
+    partie: 2,
+    question: "Pourquoi une tasse de thé chaud refroidit-elle avec le temps ?",
+    options: [
+      { texte: "Parce que la chaleur passe du thé chaud vers l'air plus froid", correct: true },
+      { texte: "Parce que l'eau disparaît petit à petit", correct: false, pourquoi: "L'évaporation joue un rôle, mais c'est surtout le contact avec l'air plus froid qui refroidit le thé." },
+      { texte: "Parce que la tasse absorbe la chaleur pour toujours", correct: false, pourquoi: "La tasse se réchauffe, puis rend la chaleur à l'air." },
+      { texte: "Parce que le thé se transforme en glace", correct: false, pourquoi: "Le thé refroidit jusqu'à la température de la pièce, pas en dessous." }
+    ],
+    explication: "La chaleur va toujours de ce qui est chaud vers ce qui est plus froid, jusqu'à ce que tout soit à la même température. C'est pour ça qu'un thé finit toujours par devenir tiède !"
+  },
+  {
+    partie: 2,
+    question: "Quand une voiture freine brutalement, pourquoi est-on projeté vers l'avant ?",
+    options: [
+      { texte: "À cause de l'inertie : le corps a envie de continuer tout droit", correct: true },
+      { texte: "À cause de la gravité qui tire vers le bas", correct: false, pourquoi: "La gravité tire vers le bas, pas vers l'avant." },
+      { texte: "Parce que les sièges nous poussent vers l'avant", correct: false, pourquoi: "C'est l'inverse : les sièges et la ceinture nous retiennent." },
+      { texte: "Parce que la voiture nous attire vers elle", correct: false, pourquoi: "Une voiture n'attire personne ; c'est le corps qui continue son mouvement." }
+    ],
+    explication: "Le corps se déplaçait à la même vitesse que la voiture ; quand elle s'arrête d'un coup, il a envie de continuer. Les sièges et surtout la ceinture l'en empêchent : on s'attache toujours !"
+  },
+  {
+    partie: 2,
+    question: "Pourquoi un bateau en acier flotte-t-il, alors qu'un clou en acier coule ?",
+    options: [
+      { texte: "Parce que sa forme creuse emprisonne de l'air : le bateau est moins dense que l'eau", correct: true },
+      { texte: "Parce que l'acier flotte quand il est en grand morceau", correct: false, pourquoi: "Une plaque d'acier coule aussi : seule la forme creuse du bateau change tout." },
+      { texte: "Parce que la peinture de la coque repousse l'eau", correct: false, pourquoi: "La peinture protège la coque de la rouille, mais elle n'empêche rien de couler." },
+      { texte: "Parce que les bateaux sont faits d'un autre métal que le clou", correct: false, pourquoi: "La coque est bien en acier, comme le clou : c'est le volume d'air enfermé qui fait la différence." }
+    ],
+    explication: "Un objet flotte quand il pèse moins que l'eau qu'il repousse. En forme de bol, le bateau chasse énormément d'eau : même en acier, son poids total (coque + air) reste inférieur à celui de cette eau. Fais l'expérience avec une feuille d'alu : coulée à plat elle coule, pliée en bateau elle flotte !"
+  },
+  {
+    partie: 2,
+    question: "Le son voyage-t-il plus vite dans l'eau ou dans l'air ?",
+    options: [
+      { texte: "Dans l'eau", correct: true },
+      { texte: "Dans l'air", correct: false, pourquoi: "Le son est plus rapide dans l'eau (1 500 m/s) que dans l'air (340 m/s)." },
+      { texte: "À la même vitesse dans les deux", correct: false, pourquoi: "La vitesse du son dépend du milieu : l'eau le transmet bien mieux." },
+      { texte: "Le son ne voyage pas dans l'eau", correct: false, pourquoi: "Bien sûr que si : les plongeurs s'entendent très bien !" }
+    ],
+    explication: "Le son va environ 4 fois plus vite dans l'eau (1 500 mètres par seconde) que dans l'air (340 mètres par seconde). C'est pourquoi les baleines et les dauphins s'entendent à des kilomètres."
+  },
+  {
+    partie: 2,
+    question: "Qu'est-ce que le son ?",
+    options: [
+      { texte: "Une vibration qui se propage dans l'air ou un autre milieu", correct: true },
+      { texte: "Une petite particule qui voyage", correct: false, pourquoi: "Le son ne transporte pas de matière : c'est un mouvement d'ondes." },
+      { texte: "Une forme de lumière invisible", correct: false, pourquoi: "Lumière et son sont très différents : la lumière voyage dans le vide, pas le son." },
+      { texte: "Du courant électrique dans l'air", correct: false, pourquoi: "Le courant électrique, ce sont des électrons en mouvement ; le son, ce sont des vibrations." }
+    ],
+    explication: "Quand tu parles, tes cordes vocales vibrent et font vibrer l'air autour de toi, comme des cercles dans l'eau. Sans air (dans le vide), aucune vibration ne se transmet : c'est le silence absolu."
+  },
+  {
+    partie: 2,
+    question: "Pourquoi une lampe ne s'allume-t-elle pas si le circuit électrique est coupé ?",
+    options: [
+      { texte: "Parce que le courant doit circuler dans une boucle fermée : la coupure bloque son chemin", correct: true },
+      { texte: "Parce que l'électricité s'est échappée dans l'air", correct: false, pourquoi: "L'électricité ne s'échappe pas ainsi : elle a juste besoin d'un chemin complet." },
+      { texte: "Parce que la pile s'est vidée d'un coup", correct: false, pourquoi: "Une coupure ne vide pas la pile : tant que le chemin est ouvert, rien ne circule." },
+      { texte: "Parce que le fil est devenu trop froid", correct: false, pourquoi: "La température du fil n'a rien à voir : c'est la continuité du circuit qui compte." }
+    ],
+    explication: "Le courant a besoin d'un chemin complet : il part de la pile, traverse la lampe, puis retourne à la pile. Si tu coupes le fil ou que tu ouvres l'interrupteur, la boucle est ouverte : le courant s'arrête."
+  },
+  {
+    partie: 2,
+    question: "À quoi sert la gaine en plastique autour des fils électriques ?",
+    options: [
+      { texte: "À isoler le courant : le plastique ne le laisse pas passer, on évite les chocs", correct: true },
+      { texte: "À rendre les fils plus solides", correct: false, pourquoi: "Elle protège aussi le fil, mais son rôle vital est de bloquer le courant." },
+      { texte: "À faire circuler le courant plus vite", correct: false, pourquoi: "La vitesse du courant ne dépend pas de la gaine qui entoure le fil !" },
+      { texte: "À empêcher les fils de chauffer", correct: false, pourquoi: "C'est le métal qui chauffe quand le courant passe ; la gaine sert surtout à nous protéger." }
+    ],
+    explication: "Le métal des fils conduit très bien l'électricité, ce qui est dangereux au toucher. Le plastique, le caoutchouc ou le verre sont des isolants : ils bloquent le courant et nous protègent."
+  },
+  {
+    partie: 2,
+    question: "Pourquoi une paille droite semble-t-elle cassée dans un verre d'eau ?",
+    options: [
+      { texte: "Parce que la lumière change de direction en passant de l'eau à l'air : c'est la réfraction", correct: true },
+      { texte: "Parce que l'eau coupe réellement la paille", correct: false, pourquoi: "Rien n'est cassé : sortie de l'eau, la paille est toujours droite." },
+      { texte: "Parce que l'eau grossit tout ce qu'elle contient", correct: false, pourquoi: "L'eau ne grossit pas les objets : elle déforme seulement la lumière qui les traverse." },
+      { texte: "Parce que la paille flotte et se plie", correct: false, pourquoi: "La paille garde sa forme ; c'est son image qui paraît décalée." }
+    ],
+    explication: "La lumière ralentit un peu en entrant dans l'eau et change de direction : c'est la réfraction. Ton œil reçoit des rayons décalés, et l'image de la paille semble brisée à la surface de l'eau."
+  },
+  {
+    partie: 2,
+    question: "Un sac de 1 kg de plumes et un sac de 1 kg de plomb : lequel est le plus lourd ?",
+    options: [
+      { texte: "Aucun des deux : même masse, donc même poids", correct: true },
+      { texte: "Le plomb, parce qu'il est plus dense", correct: false, pourquoi: "Le plomb est bien plus dense : il prend moins de place, mais le sac en contient juste assez pour faire 1 kg." },
+      { texte: "Les plumes, parce qu'elles sont plus volumineuses", correct: false, pourquoi: "Elles occupent plus de place, mais leur masse totale reste de 1 kg." },
+      { texte: "Il faut les peser pour le savoir", correct: false, pourquoi: "C'est écrit sur les deux sacs : 1 kg reste 1 kg !" }
+    ],
+    explication: "La masse, c'est la quantité de matière : 1 kg reste 1 kg. La densité, elle, dit si la matière est serrée : le plomb est très dense, les plumes prennent énormément de place pour très peu de matière."
+  },
+  {
+    partie: 2,
+    question: "Pourquoi a-t-on chaud en frottant ses mains l'une contre l'autre ?",
+    options: [
+      { texte: "Parce que le frottement transforme le mouvement en chaleur", correct: true },
+      { texte: "Parce que nos mains produisent de l'électricité", correct: false, pourquoi: "Frotter ne produit pas d'électricité ici : c'est bien de la chaleur que tu ressens." },
+      { texte: "Parce que la peau devient rouge", correct: false, pourquoi: "La rougeur vient de la chaleur, pas l'inverse !" },
+      { texte: "Parce que l'air entre les mains se réchauffe tout seul", correct: false, pourquoi: "Ce n'est pas l'air : frotter deux surfaces l'une contre l'autre suffit à les réchauffer." }
+    ],
+    explication: "Le frottement ralentit le mouvement et le transforme en chaleur. C'est le même principe qui chauffe les freins d'un vélo, fait brûler les météores en arrivant dans l'atmosphère, ou allume une allumette."
+  },
+  {
+    partie: 2,
+    question: "Pourquoi la fumée d'un feu monte-t-elle ?",
+    options: [
+      { texte: "Parce que l'air chaud est plus léger que l'air froid : il s'élève", correct: true },
+      { texte: "Parce que la fumée est attirée par les nuages", correct: false, pourquoi: "Ce n'est pas une attraction : la fumée suit simplement l'air chaud qui monte." },
+      { texte: "Parce que la fumée est plus lourde que l'air", correct: false, pourquoi: "C'est le contraire : entraînée par l'air chaud, la fumée monte au lieu de tomber." },
+      { texte: "Parce que le vent la pousse vers le haut", correct: false, pourquoi: "Le vent souffle surtout à l'horizontal : ici, c'est la chaleur qui fait monter la fumée." }
+    ],
+    explication: "L'air chaud occupe plus de place que l'air froid : il devient plus léger et monte, entraînant la fumée avec lui (c'est la convection). C'est aussi pour ça que les cheminées évacuent la fumée par le haut !"
+  },
+  {
+    partie: 2,
+    question: "Pourquoi met-on du sel sur les routes quand il gèle ?",
+    options: [
+      { texte: "Parce que le sel fait baisser la température de congélation de l'eau", correct: true },
+      { texte: "Parce que le sel chauffe la route", correct: false, pourquoi: "Le sel n'apporte aucune chaleur : il agit sur la façon dont l'eau gèle." },
+      { texte: "Parce que le sel rend la route plus rugueuse", correct: false, pourquoi: "Le sable ou le gravier servent à l'adhérence ; le sel, lui, agit sur le verglas." },
+      { texte: "Parce que le sel absorbe la neige", correct: false, pourquoi: "Le sel n'avale pas la neige : il l'empêche de rester de la glace solide." }
+    ],
+    explication: "Mélangé à l'eau, le sel l'empêche de geler à 0 °C : elle ne se solidifie qu'à une température bien plus basse. La glace fond donc... tant qu'il reste du sel !"
   },
   {
     partie: 3,
     question: "Quelle est la cause principale des tremblements de terre ?",
     options: [
       { texte: "Le déplacement des plaques tectoniques", correct: true },
-      { texte: "Le vent très fort", correct: false },
-      { texte: "Les marées", correct: false },
-      { texte: "Les éruptions volcaniques uniquement", correct: false }
+      { texte: "Le vent très fort", correct: false, pourquoi: "Même une tempête ne fait pas trembler le sol." },
+      { texte: "Les marées", correct: false, pourquoi: "Les marées font surtout bouger l'eau de la mer." },
+      { texte: "Les éruptions volcaniques uniquement", correct: false, pourquoi: "Un volcan peut provoquer des secousses, mais la plupart des séismes viennent des plaques." }
     ],
     explication: "Les plaques tectoniques, ces immenses morceaux de la croûte terrestre, bougent très lentement et frottent les unes contre les autres. Quand elles se bloquent puis se libèrent d'un coup... ça secoue !"
   },
@@ -619,9 +1156,9 @@ const QUESTIONS = [
     question: "Le diamant et la mine de crayon (graphite) sont faits du même élément. Lequel ?",
     options: [
       { texte: "Le carbone", correct: true },
-      { texte: "Le calcium", correct: false },
-      { texte: "Le silicium", correct: false },
-      { texte: "Le cuivre", correct: false }
+      { texte: "Le calcium", correct: false, pourquoi: "Le calcium se trouve dans les os et les coquillages, pas dans le diamant." },
+      { texte: "Le silicium", correct: false, pourquoi: "Le silicium se trouve dans le sable et les puces électroniques." },
+      { texte: "Le cuivre", correct: false, pourquoi: "Le cuivre est un métal rouge : ni le diamant ni le graphite n'en contiennent." }
     ],
     explication: "Dans le diamant, les atomes de carbone sont rangés en réseau très solide ; dans le graphite, en feuillets qui glissent les uns sur les autres. Mêmes atomes, organisation différente : propriétés opposées !"
   },
@@ -630,9 +1167,9 @@ const QUESTIONS = [
     question: "Quel gaz est le principal responsable de l'effet de serre dû aux activités humaines ?",
     options: [
       { texte: "Le dioxyde de carbone (CO₂)", correct: true },
-      { texte: "L'oxygène", correct: false },
-      { texte: "L'hélium", correct: false },
-      { texte: "Le diazote (N₂)", correct: false }
+      { texte: "L'oxygène", correct: false, pourquoi: "L'oxygène ne piège pas la chaleur : c'est le CO₂ qui le fait." },
+      { texte: "L'hélium", correct: false, pourquoi: "L'hélium est trop rare et ne piège pas la chaleur." },
+      { texte: "Le diazote (N₂)", correct: false, pourquoi: "Le diazote est le gaz principal de l'air, mais il contribue très peu à l'effet de serre." }
     ],
     explication: "Le CO₂ (avec le méthane et la vapeur d'eau) piège une partie de la chaleur dans l'atmosphère. Il en faut un peu (sinon la Terre serait gelée), mais trop réchauffe la planète."
   },
@@ -641,20 +1178,20 @@ const QUESTIONS = [
     question: "À quoi correspond un pH de 7 ?",
     options: [
       { texte: "Neutre (comme l'eau pure)", correct: true },
-      { texte: "Très acide", correct: false },
-      { texte: "Très basique (alcalin)", correct: false },
-      { texte: "Ça n'existe pas", correct: false }
+      { texte: "Très acide", correct: false, pourquoi: "Les acides sont en dessous de 7 (citron ≈ 2, vinaigre ≈ 3)." },
+      { texte: "Très basique (alcalin)", correct: false, pourquoi: "Les bases sont au-dessus de 7 (savon ≈ 10, eau de Javel ≈ 13)." },
+      { texte: "Ça n'existe pas", correct: false, pourquoi: "Si, ça existe : c'est exactement le pH de l'eau pure." }
     ],
-    explication: "7 = neutre (eau pure). En dessous, c'est acide (citron ≈ 2, vinaigre ≈ 3). Au-dessus, c'est basique (savon ≈ 10, eau de javel ≈ 13)."
+    explication: "7 = neutre (eau pure). En dessous, c'est acide (citron ≈ 2, vinaigre ≈ 3). Au-dessus, c'est basique (savon ≈ 10, eau de Javel ≈ 13)."
   },
   {
     partie: 3,
     question: "Pourquoi le ciel est-il bleu le jour ?",
     options: [
       { texte: "Parce que l'air diffuse surtout la lumière bleue dans toutes les directions", correct: true },
-      { texte: "Parce que l'océan est bleu et qu'il se reflète dans le ciel", correct: false },
-      { texte: "Parce que l'ozone est bleu", correct: false },
-      { texte: "Parce que le Soleil est bleu", correct: false }
+      { texte: "Parce que l'océan est bleu et qu'il se reflète dans le ciel", correct: false, pourquoi: "Le ciel est bleu même loin des océans, au-dessus des déserts." },
+      { texte: "Parce que l'ozone est bleu", correct: false, pourquoi: "L'ozone est un gaz presque incolore, présent en faible quantité." },
+      { texte: "Parce que le Soleil est bleu", correct: false, pourquoi: "Le Soleil est blanc (il nous semble jaune) : c'est l'air qui colore le ciel." }
     ],
     explication: "L'air diffuse la lumière bleue (qui a une petite longueur d'onde) dans toutes les directions, plus que les autres couleurs. Astuce : le violet est diffusé encore plus, mais nos yeux sont plus sensibles au bleu — et le Soleil émet moins de violet que de bleu."
   },
@@ -663,9 +1200,9 @@ const QUESTIONS = [
     question: "Qu'est-ce qu'une année-lumière ?",
     options: [
       { texte: "Une distance : celle parcourue par la lumière en un an", correct: true },
-      { texte: "Une durée : le temps que met la lumière pour voyager", correct: false },
-      { texte: "Une vitesse : la vitesse de la lumière", correct: false },
-      { texte: "Un poids : la masse de la lumière", correct: false }
+      { texte: "Une durée : le temps que met la lumière pour voyager", correct: false, pourquoi: "C'est l'erreur la plus courante : une année-lumière mesure une distance, pas un temps." },
+      { texte: "Une vitesse : la vitesse de la lumière", correct: false, pourquoi: "La vitesse de la lumière, c'est 299 792 km/s : ce n'est pas une année-lumière." },
+      { texte: "Un poids : la masse de la lumière", correct: false, pourquoi: "La lumière n'a pas de masse." }
     ],
     explication: "Une année-lumière est une distance, pas une durée : c'est ce que la lumière parcourt en un an, soit environ 9 460 milliards de km."
   },
@@ -674,11 +1211,363 @@ const QUESTIONS = [
     question: "Les anneaux de Saturne sont surtout composés de...",
     options: [
       { texte: "Glace, poussière et petits rochers", correct: true },
-      { texte: "Gaz brûlant", correct: false },
-      { texte: "Or et diamants", correct: false },
-      { texte: "Nuages colorés", correct: false }
+      { texte: "Gaz brûlant", correct: false, pourquoi: "Les anneaux sont froids et faits de solides, pas de gaz." },
+      { texte: "Or et diamants", correct: false, pourquoi: "Belle idée, mais ce ne sont que de la glace et de la roche !" },
+      { texte: "Nuages colorés", correct: false, pourquoi: "Les nuages sont dans l'atmosphère de Saturne, pas dans ses anneaux." }
     ],
     explication: "Des milliards de morceaux de glace, de poussière et de petits rochers, de la taille d'un grain de sable à une maison."
+  },
+  {
+    partie: 3,
+    question: "Pourquoi voit-on un éclair avant d'entendre le tonnerre ?",
+    options: [
+      { texte: "Parce que la lumière va beaucoup plus vite que le son", correct: true },
+      { texte: "Parce que les yeux réagissent plus vite que les oreilles", correct: false, pourquoi: "Nos yeux et nos oreilles réagissent presque aussi vite : c'est la lumière qui va plus vite." },
+      { texte: "Parce que le tonnerre se produit après l'éclair", correct: false, pourquoi: "L'éclair et le tonnerre ont lieu exactement au même moment." },
+      { texte: "Parce que le son met du temps à se fabriquer", correct: false, pourquoi: "Le son naît instantanément, mais il voyage beaucoup plus lentement." }
+    ],
+    explication: "L'éclair et le tonnerre ont lieu en même temps, mais la lumière va environ 880 000 fois plus vite que le son ! En comptant les secondes entre les deux et en divisant par 3, on connaît la distance de l'orage (en kilomètres)."
+  },
+  {
+    partie: 3,
+    question: "Qu'est-ce qu'un arc-en-ciel ?",
+    options: [
+      { texte: "La lumière du Soleil décomposée en couleurs par les gouttes d'eau", correct: true },
+      { texte: "Un pont de peinture posé sur les nuages", correct: false, pourquoi: "Personne ne peint les arcs-en-ciel : c'est un phénomène de lumière." },
+      { texte: "La réflexion de la mer dans le ciel", correct: false, pourquoi: "On voit des arcs-en-ciel aussi au-dessus des chutes d'eau et des arrosages." },
+      { texte: "Des nuages colorés par le vent", correct: false, pourquoi: "Les nuages restent blancs ou gris : c'est la lumière qui se décompose." }
+    ],
+    explication: "Chaque goutte d'eau agit comme un petit prisme : la lumière blanche du Soleil se sépare en rouge, orange, jaune, vert, bleu et violet."
+  },
+  {
+    partie: 3,
+    question: "Que devient l'ombre d'un objet quand on l'éloigne de la lampe ?",
+    options: [
+      { texte: "Elle devient plus petite", correct: true },
+      { texte: "Elle devient plus grande", correct: false, pourquoi: "C'est le contraire : plus l'objet est proche de la lampe, plus l'ombre est grande." },
+      { texte: "Elle change de couleur", correct: false, pourquoi: "Une ombre est plus sombre, mais elle garde la couleur du mur." },
+      { texte: "Elle disparaît complètement", correct: false, pourquoi: "Tant que la lumière est bloquée, l'ombre existe." }
+    ],
+    explication: "Plus l'objet est proche de la lampe, plus son ombre est grande. En l'éloignant de la lampe (donc en le rapprochant du mur), son ombre rétrécit : c'est le jeu des ombres chinoises !"
+  },
+  {
+    partie: 3,
+    question: "Le sel de table est fait de deux éléments chimiques réunis. Lesquels ?",
+    options: [
+      { texte: "Du sodium, un métal, et du chlore, un gaz toxique", correct: true },
+      { texte: "Du calcium et du fluor", correct: false, pourquoi: "Le calcium est dans les os et les coquillages, et le fluor dans certains dentifrices — mais pas dans le sel." },
+      { texte: "Du magnésium et de l'oxygène", correct: false, pourquoi: "Le magnésium est un métal léger et l'oxygène un gaz : ensemble, ils forment de la magnésie, pas du sel de cuisine." },
+      { texte: "Du carbone et du silicium", correct: false, pourquoi: "Le carbone est dans le diamant et le silicium dans le sable : c'est tout autre chose." }
+    ],
+    explication: "Le chlorure de sodium (NaCl), c'est ça, le sel de cuisine ! Séparément, le sodium est un métal qui brûle dans l'eau et le chlore un gaz toxique. Mais une fois unis, leurs propriétés changent complètement : on obtient des cristaux stables et inoffensifs... que l'on saupoudre sur les frites !"
+  },
+  {
+    partie: 3,
+    question: "Avec de la peinture, quelle couleur obtient-on en mélangeant du jaune et du bleu ?",
+    options: [
+      { texte: "Le vert", correct: true },
+      { texte: "Le rouge", correct: false, pourquoi: "Le rouge est une couleur primaire : on ne l'obtient pas en mélangeant deux autres couleurs." },
+      { texte: "L'orange", correct: false, pourquoi: "L'orange vient du mélange jaune + rouge." },
+      { texte: "Le violet", correct: false, pourquoi: "Le violet vient du mélange bleu + rouge." }
+    ],
+    explication: "Jaune + bleu = vert. Et aussi : jaune + rouge = orange, bleu + rouge = violet. (Avec de la lumière, c'est différent : c'est le mélange rouge + vert qui donne du jaune !)"
+  },
+  {
+    partie: 3,
+    question: "Au sommet du Mont-Blanc, à quelle température l'eau commence-t-elle à bouillir ?",
+    options: [
+      { texte: "Vers 85 °C : elle bout à plus basse température qu'en bas", correct: true },
+      { texte: "À 100 °C, exactement comme au niveau de la mer", correct: false, pourquoi: "100 °C, c'est au niveau de la mer : en altitude, la pression de l'air est plus faible et l'eau bout plus tôt." },
+      { texte: "Vers 70 °C", correct: false, pourquoi: "C'est encore trop bas : vers 70-75 °C, il faudrait être à plus de 7 000 m d'altitude." },
+      { texte: "Elle ne bout jamais : elle se transforme directement en glace", correct: false, pourquoi: "L'eau bout bien là-haut, sinon impossible de faire cuire des pâtes — mais il faut plus de temps !" }
+    ],
+    explication: "Au sommet du Mont-Blanc (4 808 m), l'air pousse beaucoup moins sur l'eau : elle bout vers 85 °C. Conséquence pratique : la cuisson des aliments y dure beaucoup plus longtemps, car l'eau est moins chaude. C'est aussi pour cela que les marmites « à pression » font cuire plus vite : elles augmentent la pression."
+  },
+  {
+    partie: 3,
+    question: "D'où vient le vent ?",
+    options: [
+      { texte: "De l'air qui se déplace entre les zones chaudes et les zones froides", correct: true },
+      { texte: "Du mouvement des étoiles dans le ciel", correct: false, pourquoi: "Les étoiles sont bien trop loin pour agiter notre air." },
+      { texte: "De la respiration des arbres", correct: false, pourquoi: "Les arbres ne soufflent pas comme des soufflets." },
+      { texte: "Des vagues de la mer uniquement", correct: false, pourquoi: "Les vagues déplacent de l'eau ; le vent existe aussi loin de la mer." }
+    ],
+    explication: "L'air chaud monte et l'air froid descend pour prendre sa place : ces grands déplacements d'air, c'est le vent !"
+  },
+  {
+    partie: 3,
+    question: "Pourquoi l'eau de mer est-elle salée ?",
+    options: [
+      { texte: "Parce qu'elle contient des sels et des minéraux dissous", correct: true },
+      { texte: "Parce que le sable des plages est salé", correct: false, pourquoi: "Le sable est de la roche broyée : il n'est pas salé." },
+      { texte: "Parce que les poissons y déposent du sel", correct: false, pourquoi: "Les poissons n'ajoutent pas de sel : c'est l'eau qui en contient naturellement." },
+      { texte: "Parce que le Soleil fabrique du sel", correct: false, pourquoi: "Le Soleil évapore l'eau, mais il ne fabrique pas de sel : le sel vient des roches." }
+    ],
+    explication: "Les rivières emportent des minéraux des roches jusqu'à la mer. L'eau s'évapore, mais le sel, lui, reste : il s'accumule depuis des millions d'années."
+  },
+  {
+    partie: 3,
+    question: "De quoi est composé l'air que nous respirons ?",
+    options: [
+      { texte: "Surtout d'azote (environ 78 %) et d'oxygène (environ 21 %)", correct: true },
+      { texte: "Surtout d'oxygène", correct: false, pourquoi: "L'oxygène est essentiel à notre respiration, mais il ne représente qu'environ un cinquième de l'air." },
+      { texte: "Surtout de dioxyde de carbone (CO₂)", correct: false, pourquoi: "Le CO₂ est très important pour le climat, mais il ne forme qu'environ 0,04 % de l'air." },
+      { texte: "D'oxygène pur", correct: false, pourquoi: "Respirer de l'oxygène pur serait même dangereux : l'air est surtout fait d'azote." }
+    ],
+    explication: "L'air est un mélange de gaz : environ 78 % d'azote, 21 % d'oxygène, et de petites quantités d'argon, de CO₂ (environ 0,04 %) et de vapeur d'eau."
+  },
+  {
+    partie: 3,
+    question: "Quelles sont les grandes couches de la Terre, de l'extérieur vers l'intérieur ?",
+    options: [
+      { texte: "La croûte, le manteau, puis le noyau", correct: true },
+      { texte: "La croûte, puis déjà le noyau", correct: false, pourquoi: "Il manque le manteau : une épaisse couche de roche très chaude entre les deux." },
+      { texte: "La terre, l'eau, puis l'air", correct: false, pourquoi: "Ce sont des enveloppes autour de la planète, pas ses couches internes." },
+      { texte: "De la roche, puis un océan d'eau au centre", correct: false, pourquoi: "Au centre de la Terre, il n'y a pas d'eau : c'est un noyau de fer et de nickel." }
+    ],
+    explication: "La Terre est comme un oignon : une fine croûte rocheuse (où nous vivons), un manteau épais de roche brûlante, et un noyau de fer et de nickel, si chaud qu'il est en partie liquide."
+  },
+  {
+    partie: 3,
+    question: "Qu'est-ce qu'un fossile ?",
+    options: [
+      { texte: "Un reste ou une trace d'un être vivant ancien, conservé dans la roche", correct: true },
+      { texte: "Une pierre précieuse très rare", correct: false, pourquoi: "Un fossile n'a rien d'une gemme : c'est un témoin d'un être vivant du passé." },
+      { texte: "Une roche fondue dans un volcan", correct: false, pourquoi: "La roche volcanique vient du manteau ; un fossile, lui, vient d'un être vivant." },
+      { texte: "Un os de dinosaure, uniquement", correct: false, pourquoi: "Les os de dinosaure sont des fossiles, mais aussi les empreintes, les coquilles, les feuilles..." }
+    ],
+    explication: "Il y a des millions d'années, des animaux ou des plantes se sont enfoncés dans la boue devenue roche, et leurs restes ou empreintes s'y sont conservés : ce sont des fossiles, de vraies photos du passé !"
+  },
+  {
+    partie: 3,
+    question: "Comment se forment les nuages ?",
+    options: [
+      { texte: "La vapeur d'eau monte, refroidit, et se transforme en minuscules gouttelettes", correct: true },
+      { texte: "C'est de la fumée montée des villes", correct: false, pourquoi: "La fumée pollue l'air, mais les nuages sont faits d'eau." },
+      { texte: "Ce sont des morceaux de brouillard arrachés par le vent", correct: false, pourquoi: "Le brouillard est déjà un nuage... posé au sol ! L'un ne fabrique pas l'autre." },
+      { texte: "L'eau de la mer se met à bouillir", correct: false, pourquoi: "L'eau de mer s'évapore sans bouillir, simplement chauffée par le Soleil." }
+    ],
+    explication: "Le Soleil fait s'évaporer l'eau des rivières, des lacs et des mers. En montant, la vapeur d'eau refroidit et se condense en gouttelettes minuscules autour de poussières : des millions de ces gouttelettes forment un nuage !"
+  },
+  {
+    partie: 3,
+    question: "À quoi sert la couche d'ozone ?",
+    options: [
+      { texte: "À nous protéger des rayons ultraviolets (UV) du Soleil", correct: true },
+      { texte: "À garder la chaleur de la Terre", correct: false, pourquoi: "C'est l'atmosphère et les gaz à effet de serre qui gardent la chaleur, pas l'ozone." },
+      { texte: "À fabriquer l'oxygène que l'on respire", correct: false, pourquoi: "L'oxygène vient de la photosynthèse des plantes et des algues ; l'ozone a un autre rôle." },
+      { texte: "À créer les aurores boréales", correct: false, pourquoi: "Les aurores viennent de particules solaires qui percutent l'atmosphère près des pôles." }
+    ],
+    explication: "L'ozone est un gaz rare situé dans la stratosphère, à 20-30 km au-dessus de nos têtes. Il absorbe la majeure partie des rayons ultraviolets du Soleil, dangereux pour la peau et les yeux : c'est notre bouclier naturel !"
+  },
+  {
+    partie: 3,
+    question: "Pourquoi a-t-on des marées au bord de la mer ?",
+    options: [
+      { texte: "Surtout à cause de l'attraction de la Lune sur les océans", correct: true },
+      { texte: "À cause du vent qui pousse l'eau deux fois par jour", correct: false, pourquoi: "Le vent crée des vagues, mais pas le rythme régulier des marées." },
+      { texte: "Parce que la Terre tourne sur elle-même", correct: false, pourquoi: "La rotation fait passer la marée de lieu en lieu, mais c'est la Lune qui soulève l'eau." },
+      { texte: "Parce que le fond de la mer remonte", correct: false, pourquoi: "Le fond marin ne bouge pas : c'est le niveau de l'eau qui monte et descend." }
+    ],
+    explication: "La Lune attire l'eau des océans : du côté qui lui fait face, l'eau se soulève (marée haute), et de l'autre côté aussi. Le Soleil joue un rôle plus faible. Avec la rotation de la Terre, il y a environ deux marées hautes par jour."
+  },
+  {
+    partie: 3,
+    question: "De quoi sont faits tous les objets autour de toi, à l'échelle la plus petite ?",
+    options: [
+      { texte: "D'atomes : de minuscules particules de matière", correct: true },
+      { texte: "De cellules vivantes", correct: false, pourquoi: "Les cellules, c'est du vivant : une roche ou un métal, eux, sont faits d'atomes." },
+      { texte: "De poussière de plus en plus fine", correct: false, pourquoi: "Même la poussière est faite d'atomes : on ne peut pas découper la matière indéfiniment." },
+      { texte: "De rien, c'est une invention des scientifiques", correct: false, pourquoi: "Les atomes existent vraiment : aujourd'hui, on peut même les observer avec des instruments très puissants." }
+    ],
+    explication: "Tout — l'air, l'eau, ton corps, les roches, les étoiles — est fait d'atomes : des milliards de milliards dans une seule goutte d'eau. Chaque atome d'oxygène ou de carbone est identique, partout dans l'univers !"
+  },
+  {
+    partie: 3,
+    question: "Que se passe-t-il quand un volcan entre en éruption ?",
+    options: [
+      { texte: "Du magma (de la roche en fusion) sort de la Terre par le cratère : c'est la lave", correct: true },
+      { texte: "La montagne explose et disparaît", correct: false, pourquoi: "La montagne ne disparaît pas : elle crache du magma et des cendres, souvent par le sommet." },
+      { texte: "Un tremblement de terre soulève la montagne", correct: false, pourquoi: "Les séismes font vibrer le sol, mais ils ne font pas sortir de lave." },
+      { texte: "Une nappe d'eau souterraine remonte", correct: false, pourquoi: "Il peut y avoir de la vapeur d'eau, mais ce qui sort du volcan, c'est de la roche en fusion." }
+    ],
+    explication: "Sous la croûte terrestre, des roches sont si chaudes qu'elles fondent : c'est le magma. Quand la pression devient trop forte, il remonte et sort par le volcan : en surface, on l'appelle la lave, qui coule parfois à plus de 1 000 °C."
+  },
+  {
+    partie: 4,
+    question: "Pourquoi dit-on que les forêts sont les « poumons de la Terre » ?",
+    options: [
+      { texte: "Parce que les arbres captent du CO₂ et rejettent de l'oxygène", correct: true },
+      { texte: "Parce qu'elles fabriquent le vent", correct: false, pourquoi: "Le vent vient des différences de température dans l'atmosphère, pas des arbres." },
+      { texte: "Parce qu'elles purifient l'eau de pluie", correct: false, pourquoi: "Les sols filtrent l'eau, mais l'image des poumons parle de l'air que l'on respire." },
+      { texte: "Parce qu'elles donnent de l'ombre", correct: false, pourquoi: "L'ombre est agréable, mais c'est l'échange de gaz qui a valu aux forêts leur surnom." }
+    ],
+    explication: "En faisant la photosynthèse, les arbres captent le dioxyde de carbone (CO₂) de l'air et rejettent de l'oxygène. Ils stockent aussi du carbone dans leur bois : protéger les forêts aide donc à réguler le climat."
+  },
+  {
+    partie: 4,
+    question: "À quoi sert le tri et le recyclage des déchets ?",
+    options: [
+      { texte: "À fabriquer de nouveaux objets avec les anciens, sans repartir de la matière première", correct: true },
+      { texte: "À faire disparaître les déchets par magie", correct: false, pourquoi: "Rien ne disparaît : un déchet trié est transformé, pas effacé." },
+      { texte: "À transformer les déchets en électricité", correct: false, pourquoi: "C'est l'incinération qui produit de l'énergie en brûlant ; le recyclage, lui, refabrique de la matière." },
+      { texte: "À remplir les bacs de jolies couleurs", correct: false, pourquoi: "Les bacs colorés servent à séparer les matières pour qu'elles puissent être refabriquées." }
+    ],
+    explication: "Une bouteille en plastique triée peut devenir une fibre de vêtement, un canapé... ou une nouvelle bouteille ! Le recyclage économise les ressources (arbres, pétrole, minerais) et l'énergie."
+  },
+  {
+    partie: 4,
+    question: "Laquelle de ces énergies est renouvelable ?",
+    options: [
+      { texte: "L'énergie solaire", correct: true },
+      { texte: "Le charbon", correct: false, pourquoi: "Le charbon s'est formé sur des millions d'années : on le consomme bien plus vite qu'il ne se renouvelle." },
+      { texte: "Le pétrole", correct: false, pourquoi: "Le pétrole vient d'organismes marins anciens : ses réserves sont limitées." },
+      { texte: "Le gaz naturel", correct: false, pourquoi: "Le gaz naturel est un combustible fossile, comme le charbon et le pétrole." }
+    ],
+    explication: "Le Soleil, le vent (éolien), l'eau (hydrolienne) et la chaleur de la Terre (géothermie) se renouvellent en permanence : ce sont des énergies renouvelables. Les énergies fossiles, elles, émettent du CO₂ en brûlant."
+  },
+  {
+    partie: 4,
+    question: "Pourquoi les abeilles sont-elles si importantes pour la nature ?",
+    options: [
+      { texte: "Elles transportent le pollen de fleur en fleur : sans elles, beaucoup de fruits ne naîtraient pas", correct: true },
+      { texte: "Seulement parce qu'elles fabriquent du miel", correct: false, pourquoi: "Le miel est un délicieux bonus ; leur grand rôle pour la nature, c'est la pollinisation." },
+      { texte: "Parce qu'elles fabriquent la cire des arbres", correct: false, pourquoi: "La cire des abeilles vient de leur propre corps, et ce n'est pas leur utilité principale." },
+      { texte: "Parce qu'elles mangent les insectes nuisibles", correct: false, pourquoi: "Ce sont plutôt les coccinelles ou les oiseaux qui mangent les pucerons." }
+    ],
+    explication: "En butinant, les abeilles couvrent de pollen les fleurs qu'elles visitent : c'est la pollinisation, indispensable pour que les fleurs deviennent des fruits et des graines. Une grande partie de ce que nous mangeons en dépend !"
+  },
+  {
+    partie: 4,
+    question: "Que veut dire « espèce en voie de disparition » ?",
+    options: [
+      { texte: "Il en reste très peu : elle risque de disparaître à jamais", correct: true },
+      { texte: "Elle vient d'apparaître", correct: false, pourquoi: "C'est même l'inverse : son effectif diminue fortement." },
+      { texte: "Elle a été découverte récemment", correct: false, pourquoi: "Une espèce peut être connue depuis longtemps et être en grand danger." },
+      { texte: "Elle a déménagé vers un autre pays", correct: false, pourquoi: "Certaines espèces migrent, mais une espèce en danger risque surtout de s'éteindre." }
+    ],
+    explication: "Quand une espèce perd ses forêts, sa nourriture ou son climat, ses effectifs chutent. S'il ne reste que quelques individus, elle est « en voie de disparition » : on la protège alors avec des réserves naturelles et des lois."
+  },
+  {
+    partie: 4,
+    question: "Combien de temps met un déchet plastique jeté dans la nature à se dégrader ?",
+    options: [
+      { texte: "Plusieurs centaines d'années", correct: true },
+      { texte: "Quelques jours", correct: false, pourquoi: "Quelques jours, c'est le temps d'une peau de banane ou d'un morceau de papier." },
+      { texte: "Quelques semaines", correct: false, pourquoi: "Trop court : même une bouteille met des décennies à se fragmenter." },
+      { texte: "Quelques mois", correct: false, pourquoi: "Non : le plastique se dégrade extrêmement lentement." }
+    ],
+    explication: "Une bouteille en plastique met environ 450 ans à se dégrader, et elle ne disparaît pas vraiment : elle se fragmente en microplastiques qui polluent les sols, les rivières et l'océan. Mieux vaut la trier et la recycler !"
+  },
+  {
+    partie: 4,
+    question: "Qu'est-ce que le compostage ?",
+    options: [
+      { texte: "Transformer les restes de fruits, de légumes et de feuilles en engrais naturel", correct: true },
+      { texte: "Brûler les déchets pour se chauffer", correct: false, pourquoi: "Brûler n'est pas composter : le compostage laisse les organismes du sol travailler." },
+      { texte: "Enterrer le plastique dans le jardin", correct: false, pourquoi: "Seuls les déchets organiques (nourriture, feuilles, marc de café) se compostent." },
+      { texte: "Laver les déchets avant de les jeter", correct: false, pourquoi: "Le recyclage du verre ou du papier est autre chose ; le compostage concerne les restes de nourriture." }
+    ],
+    explication: "Dans un composteur, les vers, champignons et bactéries transforment les restes de nourriture et les feuilles mortes en un sol riche, un engrais naturel parfait pour les plantes. En plus, cela allège les poubelles !"
+  },
+  {
+    partie: 4,
+    question: "D'où vient la plus grande partie de l'oxygène que nous respirons ?",
+    options: [
+      { texte: "Des algues microscopiques qui flottent dans les océans (le phytoplancton)", correct: true },
+      { texte: "Des forêts, comme l'Amazonie", correct: false, pourquoi: "Les forêts en produisent beaucoup, mais plus de la moitié de l'oxygène de la planète sort de l'océan." },
+      { texte: "De la couche d'ozone", correct: false, pourquoi: "La couche d'ozone nous protège des rayons ultraviolets ; elle ne fabrique pas d'oxygène." },
+      { texte: "Des gaz relâchés par les volcans", correct: false, pourquoi: "Les volcans rejettent surtout du CO₂ et de la vapeur d'eau, pas d'oxygène." }
+    ],
+    explication: "On imagine souvent que l'oxygène vient surtout des arbres, mais c'est le phytoplancton — des algues microscopiques à la surface des océans — qui en produit plus de la moitié. Ces invisibles nous doivent une fière chandelle : sans eux, on ne pourrait presque pas respirer !"
+  },
+  {
+    partie: 5,
+    question: "Qu'est-ce qu'un algorithme ?",
+    options: [
+      { texte: "Une suite d'instructions précises pour résoudre un problème", correct: true },
+      { texte: "Un ordinateur très puissant", correct: false, pourquoi: "Un ordinateur exécute des programmes ; l'algorithme, c'est la recette d'instructions à suivre." },
+      { texte: "Un virus informatique", correct: false, pourquoi: "Un virus est un programme nuisible ; un algorithme peut servir à tout, même à trier ses cartes de jeu." },
+      { texte: "Une formule réservée aux savants", correct: false, pourquoi: "Une recette de cuisine ou les règles d'un jeu sont déjà des algorithmes : chacun en utilise !" }
+    ],
+    explication: "Une recette de cuisine, les règles du Uno, le chemin pour aller à l'école... tout cela ressemble à un algorithme : des étapes précises, dans l'ordre, qui mènent à un résultat. Les programmes d'ordinateur sont des algorithmes écrits pour la machine."
+  },
+  {
+    partie: 5,
+    question: "Dans quelle « langue » les ordinateurs comprennent-ils tout, au plus fond ?",
+    options: [
+      { texte: "Des 0 et des 1 : c'est le binaire", correct: true },
+      { texte: "De l'anglais", correct: false, pourquoi: "On programme dans des langages proches de l'anglais (Python, Scratch...), mais la machine ne voit finalement que des 0 et des 1." },
+      { texte: "Des chiffres de 0 à 9", correct: false, pourquoi: "Notre numération est décimale (base 10) ; l'ordinateur, lui, travaille en base 2." },
+      { texte: "Des signaux de couleur", correct: false, pourquoi: "La couleur des écrans est faite de lumière rouge, verte et bleue ; dans la machine, ce sont des signaux codés en 0 et 1." }
+    ],
+    explication: "Un bit, c'est un 0 ou un 1, comme un interrupteur éteint ou allumé. Avec assez de bits, on code les lettres, les sons, les images, les vidéos... tout ce que tu vois sur un écran !"
+  },
+  {
+    partie: 5,
+    question: "Qui est considérée comme la première programmeuse de l'histoire ?",
+    options: [
+      { texte: "Ada Lovelace, dans les années 1840", correct: true },
+      { texte: "Marie Curie", correct: false, pourquoi: "Marie Curie est célèbre pour ses travaux sur la radioactivité, bien plus tard, et dans une autre discipline." },
+      { texte: "Steve Jobs", correct: false, pourquoi: "Il a popularisé l'ordinateur et le smartphone au XXe siècle, un siècle après Ada Lovelace." },
+      { texte: "La reine Victoria", correct: false, pourquoi: "Elle a régné à la même époque qu'Ada Lovelace, mais elle n'a pas écrit de programme !" }
+    ],
+    explication: "Ada Lovelace, mathématicienne anglaise, a écrit en 1843 les premières instructions destinées à une machine calculatrice (la machine de Charles Babbage)... bien avant l'invention de l'ordinateur électronique. Un langage de programmation porte aujourd'hui son nom."
+  },
+  {
+    partie: 5,
+    question: "Que fait un capteur sur un robot ?",
+    options: [
+      { texte: "Il détecte ce qui l'entoure : lumière, distance, chaleur, son...", correct: true },
+      { texte: "Il fait avancer les roues", correct: false, pourquoi: "Ce sont les moteurs qui font bouger le robot ; le capteur lui indique quoi faire." },
+      { texte: "Il recharge la batterie", correct: false, pourquoi: "La batterie stocke l'énergie ; le capteur, lui, recueille des informations." },
+      { texte: "Il répare le robot", correct: false, pourquoi: "Un capteur ne répare rien : il informe le « cerveau » du robot." }
+    ],
+    explication: "Un capteur, c'est comme un organe des sens : caméra ou radar pour une voiture autonome, détecteur de chaleur, micro... Le programme utilise ces informations pour décider la prochaine action du robot."
+  },
+  {
+    partie: 5,
+    question: "Qu'est-ce qu'un nombre premier ?",
+    options: [
+      { texte: "Un nombre qui n'est divisible que par 1 et par lui-même (comme 2, 3, 5, 7...)", correct: true },
+      { texte: "Un nombre très grand", correct: false, pourquoi: "2 est tout petit, et pourtant c'est le plus petit nombre premier." },
+      { texte: "Un nombre qui se termine par 1", correct: false, pourquoi: "21 se termine par 1, mais 21 = 3 × 7 : ce n'est pas un nombre premier." },
+      { texte: "Un nombre qui s'écrit avec un seul chiffre", correct: false, pourquoi: "11, 13 ou 17 ont deux chiffres et sont pourtant premiers." }
+    ],
+    explication: "Un nombre premier ne peut pas s'obtenir en multipliant deux nombres plus petits : 2, 3, 5, 7, 11, 13... Mais 4 (2 × 2) ou 9 (3 × 3) ne le sont pas. Il en existe une infinité : les mathématiciens les étudient encore !"
+  },
+  {
+    partie: 5,
+    question: "Qu'est-ce qu'une machine simple, comme un levier, une poulie ou une vis ?",
+    options: [
+      { texte: "Un outil qui facilite le travail en transformant une force", correct: true },
+      { texte: "Une machine qui fonctionne sans énergie", correct: false, pourquoi: "Même un levier a besoin d'une force (ton bras, le poids de l'eau...) : rien ne travaille sans énergie." },
+      { texte: "Un robot qui pense tout seul", correct: false, pourquoi: "Un robot est une machine complexe ; une machine simple, comme la roue, n'a pas d'électronique." },
+      { texte: "Une machine qui travaille toute seule", correct: false, pourquoi: "Une machine simple n'agit pas seule : elle aide ton effort, elle ne le remplace pas." }
+    ],
+    explication: "Un levier soulève une pierre lourde, une poulie hisse un fardeau, un plan incliné fait monter une caisse sans la soulever, une vis serre fort avec peu d'effort... Ces machines simples sont à la base de toutes les inventions, des pyramides aux grues géantes."
+  },
+  {
+    partie: 5,
+    question: "Que sont les pixels sur un écran ?",
+    options: [
+      { texte: "De minuscules points de lumière rouge, verte et bleue qui forment l'image", correct: true },
+      { texte: "Des petites fenêtres ouvertes sur Internet", correct: false, pourquoi: "Les fenêtres sont des zones de l'écran, composées de millions de pixels." },
+      { texte: "Des touches du clavier", correct: false, pourquoi: "Le clavier sert à taper ; les pixels, eux, affichent l'image." },
+      { texte: "Des antennes qui captent le wifi", correct: false, pourquoi: "Le wifi est invisible ; les pixels, on peut les voir avec une loupe sur l'écran !" }
+    ],
+    explication: "Un écran affiche des milliers, voire des millions de pixels. Chacun mélange trois lumières colorées (rouge, verte, bleue) en différentes intensités : rapprochés, ils donnent toutes les couleurs et forment l'image."
+  },
+  {
+    partie: 5,
+    question: "Pourquoi appelle-t-on une panne d'ordinateur un « bug » (« insecte » en anglais) ?",
+    options: [
+      { texte: "D'après un vrai insecte retrouvé coincé dans une machine, en 1947", correct: true },
+      { texte: "Parce que les premiers ordinateurs ressemblaient à des insectes", correct: false, pourquoi: "Les premiers ordinateurs ressemblaient surtout à d'immenses armoires remplies de câbles." },
+      { texte: "Parce que « bug » est l'abréviation d'une expression compliquée", correct: false, pourquoi: "Faux : « bug » veut tout simplement dire « insecte » ou « bestiole » en anglais." },
+      { texte: "Parce que les virus informatiques piquent les fichiers", correct: false, pourquoi: "Le mot « virus » est une autre image empruntée à la médecine ; l'histoire du « bug », elle, vient d'un insecte." }
+    ],
+    explication: "En septembre 1947, les opérateurs du célèbre ordinateur Harvard Mark II ont trouvé un papillon de nuit (une mite) coincé dans un relais, à l'origine d'une panne. Ils l'ont collé dans leur carnet avec la note « premier cas réel de bug trouvé ». Le mot existait déjà chez les ingénieurs, mais cette anecdote l'a rendu célèbre."
   }
 ];
 
@@ -700,22 +1589,48 @@ function melanger(liste) {
   return copie;
 }
 
-// Ordre des propositions mélangé pour chaque question (la lettre change donc à chaque partie)
-QUESTIONS.forEach(function (q) {
-  q.optionsAffichees = melanger(q.options);
-  q.choix = null; // index de l'option choisie par l'enfant
-});
-
 const LETTRES = ["A", "B", "C", "D"];
+const NB_QUESTIONS = 30; // nombre de questions tirées au hasard à chaque partie
 
-// Diapositives : intro, puis (question, réponse) × 30, puis l'écran final
-const DIAPOS = [{ type: "intro" }];
-QUESTIONS.forEach(function (q, i) {
-  DIAPOS.push({ type: "question", index: i });
-  DIAPOS.push({ type: "reponse", index: i });
-});
-DIAPOS.push({ type: "final" });
+// Pioche NB_QUESTIONS questions au hasard, en équilibrant les thèmes,
+// et mélange les propositions de chacune (la lettre change donc à chaque partie).
+function tirerQuestions() {
+  const parPartie = PARTIES.map(function (_, p) {
+    return melanger(QUESTIONS.filter(function (q) { return q.partie === p; }));
+  });
 
+  const melangees = [];
+  for (let i = 0; melangees.length < QUESTIONS.length; i++) {
+    parPartie.forEach(function (liste) {
+      if (i < liste.length) melangees.push(liste[i]);
+    });
+  }
+
+  return melangees.slice(0, NB_QUESTIONS).map(function (q) {
+    return {
+      partie: q.partie,
+      question: q.question,
+      explication: q.explication,
+      optionsAffichees: melanger(q.options),
+      choix: null,     // index de l'option choisie par l'enfant
+      revelee: false   // devient vrai dès que la réponse a été montrée : le score est verrouillé
+    };
+  });
+}
+
+// Diapositives : intro, puis (question, réponse) par question, puis l'écran final
+function construireDiapos() {
+  const dia = [{ type: "intro" }];
+  selection.forEach(function (_, i) {
+    dia.push({ type: "question", index: i });
+    dia.push({ type: "reponse", index: i });
+  });
+  dia.push({ type: "final" });
+  return dia;
+}
+
+let selection = tirerQuestions();
+let DIAPOS = construireDiapos();
 let position = 0;
 
 /* ---------------- Éléments de la page ---------------- */
@@ -728,7 +1643,7 @@ const btnSuivant = document.getElementById("btnSuivant");
 
 function scoreActuel() {
   let score = 0;
-  QUESTIONS.forEach(function (q) {
+  selection.forEach(function (q) {
     if (q.choix !== null && q.optionsAffichees[q.choix].correct) score++;
   });
   return score;
@@ -748,43 +1663,59 @@ function rendreIntro() {
     <div class="type-ligne"><span class="badge-partie">🔬 Présentation</span></div>
     <h2 class="question-texte">Prêt(e) pour le défi science ?</h2>
     <ul class="intro-liste">
-      <li>📝 <strong>30 questions</strong> sur l'espace, le vivant, la physique et la Terre.</li>
+      <li>🎲 <strong>${NB_QUESTIONS} questions tirées au hasard</strong> parmi les ${QUESTIONS.length} du quiz : à chaque partie, jamais tout à fait le même défi !</li>
       <li>👀 Tu vois <strong>une question</strong>, puis sur l'écran suivant <strong>la réponse expliquée</strong>.</li>
-      <li>🖱️ Clique sur la bonne réponse avant de passer à la suite (c'est pour ton score, mais on ne voit rien tout de suite !).</li>
+      <li>🖱️ Clique sur la bonne réponse avant de passer à la suite (c'est pour ton score, mais on ne voit rien tout de suite !). Une fois la réponse découverte, ton choix est verrouillé.</li>
+      <li>💡 Si tu te trompes, l'écran suivant t'explique <strong>pourquoi ta réponse était fausse</strong>.</li>
       <li>🏆 À la fin : ton score, ta mention, et un <strong>défi bonus</strong>.</li>
     </ul>
     <div class="explication"><strong>Pas de triche !</strong> L'important, c'est de comprendre les explications. Même les scientifiques se trompent parfois... et c'est comme ça qu'on apprend.</div>`;
 }
 
 function rendreQuestion(i) {
-  const q = QUESTIONS[i];
+  const q = selection[i];
   let html = `
     <div class="type-ligne">
       <span class="badge-partie">${PARTIES[q.partie]}</span>
-      <span class="numero-question">Question ${i + 1} / ${QUESTIONS.length}</span>
+      <span class="numero-question">Question ${i + 1} / ${selection.length}</span>
     </div>
     <h2 class="question-texte">${q.question}</h2>
     <div class="options">`;
 
   q.optionsAffichees.forEach(function (opt, j) {
-    const choisie = q.choix === j ? " choisie" : "";
+    let classe = "option";
+    if (q.revelee) {
+      // La réponse a déjà été montrée : le choix est verrouillé
+      classe += " verrouillee";
+      if (opt.correct) {
+        classe += " bonne";
+      } else if (q.choix === j) {
+        classe += " fausse";
+      }
+    } else if (q.choix === j) {
+      classe += " choisie";
+    }
+    const balise = q.revelee ? "div" : "button";
     html += `
-      <button class="option${choisie}" data-option="${j}">
+      <${balise} class="${classe}" data-option="${j}">
         <span class="lettre">${LETTRES[j]}</span>
         <span>${opt.texte}</span>
-      </button>`;
+      </${balise}>`;
   });
 
   html += `
     </div>
-    <div class="explication"><strong>Astuce :</strong> choisis ta réponse, puis clique sur « Voir la réponse » pour découvrir l'explication.</div>`;
+    <div class="explication">${q.revelee
+      ? "<strong>🔒 Réponse déjà validée :</strong> elle ne peut plus être changée. Clique sur « Voir la réponse → » pour revoir l'explication."
+      : "<strong>Astuce :</strong> choisis ta réponse, puis clique sur « Voir la réponse » pour découvrir l'explication."}</div>`;
   return html;
 }
 
 function rendreReponse(i) {
-  const q = QUESTIONS[i];
+  const q = selection[i];
   const aChoisi = q.choix !== null;
-  const juste = aChoisi && q.optionsAffichees[q.choix].correct;
+  const optChoisie = aChoisi ? q.optionsAffichees[q.choix] : null;
+  const juste = aChoisi && optChoisie.correct;
 
   let etiquette;
   if (!aChoisi) {
@@ -795,10 +1726,17 @@ function rendreReponse(i) {
     etiquette = `<div class="etiquette-reponse rate">❌ Pas tout à fait... on apprend avec ses erreurs !</div>`;
   }
 
+  // Explication ciblée : pourquoi LA réponse choisie par l'enfant est fausse
+  let noteErreur = "";
+  if (optChoisie && !juste && optChoisie.pourquoi) {
+    noteErreur = `
+    <div class="explication erreur"><strong>Tu as répondu « ${optChoisie.texte} » :</strong> ${optChoisie.pourquoi}</div>`;
+  }
+
   let html = `
     <div class="type-ligne">
       <span class="badge-partie">${PARTIES[q.partie]}</span>
-      <span class="numero-question">Réponse ${i + 1} / ${QUESTIONS.length}</span>
+      <span class="numero-question">Réponse ${i + 1} / ${selection.length}</span>
     </div>
     ${etiquette}
     <h2 class="question-texte">${q.question}</h2>
@@ -819,18 +1757,21 @@ function rendreReponse(i) {
   });
 
   html += `
-    </div>
+    </div>${noteErreur}
     <div class="explication"><strong>Pourquoi ?</strong> ${q.explication}</div>`;
   return html;
 }
 
 function rendreFinal() {
   const score = scoreActuel();
+  const sansReponse = selection.filter(function (q) { return q.choix === null; }).length;
+  const erreurs = selection.length - score - sansReponse;
   const m = mention(score);
   return `
     <div class="bloc-final">
       <div class="type-ligne"><span class="badge-partie">🏆 Résultat final</span></div>
-      <div class="grand-score">${score} / ${QUESTIONS.length}</div>
+      <div class="grand-score">${score} / ${selection.length}</div>
+      <p style="font-size:1.1rem;">✅ ${score} bonne${score > 1 ? "s" : ""} réponse${score > 1 ? "s" : ""} · ❌ ${erreurs} erreur${erreurs > 1 ? "s" : ""} · 🤔 ${sansReponse} sans réponse</p>
       <div class="mention">${m.titre}</div>
       <p style="font-size:1.15rem; line-height:1.5;">${m.texte}</p>
       <table class="bareme">
@@ -858,16 +1799,19 @@ function rendre() {
     compteur.textContent = "Bienvenue !";
   } else if (dia.type === "question") {
     carte.innerHTML = rendreQuestion(dia.index);
-    compteur.textContent = "Question " + (dia.index + 1) + " / " + QUESTIONS.length;
-    carte.querySelectorAll(".option").forEach(function (bouton) {
-      bouton.addEventListener("click", function () {
-        QUESTIONS[dia.index].choix = parseInt(bouton.getAttribute("data-option"), 10);
-        rendre();
+    compteur.textContent = "Question " + (dia.index + 1) + " / " + selection.length;
+    if (!selection[dia.index].revelee) {
+      carte.querySelectorAll(".option").forEach(function (bouton) {
+        bouton.addEventListener("click", function () {
+          selection[dia.index].choix = parseInt(bouton.getAttribute("data-option"), 10);
+          rendre();
+        });
       });
-    });
+    }
   } else if (dia.type === "reponse") {
+    selection[dia.index].revelee = true; // verrouille le choix : il ne peut plus changer
     carte.innerHTML = rendreReponse(dia.index);
-    compteur.textContent = "Réponse " + (dia.index + 1) + " / " + QUESTIONS.length;
+    compteur.textContent = "Réponse " + (dia.index + 1) + " / " + selection.length;
   } else {
     carte.innerHTML = rendreFinal();
     compteur.textContent = "Terminé !";
@@ -895,7 +1839,7 @@ function rendre() {
     btnSuivant.textContent = "Voir la réponse →";
     btnSuivant.style.display = "";
   } else if (dia.type === "reponse") {
-    const derniere = dia.index === QUESTIONS.length - 1;
+    const derniere = dia.index === selection.length - 1;
     btnSuivant.textContent = derniere ? "Voir mon score 🏆" : "Question suivante →";
     btnSuivant.style.display = "";
   } else {
@@ -920,7 +1864,8 @@ function reculer() {
 }
 
 function recommencer() {
-  QUESTIONS.forEach(function (q) { q.choix = null; });
+  selection = tirerQuestions(); // un tout nouveau tirage de 30 questions
+  DIAPOS = construireDiapos();
   position = 0;
   rendre();
 }
@@ -932,6 +1877,9 @@ btnPrecedent.addEventListener("click", reculer);
 
 document.addEventListener("keydown", function (e) {
   if (e.key === "ArrowRight" || e.key === " ") {
+    // Sur un bouton, la barre d'espace doit activer le bouton (choisir une option,
+    // ou cliquer sur « Suivant »), pas faire avancer en double.
+    if (e.key === " " && e.target && e.target.closest && e.target.closest("button")) return;
     if (DIAPOS[position].type !== "final" && btnSuivant.style.display !== "none") {
       e.preventDefault();
       avancer();
