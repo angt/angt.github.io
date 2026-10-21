@@ -613,6 +613,17 @@ const QUESTIONS = [
     explication: "Uranus est inclinée à presque 98° : elle « roule » sur son orbite, sans doute après un choc géant dans son passé. Résultat, ses saisons sont très étranges : 42 ans de jour puis 42 ans de nuit à chaque pôle."
   },
   {
+    partie: 0,
+    question: "Pourquoi ne voit-on jamais la « face cachée » de la Lune ?",
+    options: [
+      { texte: "Parce qu'elle tourne sur elle-même en 27 jours, le temps de son orbite", correct: true },
+      { texte: "Parce qu'elle ne tourne pas du tout sur elle-même, elle reste fixe", correct: false, pourquoi: "C'est l'inverse : si elle ne tournait pas sur elle-même, elle nous montrerait toutes ses faces au fil du mois." },
+      { texte: "Parce que sa face arrière reste toujours dans l'ombre et le noir", correct: false, pourquoi: "« Face cachée » ne veut pas dire « face sombre » : cette face est éclairée par le Soleil une fois par mois, autant que celle qu'on voit." },
+      { texte: "Parce que la Terre lui cache en permanence toute cette moitié", correct: false, pourquoi: "L'ombre de la Terre est bien plus étroite que la Lune : elle ne la cache qu'au moment des éclipses de Lune." }
+    ],
+    explication: "La Lune fait un tour sur elle-même en 27,3 jours, exactement le temps d'un tour autour de la Terre : c'est une rotation synchrone, et elle nous montre donc toujours le même hémisphère. Ce n'est pas un hasard : l'attraction de la Terre a peu à peu ralenti sa rotation jusqu'à ce verrouillage. Cette face arrière n'est pas noire pour autant : la sonde soviétique Luna 3 l'a photographiée pour la première fois en 1959."
+  },
+  {
     partie: 1,
     question: "Quel gaz les plantes captent-elles dans l'air pour fabriquer leur nourriture ?",
     options: [
@@ -877,6 +888,17 @@ const QUESTIONS = [
     explication: "Invisibles à l'œil nu, les bactéries vivent partout : dans le sol, l'eau, et même dans notre corps, où elles aident à digérer. Le yaourt, par exemple, est fabriqué grâce à des bactéries !"
   },
   {
+    partie: 1,
+    question: "Comment certains oiseaux peuvent-ils dormir perchés sur une branche sans tomber ?",
+    options: [
+      { texte: "Un tendon se bloque quand le poids de l'oiseau plie ses doigts", correct: true },
+      { texte: "Ils se réveillent dès qu'ils penchent, pour se rattraper à temps", correct: false, pourquoi: "Leur sommeil est profond : c'est justement la patte qui tient toute seule, sans que l'oiseau ait à intervenir." },
+      { texte: "Ils serrent la branche avec leurs muscles pendant toute la nuit", correct: false, pourquoi: "Contracter un muscle toute une nuit coûterait beaucoup d'énergie : chez eux, la prise est mécanique, sans effort." },
+      { texte: "Ils calent leurs ailes contre le tronc pour rester en équilibre", correct: false, pourquoi: "Beaucoup dorment au bout d'une branche, en plein vent, sans rien contre quoi s'appuyer." }
+    ],
+    explication: "Quand l'oiseau se pose, son poids fait plier ses doigts autour de la branche ; un tendon les bloque dans cette position. Plus il pèse, plus la prise se ferme : il peut dormir sans contracter un seul muscle. Pour repartir, il se redresse, et le tendon se débloque. Ce mécanisme s'appelle le verrouillage tendineux, et il équipe les pattes de la plupart des passereaux."
+  },
+  {
     partie: 2,
     question: "Dans le vide de l'espace, que se passe-t-il si tu cries ?",
     options: [
@@ -1139,6 +1161,17 @@ const QUESTIONS = [
       { texte: "Parce que le sel absorbe la neige", correct: false, pourquoi: "Le sel n'avale pas la neige : il l'empêche de rester de la glace solide." }
     ],
     explication: "Mélangé à l'eau, le sel l'empêche de geler à 0 °C : elle ne se solidifie qu'à une température bien plus basse. La glace fond donc... tant qu'il reste du sel !"
+  },
+  {
+    partie: 2,
+    question: "Dans une pièce à 20 °C, pourquoi une cuillère en métal paraît-elle plus froide qu'une cuillère en bois ?",
+    options: [
+      { texte: "Parce que le métal évacue la chaleur de ta peau plus vite", correct: true },
+      { texte: "Parce que le métal est vraiment plus froid que le bois", correct: false, pourquoi: "Non : les deux sont à la température de la pièce. C'est ton doigt qui se refroidit plus vite au contact du métal." },
+      { texte: "Parce que le métal produit du froid au contact de la main", correct: false, pourquoi: "Rien ne « produit du froid » : un objet ne fait que prendre ou transmettre de la chaleur." },
+      { texte: "Parce que le bois est toujours un peu chaud, même en hiver", correct: false, pourquoi: "Le bois n'est pas plus chaud : il transmet simplement la chaleur moins vite, donc ta peau reste chaude." }
+    ],
+    explication: "Les deux cuillères sont exactement à 20 °C. Mais le métal conduit la chaleur très bien : il pompe celle de ton doigt et la disperse dans toute la cuillère, et ton doigt se refroidit. Le bois, mauvais conducteur, laisse la chaleur sur place. Tu confonds donc une sensation (le froid) avec ce qu'elle mesure réellement (une fuite de chaleur). C'est le même effet qui fait qu'une poignée de porte en métal « brûle » de froid en hiver."
   },
   {
     partie: 3,
@@ -1482,6 +1515,17 @@ const QUESTIONS = [
     explication: "On imagine souvent que l'oxygène vient surtout des arbres, mais c'est le phytoplancton — des algues microscopiques à la surface des océans — qui en produit plus de la moitié. Sans ces invisibles, on ne pourrait presque pas respirer !"
   },
   {
+    partie: 4,
+    question: "Pourquoi le verre peut-il être recyclé à l'infini, alors que le papier perd en qualité ?",
+    options: [
+      { texte: "Parce que le verre refond à neuf, alors que les fibres du papier s'usent", correct: true },
+      { texte: "Parce que le verre est un matériau naturel et le papier un produit chimique", correct: false, pourquoi: "Les deux sont naturels : le papier vient du bois, le verre du sable. La différence est dans la façon dont ils se recyclent." },
+      { texte: "Parce que le papier ne se recycle pas vraiment, il est seulement brûlé", correct: false, pourquoi: "Le papier se recycle bel et bien, mais ses fibres s'usent : on ne peut le faire qu'un nombre limité de fois." },
+      { texte: "Parce qu'il faut plus d'énergie pour recycler le papier que pour le fabriquer", correct: false, pourquoi: "Recycler du papier demande au contraire moins d'énergie que de produire de la pâte à partir d'arbres." }
+    ],
+    explication: "Le verre est fait de sable, de calcaire et de soude : fondu à 1 500 °C, il redevient une matière neuve, sans perdre de qualité, et cela indéfiniment (à condition de trier les couleurs, car un verre vert ne donne pas du verre transparent). Le papier est un feutrage de fibres de cellulose : chaque recyclage les casse un peu plus courtes, et après cinq à sept passages elles sont trop courtes pour tenir ensemble. D'où l'intérêt de recycler le verre autant que possible et d'économiser le papier dès le départ."
+  },
+  {
     partie: 5,
     question: "Qu'est-ce qu'un algorithme ?",
     options: [
@@ -1568,6 +1612,17 @@ const QUESTIONS = [
       { texte: "Parce que les virus informatiques piquent les fichiers", correct: false, pourquoi: "Le mot « virus » est une autre image empruntée à la médecine ; l'histoire du « bug », elle, vient d'un insecte." }
     ],
     explication: "En septembre 1947, les opérateurs du célèbre ordinateur Harvard Mark II ont trouvé un papillon de nuit (une mite) coincé dans un relais, à l'origine d'une panne. Ils l'ont collé dans leur carnet avec la note « premier cas réel de bug trouvé ». Le mot existait déjà chez les ingénieurs, mais cette anecdote l'a rendu célèbre."
+  },
+  {
+    partie: 5,
+    question: "Pourquoi ton téléphone ne réagit-il pas quand tu le touches avec un gant en laine ?",
+    options: [
+      { texte: "Parce que la laine coupe le contact entre ton doigt et l'écran", correct: true },
+      { texte: "Parce qu'un doigt ganté appuie moins fort sur la vitre", correct: false, pourquoi: "Beaucoup d'écrans ne mesurent aucune pression : tu peux appuyer fort avec un gant, rien ne se passe." },
+      { texte: "Parce que le capteur a besoin de sentir la chaleur du doigt", correct: false, pourquoi: "Un écran n'est pas un thermomètre : un doigt froid ou un stylet spécial fonctionnent très bien." },
+      { texte: "Parce que le gant renvoie la lumière de l'écran vers le capteur", correct: false, pourquoi: "C'est le principe de certains écrans infrarouges, mais pas celui de la plupart des téléphones." }
+    ],
+    explication: "Sous la vitre de ton téléphone se cache une grille de fils conducteurs parcourue par de petites charges électriques. Ton doigt est conducteur lui aussi : il modifie légèrement ce champ à l'endroit où il touche, et l'écran repère ce point. La laine est un isolant, elle coupe ce contact électrique, et l'écran ne « sent » plus rien. C'est pourquoi certains gants d'hiver ont le bout des doigts tissé de fil conducteur. D'autres écrans, eux, détectent une pression ou coupent un faisceau infrarouge : ceux-là marchent très bien avec des gants."
   }
 ];
 
