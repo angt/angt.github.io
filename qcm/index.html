@@ -351,6 +351,96 @@
 // sur l'écran de réponse, pour expliquer SON erreur en particulier.
 const QUESTIONS = [
   {
+    question: "Que trouve-t-on au centre d'un atome ?",
+    options: [
+      { texte: "Un noyau de protons et de neutrons", correct: true },
+      { texte: "Du vide, et rien d'autre", correct: false, pourquoi: "Le vide occupe presque tout le volume, mais au centre se cache un noyau minuscule : sans lui, l'atome n'existerait pas." },
+      { texte: "Une bille de matière pleine et dure", correct: false, pourquoi: "Le noyau est minuscule et le reste de l'atome est presque vide : rien de plein là-dedans." },
+      { texte: "Un unique électron géant", correct: false, pourquoi: "Les électrons sont des milliers de fois plus légers que le noyau, et ils tournent autour de lui." }
+    ],
+    explication: "Un atome, c'est un noyau central (des protons et des neutrons serrés les uns contre les autres) autour duquel voltigent des électrons, très loin du noyau. Le noyau est si petit que si on le représentait par une bille d'un centimètre posée au milieu d'un terrain de foot, les électrons seraient à un kilomètre de là ! Et pourtant, il contient presque toute la masse de l'atome."
+  },
+  {
+    question: "Les atomes sont surtout du vide. Pourquoi ta main ne traverse-t-elle pas la table ?",
+    options: [
+      { texte: "Parce que les électrons se repoussent très fort", correct: true },
+      { texte: "Parce que les atomes de la table n'ont aucun vide", correct: false, pourquoi: "Si : leur vide est même immense par rapport à leur noyau. C'est la répulsion électrique qui bloque." },
+      { texte: "Parce que l'air coincé entre les atomes résiste", correct: false, pourquoi: "L'air ne bloque pas une main : on peut la plonger dans l'air sans effort." },
+      { texte: "Parce que le bois est plus froid que ta main", correct: false, pourquoi: "La température n'empêche pas de traverser : même une table brûlante resterait infranchissable." }
+    ],
+    explication: "Les électrons de ta main et ceux de la table portent la même charge électrique : ils se repoussent violemment dès qu'ils s'approchent. Cette répulsion est si forte qu'aucun muscle ne peut la vaincre — c'est elle qui donne aux objets leur « solidité »."
+  },
+  {
+    question: "Combien d'atomes alignés tiendraient à peu près dans un millimètre ?",
+    options: [
+      { texte: "Une dizaine de millions", correct: true },
+      { texte: "Une centaine", correct: false, pourquoi: "Cent atomes mesurent un cent millième de millimètre : c'est encore bien plus petit que ce que l'œil distingue." },
+      { texte: "Quelques milliers", correct: false, pourquoi: "C'est dix mille fois trop peu : un millimètre contient une dizaine de millions d'atomes." },
+      { texte: "Mille milliards", correct: false, pourquoi: "Là, c'est cent mille fois trop : cette rangée d'atomes mesurerait environ 100 mètres de long !" }
+    ],
+    explication: "Un atome d'hydrogène mesure environ un dixième de millionième de millimètre : alignés, il en faudrait une dizaine de millions pour faire un seul millimètre. Et dans une simple goutte d'eau, il y en a plus de mille milliards de milliards !"
+  },
+  {
+    question: "Peut-on casser un atome ?",
+    options: [
+      { texte: "Oui, en cassant son noyau, avec une énergie énorme", correct: true },
+      { texte: "Non, c'est la plus petite chose qui existe", correct: false, pourquoi: "Faux : un atome contient des protons, des neutrons et des électrons, et son noyau peut se briser." },
+      { texte: "Oui, mais seulement en le brûlant", correct: false, pourquoi: "Brûler, c'est réorganiser les atomes entre eux : ils ressortent intacts, sous forme de gaz et de cendres." },
+      { texte: "Oui, en le coupant en deux avec un laser", correct: false, pourquoi: "Un laser peut arracher des électrons, mais il ne coupe pas le noyau en deux." }
+    ],
+    explication: "On peut casser un noyau : c'est ce qui se passe dans une centrale nucléaire ou dans le cœur d'une étoile. En libérant les morceaux, on récupère une énergie fantastique — mais attention, le mot « atome » veut dire « insécable » en grec, parce que les savants de l'Antiquité croyaient qu'on ne pouvait pas le diviser !"
+  },
+  {
+    question: "Quel est l'atome le plus simple de tous, avec un seul proton ?",
+    options: [
+      { texte: "L'hydrogène", correct: true },
+      { texte: "L'hélium", correct: false, pourquoi: "L'hélium a deux protons, et deux neutrons dans son noyau le plus courant." },
+      { texte: "L'oxygène", correct: false, pourquoi: "L'oxygène compte huit protons : c'est huit fois plus que le plus simple des atomes." },
+      { texte: "Le carbone", correct: false, pourquoi: "Le carbone a six protons, et c'est lui qui fait le diamant et le graphite." }
+    ],
+    explication: "L'hydrogène n'a qu'un proton et, le plus souvent, aucun neutron : un noyau tout simple avec un seul électron autour. C'est l'atome le plus abondant de l'univers et le carburant des étoiles, qui le fusionnent pour fabriquer de l'hélium."
+  },
+  {
+    question: "Pourquoi un ballon gonflé à l'hélium s'envole-t-il dans le ciel ?",
+    options: [
+      { texte: "Parce que l'hélium est bien plus léger que l'air", correct: true },
+      { texte: "Parce qu'on le chauffe comme une montgolfière", correct: false, pourquoi: "Un ballon d'hélium décolle même à température ambiante : ce n'est pas la chaleur qui le soulève." },
+      { texte: "Parce qu'il ne pèse absolument rien", correct: false, pourquoi: "L'hélium a bien une masse, mais très faible : un litre ne pèse que 0,18 gramme contre 1,2 gramme pour l'air." },
+      { texte: "Parce que le ballon est attiré par le Soleil", correct: false, pourquoi: "Le Soleil est bien trop loin pour tirer un ballon : la poussée vient de l'air autour du ballon." }
+    ],
+    explication: "Un litre d'air pèse environ 1,2 gramme, un litre d'hélium seulement 0,18 gramme : le ballon est donc plus léger que le volume d'air qu'il déplace, et cet air le pousse vers le haut, comme l'eau repousse un bouchon. L'hélium a été repéré d'abord dans la lumière du Soleil, en 1868, avant d'être trouvé sur Terre : c'est de là que vient son nom (« hélios », le Soleil)."
+  },
+  {
+    question: "Combien d'atomes un atome de carbone peut-il lier à lui en même temps ?",
+    options: [
+      { texte: "Quatre", correct: true },
+      { texte: "Deux, comme l'oxygène", correct: false, pourquoi: "L'oxygène en lie deux (dans H₂O), mais le carbone peut en lier deux fois plus." },
+      { texte: "Un seul, comme l'hydrogène", correct: false, pourquoi: "L'hydrogène n'en lie qu'un : c'est justement parce que le carbone en lie quatre qu'il bâtit de si grosses molécules." },
+      { texte: "Autant qu'il en trouve", correct: false, pourquoi: "Non, c'est exactement quatre, jamais plus : c'est cette limite qui donne au carbone ses formes si variées." }
+    ],
+    explication: "Avec quatre bras, le carbone peut s'unir à quatre atomes à la fois, et surtout à d'autres carbones : il forme ainsi de longues chaînes, des anneaux, des cages. C'est pour cela que la vie est bâtie sur le carbone : protéines, sucres, graisses et ADN sont tous des assemblages de carbones. Le diamant (un réseau bien serré) et le graphite (des feuillets) sont deux façons de ranger ces mêmes atomes."
+  },
+  {
+    question: "Une bougie brûle sous un verre retourné. Pourquoi s'éteint-elle au bout de quelques secondes ?",
+    options: [
+      { texte: "Parce que l'oxygène sous le verre est épuisé", correct: true },
+      { texte: "Parce que le verre devient trop chaud", correct: false, pourquoi: "Un verre chaud n'empêche pas de brûler : c'est le manque d'oxygène qui éteint la flamme." },
+      { texte: "Parce que la fumée cache la flamme", correct: false, pourquoi: "Une flamme brûle très bien dans une pièce enfumée : ce n'est pas la fumée qui la tue." },
+      { texte: "Parce qu'il n'y a plus d'air du tout dessous", correct: false, pourquoi: "Il reste de l'air, mais surtout de l'azote : c'est l'oxygène, environ un cinquième de l'air, qui manque." }
+    ],
+    explication: "Une flamme a besoin de trois choses : un combustible (la cire), de la chaleur et de l'oxygène. Sous le verre, la bougie consomme l'oxygène disponible et le remplace par du CO₂ et de la vapeur d'eau : quand il n'y a plus assez d'oxygène, la flamme s'éteint. Quand on étouffe un feu, on le prive simplement d'air."
+  },
+  {
+    question: "Les pois, les haricots et les trèfles enrichissent le sol en azote. Grâce à qui ?",
+    options: [
+      { texte: "À des bactéries logées dans leurs racines", correct: true },
+      { texte: "Aux vers de terre qui labourent le sol", correct: false, pourquoi: "Les vers aèrent et mélangent la terre, mais ils ne savent pas fabriquer d'azote utilisable." },
+      { texte: "À la pluie, qui en apporte en tombant", correct: false, pourquoi: "La pluie apporte de l'eau, et très peu d'azote : ce n'est pas elle qui nourrit la plante." },
+      { texte: "Au Soleil, qui le fabrique en chauffant la terre", correct: false, pourquoi: "Le Soleil réchauffe le sol, mais il ne crée aucun atome : l'azote était déjà dans l'air." }
+    ],
+    explication: "L'air est fait à 78 % d'azote, mais ce gaz est presque inutilisable : ses deux atomes sont soudés très fort. Certaines bactéries du sol savent casser cette liaison ; installées dans de petites bosses sur les racines des légumineuses, elles donnent l'azote à la plante, qui en échange leur offre du sucre. C'est pourquoi on plante des trèfles ou des haricots pour « reposer » un champ, et pourquoi l'azote de nos engrais sert à fabriquer nos protéines et notre ADN."
+  },
+  {
     question: "Pourquoi a-t-on des saisons sur Terre ?",
     options: [
       { texte: "Parce que la Terre est inclinée sur son axe", correct: true },
@@ -405,7 +495,7 @@ const QUESTIONS = [
     options: [
       { texte: "Une étoile à neutrons", correct: true },
       { texte: "Une naine blanche", correct: false, pourquoi: "Très dense aussi (une cuillère en pèserait plusieurs tonnes), mais des millions de fois moins qu'une étoile à neutrons." },
-      { texte: "Le cœur de la Terre", correct: false, pourquoi: "Le cœur de la Terre est du fer très dense, mais une cuillère à café n'y pèserait qu'une centaine de grammes." },
+      { texte: "Le cœur de la Terre", correct: false, pourquoi: "Le cœur de la Terre est du fer très dense, mais une cuillère à café n'y pèserait que quelques dizaines de grammes." },
       { texte: "Le Soleil", correct: false, pourquoi: "Le Soleil est énorme, mais il est fait de gaz : sa densité moyenne vaut à peine une fois et demie celle de l'eau." }
     ],
     explication: "Dans une étoile à neutrons, une masse plus lourde que le Soleil est tassée dans une boule de la taille d'une ville : une cuillère à café de cette matière pèserait environ deux milliards de tonnes sur Terre !"
@@ -458,17 +548,17 @@ const QUESTIONS = [
       { texte: "Parce qu'elle est très proche du Soleil", correct: false, pourquoi: "Mars est même plus loin du Soleil que la Terre." },
       { texte: "Parce que ses nuages sont rouges", correct: false, pourquoi: "Ses nuages sont pâles et minces : c'est le sol qui est rouge." }
     ],
-    explication: "Son sol contient beaucoup d'oxyde de fer... exactement de la rouille, comme sur un vieux vélo !"
+    explication: "Son sol est couvert d'oxyde de fer — exactement de la rouille, comme sur un vieux vélo. Le vent soulève cette poussière rouge jusque dans l'atmosphère, si bien que le ciel martien est rose-orangé, même en plein jour."
   },
   {
     question: "Comment s'appelle la galaxie dans laquelle se trouve la Terre ?",
     options: [
       { texte: "La Voie lactée", correct: true },
-      { texte: "Andromède", correct: false, pourquoi: "Andromède est une autre galaxie, la voisine de la nôtre." },
+      { texte: "Andromède", correct: false, pourquoi: "Andromède est bien une galaxie voisine, mais elle est à 2,5 millions d'années-lumière : on ne peut pas la prendre pour la nôtre." },
       { texte: "Orion", correct: false, pourquoi: "Orion est une constellation : un dessin d'étoiles de notre ciel." },
       { texte: "La Grande Ourse", correct: false, pourquoi: "La Grande Ourse est aussi une constellation, pas une galaxie." }
     ],
-    explication: "Nous vivons dans la Voie lactée, une immense spirale de plus de 100 milliards d'étoiles. Andromède est une autre galaxie, la plus proche de la nôtre."
+    explication: "Nous vivons dans la Voie lactée, une immense spirale de plus de 100 milliards d'étoiles. Andromède est la plus proche des grandes galaxies : elle est à 2,5 millions d'années-lumière, et les deux se rapprochent lentement l'une de l'autre."
   },
   {
     question: "Qui a marché le premier sur la Lune ?",
@@ -478,7 +568,7 @@ const QUESTIONS = [
       { texte: "Youri Gagarine", correct: false, pourquoi: "Gagarine a été le premier humain dans l'espace (1961), mais il n'est jamais allé sur la Lune." },
       { texte: "Michael Collins", correct: false, pourquoi: "Il pilotait le vaisseau resté en orbite autour de la Lune pendant que ses deux coéquipiers descendaient." }
     ],
-    explication: "En juillet 1969, Neil Armstrong a posé le premier pied sur la Lune (mission Apollo 11). Buzz Aldrin l'a suivi quelques minutes plus tard, sous les yeux de Michael Collins, resté en orbite."
+    explication: "En juillet 1969, Neil Armstrong a posé le premier pied sur la Lune (mission Apollo 11). Buzz Aldrin l'a suivi une vingtaine de minutes plus tard, sous les yeux de Michael Collins, resté en orbite."
   },
   {
     question: "Qu'est-ce qu'une comète ?",
@@ -515,7 +605,7 @@ const QUESTIONS = [
     options: [
       { texte: "Vénus", correct: true },
       { texte: "Mercure", correct: false, pourquoi: "Mercure est la plus proche du Soleil, mais elle n'a presque pas d'atmosphère pour garder la chaleur : jusqu'à 430 °C le jour, −180 °C la nuit." },
-      { texte: "Mars", correct: false, pourquoi: "Ses volcans sont éteints depuis longtemps : Mars est même une planète froide (environ −60 °C)." },
+      { texte: "Mars", correct: false, pourquoi: "Mars est plus loin du Soleil et son atmosphère est très fine : il y fait environ −60 °C en moyenne." },
       { texte: "Jupiter", correct: false, pourquoi: "Très loin du Soleil, la haute atmosphère de Jupiter est glacée (environ −140 °C)." }
     ],
     explication: "Vénus ! Son atmosphère très épaisse piège la chaleur, comme une couverture géante : il y fait environ 460 °C, jour et nuit, plus chaud que sur Mercure, pourtant bien plus proche du Soleil."
@@ -531,14 +621,14 @@ const QUESTIONS = [
     explication: "La lumière voyage à 299 792 km/s, mais les étoiles sont si loin que leur lumière met des années à nous arriver. Regarder le ciel, c'est regarder dans le passé !"
   },
   {
-    question: "Sur quelle planète une journée dure-t-elle plus longtemps qu'une année ?",
+    question: "Sur quelle planète un tour complet sur elle-même dure-t-il plus longtemps qu'un tour autour du Soleil ?",
     options: [
       { texte: "Vénus", correct: true },
-      { texte: "Mercure", correct: false, pourquoi: "Mercure tourne très lentement aussi (59 jours pour un tour), mais son année ne dure que 88 jours : elle va plus vite autour du Soleil." },
-      { texte: "Mars", correct: false, pourquoi: "Une journée sur Mars dure 24 h 37, presque comme sur Terre, pour une année de 687 jours." },
-      { texte: "Jupiter", correct: false, pourquoi: "C'est même l'inverse : Jupiter tourne si vite qu'une journée n'y dure que 10 heures, pour une année de 12 ans." }
+      { texte: "Mercure", correct: false, pourquoi: "Mercure tourne lentement aussi (59 jours pour un tour sur elle-même), mais son année ne dure que 88 jours : elle va plus vite autour du Soleil." },
+      { texte: "Mars", correct: false, pourquoi: "Mars fait un tour sur elle-même en 24 h 37, presque comme la Terre, pour une année de 687 jours." },
+      { texte: "Jupiter", correct: false, pourquoi: "C'est même l'inverse : Jupiter tourne si vite qu'un tour sur elle-même ne dure que 10 heures, pour une année de 12 ans." }
     ],
-    explication: "Vénus tourne si lentement qu'elle met 243 jours terrestres pour faire un tour sur elle-même... alors qu'elle fait le tour du Soleil en seulement 225 jours ! En plus, elle tourne à l'envers : sur Vénus, le Soleil se lève à l'ouest."
+    explication: "Vénus tourne si lentement qu'elle met 243 jours terrestres pour faire un tour sur elle-même... alors qu'elle fait le tour du Soleil en seulement 225 jours ! En plus, elle tourne à l'envers : sur Vénus, le Soleil se lève à l'ouest. D'où une bizarrerie : entre deux levers de Soleil, il ne s'écoule que 117 jours, parce que la planète avance autour du Soleil pendant qu'elle tourne."
   },
   {
     question: "À quoi sert un télescope spatial comme Hubble ou James Webb ?",
@@ -728,7 +818,7 @@ const QUESTIONS = [
       { texte: "Le grand requin blanc", correct: false, pourquoi: "Le grand requin blanc mesure environ 5 mètres : six fois moins long que la baleine bleue." },
       { texte: "La girafe", correct: false, pourquoi: "La girafe est la plus grande par sa taille debout (5 à 6 m), mais elle ne pèse qu'environ une tonne." }
     ],
-    explication: "La baleine bleue peut atteindre 30 mètres de long et peser près de 150 tonnes : même les plus grands dinosaures étaient plus petits ! Et pourtant, elle mange de minuscules crevettes (le krill)."
+    explication: "La baleine bleue dépasse 30 mètres de long et approche les 150 tonnes : même les plus grands dinosaures étaient plus petits ! Et pourtant, elle se nourrit de minuscules crevettes, le krill, qu'elle filtre par tonnes."
   },
   {
     question: "Pourquoi certains papillons parcourent-ils des milliers de kilomètres ?",
@@ -1378,7 +1468,7 @@ const QUESTIONS = [
       { texte: "Quelques semaines", correct: false, pourquoi: "Trop court : même une bouteille met des décennies à se fragmenter." },
       { texte: "Quelques mois", correct: false, pourquoi: "Non : le plastique se dégrade extrêmement lentement." }
     ],
-    explication: "Une bouteille en plastique met environ 450 ans à se dégrader, et elle ne disparaît pas vraiment : elle se fragmente en microplastiques qui polluent les sols, les rivières et l'océan. Mieux vaut la trier et la recycler !"
+    explication: "Une bouteille en plastique met plusieurs centaines d'années à se dégrader, et elle ne disparaît pas vraiment : elle se fragmente en microplastiques qui polluent les sols, les rivières et l'océan. Mieux vaut la trier et la recycler !"
   },
   {
     question: "Qu'est-ce que le compostage ?",
@@ -1458,7 +1548,7 @@ const QUESTIONS = [
       { texte: "Un nombre qui se termine par 1", correct: false, pourquoi: "21 se termine par 1, mais 21 = 3 × 7 : ce n'est pas un nombre premier." },
       { texte: "Un nombre qui s'écrit avec un seul chiffre", correct: false, pourquoi: "11, 13 ou 17 ont deux chiffres et sont pourtant premiers." }
     ],
-    explication: "Un nombre premier ne peut pas s'obtenir en multipliant deux nombres plus petits : 2, 3, 5, 7, 11, 13... Mais 4 (2 × 2) ou 9 (3 × 3) ne le sont pas. Il en existe une infinité : les mathématiciens les étudient encore !"
+    explication: "Un nombre premier ne peut pas s'obtenir en multipliant deux nombres plus petits : 2, 3, 5, 7, 11, 13... Mais 4 (2 × 2) ou 9 (3 × 3) ne le sont pas. Attention au piège : 1 n'est PAS premier, car il n'a qu'un seul diviseur. Il en existe une infinité : les mathématiciens les étudient encore !"
   },
   {
     question: "Avec une longue planche posée sur un caillou, pourquoi peux-tu soulever une pierre très lourde ?",
