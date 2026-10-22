@@ -240,27 +240,6 @@
   }
   .bareme th { background: #f1edff; }
 
-  .zone-bonus {
-    width: 100%;
-    background: #eef6ff;
-    border: 2px dashed var(--fond2);
-    border-radius: 16px;
-    padding: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    text-align: left;
-  }
-  .zone-bonus h3 { font-size: 1.15rem; }
-  .reponse-bonus {
-    display: none;
-    background: #fff;
-    border-radius: 10px;
-    padding: 12px 14px;
-    line-height: 1.5;
-    border-left: 5px solid var(--vert);
-  }
-
   .navigation {
     display: flex;
     gap: 12px;
@@ -486,7 +465,7 @@ const QUESTIONS = [
       { texte: "Elle reflète la lumière du Soleil", correct: true },
       { texte: "Elle produit sa propre lumière", correct: false, pourquoi: "Seules les étoiles produisent leur propre lumière, pas les lunes ni les planètes." },
       { texte: "Elle reflète la lumière des étoiles", correct: false, pourquoi: "Les étoiles sont bien trop loin : c'est la lumière du Soleil, tout près, qui éclaire la Lune." },
-      { texte: "Elle est chaude et rougeoie comme une braise", correct: false, pourquoi: "La Lune est un monde de roche froide : sa face éclairée atteint à peine 120 °C, et elle ne rougeoie pas." }
+      { texte: "Elle est chaude et rougeoie comme une braise", correct: false, pourquoi: "La Lune est un monde de roche froide : sa face éclairée monte vers 120 °C, bien trop froid pour rougeoier." }
     ],
     explication: "La Lune ne produit aucune lumière : elle réfléchit celle du Soleil, comme un miroir gris."
   },
@@ -518,13 +497,13 @@ const QUESTIONS = [
       { texte: "9", correct: false, pourquoi: "C'était le compte avant 2006, quand on ajoutait encore Pluton." },
       { texte: "12", correct: false, pourquoi: "Les planètes naines sont nombreuses, mais les grandes planètes ne sont que 8." }
     ],
-    explication: "8 planètes : Mercure, Vénus, Terre, Mars, Jupiter, Saturne, Uranus et Neptune. Pluton est trop petite : depuis 2006, c'est une « planète naine »."
+    explication: "8 planètes : Mercure, Vénus, Terre, Mars, Jupiter, Saturne, Uranus et Neptune. Pluton est trop petite et ne domine pas son voisinage : depuis 2006, c'est une « planète naine »."
   },
   {
     question: "Quel est le plus grand volcan connu du système solaire ?",
     options: [
       { texte: "Olympus Mons, sur Mars", correct: true },
-      { texte: "Le Mauna Loa, à Hawaï", correct: false, pourquoi: "C'est le plus grand volcan de la Terre, mais il est deux fois moins haut qu'Olympus Mons." },
+      { texte: "Le Mauna Loa, à Hawaï", correct: false, pourquoi: "C'est le plus grand volcan de la Terre, mais avec ses 4 000 m au-dessus de la mer, il reste loin des 22 km d'Olympus Mons." },
       { texte: "Le Vésuve, en Italie", correct: false, pourquoi: "Le Vésuve est célèbre pour avoir enseveli Pompéi, mais il ne mesure « que » 1 280 m de haut." },
       { texte: "Un volcan de Vénus", correct: false, pourquoi: "Vénus a des volcans, mais aucun n'approche la taille colossale d'Olympus Mons." }
     ],
@@ -673,7 +652,7 @@ const QUESTIONS = [
   {
     question: "Pourquoi ne voit-on jamais la « face cachée » de la Lune ?",
     options: [
-      { texte: "Parce qu'elle tourne sur elle-même en 27 jours, le temps de son orbite", correct: true },
+      { texte: "Parce qu'elle tourne sur elle-même au même rythme qu'autour de la Terre", correct: true },
       { texte: "Parce qu'elle ne tourne pas du tout sur elle-même, elle reste fixe", correct: false, pourquoi: "C'est l'inverse : si elle ne tournait pas sur elle-même, elle nous montrerait toutes ses faces au fil du mois." },
       { texte: "Parce que sa face arrière reste toujours dans l'ombre et le noir", correct: false, pourquoi: "« Face cachée » ne veut pas dire « face sombre » : cette face est éclairée par le Soleil une fois par mois, autant que celle qu'on voit." },
       { texte: "Parce que la Terre lui cache en permanence toute cette moitié", correct: false, pourquoi: "L'ombre de la Terre est bien plus étroite que la Lune : elle ne la cache qu'au moment des éclipses de Lune." }
@@ -818,7 +797,7 @@ const QUESTIONS = [
       { texte: "Le grand requin blanc", correct: false, pourquoi: "Le grand requin blanc mesure environ 5 mètres : six fois moins long que la baleine bleue." },
       { texte: "La girafe", correct: false, pourquoi: "La girafe est la plus grande par sa taille debout (5 à 6 m), mais elle ne pèse qu'environ une tonne." }
     ],
-    explication: "La baleine bleue dépasse 30 mètres de long et approche les 150 tonnes : même les plus grands dinosaures étaient plus petits ! Et pourtant, elle se nourrit de minuscules crevettes, le krill, qu'elle filtre par tonnes."
+    explication: "La baleine bleue approche les 30 mètres de long et les 150 tonnes : même les plus grands dinosaures étaient plus petits ! Et pourtant, elle se nourrit de minuscules crevettes, le krill, qu'elle filtre par tonnes."
   },
   {
     question: "Pourquoi certains papillons parcourent-ils des milliers de kilomètres ?",
@@ -904,7 +883,7 @@ const QUESTIONS = [
     question: "Combien de dents a un adulte ?",
     options: [
       { texte: "32", correct: true },
-      { texte: "24", correct: false, pourquoi: "Trop peu : c'est à peu près le nombre de dents d'un enfant de 6 ans." },
+      { texte: "24", correct: false, pourquoi: "Trop peu : un enfant n'a que 20 dents de lait, et un adulte en a 32." },
       { texte: "28", correct: false, pourquoi: "C'est le compte sans les dents de sagesse : un adulte complet en a 32." },
       { texte: "36", correct: false, pourquoi: "Personne n'en a autant : même avec les dents de sagesse, on plafonne à 32." }
     ],
@@ -1093,7 +1072,7 @@ const QUESTIONS = [
   {
     question: "Qu'est-ce que le son ?",
     options: [
-      { texte: "Une vibration qui se propage dans l'air ou un autre milieu", correct: true },
+      { texte: "Une vibration qui se propage dans un milieu", correct: true },
       { texte: "Une petite particule qui voyage", correct: false, pourquoi: "Le son ne transporte pas de matière : c'est un mouvement d'ondes." },
       { texte: "Une forme de lumière invisible", correct: false, pourquoi: "Lumière et son sont très différents : la lumière voyage dans le vide, pas le son." },
       { texte: "Du courant électrique dans l'air", correct: false, pourquoi: "Le courant électrique, ce sont des électrons en mouvement ; le son, ce sont des vibrations." }
@@ -1216,7 +1195,7 @@ const QUESTIONS = [
       { texte: "Neutre", correct: true },
       { texte: "Très acide", correct: false, pourquoi: "Les acides sont en dessous de 7 (citron ≈ 2, vinaigre ≈ 3)." },
       { texte: "Très basique (alcalin)", correct: false, pourquoi: "Les bases sont au-dessus de 7 (savon ≈ 10, eau de Javel ≈ 13)." },
-      { texte: "Très salé", correct: false, pourquoi: "Le sel ne rend pas une eau acide : l'eau salée reste neutre, à pH 7." }
+      { texte: "Très salé", correct: false, pourquoi: "Le sel de cuisine n'est ni un acide ni une base : une eau salée reste proche de 7." }
     ],
     explication: "7 = neutre, comme l'eau pure. En dessous, c'est acide (citron ≈ 2, vinaigre ≈ 3). Au-dessus, c'est basique (savon ≈ 10, eau de Javel ≈ 13)."
   },
@@ -1473,7 +1452,7 @@ const QUESTIONS = [
   {
     question: "Qu'est-ce que le compostage ?",
     options: [
-      { texte: "Transformer les restes de nourriture et les feuilles en engrais", correct: true },
+      { texte: "Transformer les restes de nourriture en engrais", correct: true },
       { texte: "Brûler les déchets pour se chauffer", correct: false, pourquoi: "Brûler n'est pas composter : le compostage laisse les organismes du sol travailler." },
       { texte: "Enterrer le plastique dans le jardin", correct: false, pourquoi: "Seuls les déchets organiques (nourriture, feuilles, marc de café) se compostent." },
       { texte: "Laver les déchets avant de les jeter", correct: false, pourquoi: "Le recyclage du verre ou du papier est autre chose ; le compostage concerne les restes de nourriture." }
@@ -1589,13 +1568,68 @@ const QUESTIONS = [
       { texte: "Parce que le gant renvoie la lumière de l'écran vers le capteur", correct: false, pourquoi: "C'est le principe de certains écrans infrarouges, mais pas celui de la plupart des téléphones." }
     ],
     explication: "Sous la vitre de ton téléphone se cache une grille de fils conducteurs parcourue par de petites charges électriques. Ton doigt est conducteur lui aussi : il modifie légèrement ce champ à l'endroit où il touche, et l'écran repère ce point. La laine est un isolant, elle coupe ce contact électrique, et l'écran ne « sent » plus rien. C'est pourquoi certains gants d'hiver ont le bout des doigts tissé de fil conducteur. D'autres écrans, eux, détectent une pression ou coupent un faisceau infrarouge : ceux-là marchent très bien avec des gants."
+  },
+  {
+    question: "Dans l'espace, les astronautes peuvent « grandir » de quelques centimètres. Pourquoi ?",
+    options: [
+      { texte: "Sans gravité, l'espace entre leurs vertèbres s'agrandit un peu", correct: true },
+      { texte: "Leurs os deviennent réellement plus longs dans l'espace", correct: false, pourquoi: "Les os ne s'allongent pas : c'est l'espace entre eux qui augmente, et il se résorbe dès le retour sur Terre." },
+      { texte: "Ils se tiennent toujours droit, au lieu d'être voûtés", correct: false, pourquoi: "La bonne posture gagne un centimètre ou deux, mais pas ces centimètres-là : ici, c'est la gravité qui manque pour tasser les disques." },
+      { texte: "Ils respirent un air spécial qui accélère la croissance", correct: false, pourquoi: "L'air de la station est presque identique au nôtre : c'est l'absence de gravité qui change tout." }
+    ],
+    explication: "Entre chaque vertèbre se trouve un petit coussin d'eau, le disque. Sur Terre, la gravité les comprime en permanence ; dans l'espace, ils se gorgent d'eau et gonflent : la colonne s'allonge de 3 à 5 centimètres. Les astronautes mesurent donc plus grand dans l'espace... mais ils perdent ces centimètres en quelques heures après l'atterrissage !"
+  },
+  {
+    question: "L'estomac fabrique un acide assez fort pour digérer la viande. Pourquoi ne se digère-t-il pas lui-même ?",
+    options: [
+      { texte: "Une couche de mucus protège sa paroi, renouvelée en permanence", correct: true },
+      { texte: "Parce que son acide n'agit que sur les aliments, jamais sur le corps", correct: false, pourquoi: "Faux : l'acide attaque tout ce qui est vivant. C'est justement pour cela qu'il existe un bouclier de mucus — quand il faiblit, cela donne un ulcère." },
+      { texte: "Parce que ses parois sont faites d'un matériau différent de la viande", correct: false, pourquoi: "L'estomac est fait de cellules, comme le reste du corps : seul le mucus le protège de son propre acide." },
+      { texte: "Parce que l'acide est trop dilué pour attaquer la paroi de l'estomac", correct: false, pourquoi: "L'acide gastrique est très concentré (autour de pH 2) : sans le mucus, il digérerait la paroi en quelques heures." }
+    ],
+    explication: "Le suc gastrique est si corrossif qu'il dissoudrait la paroi de l'estomac. Le corps se défend avec un épais mucus qui tapisse l'intérieur, et en renouvelant ses cellules à toute vitesse : la paroi se refait entièrement tous les trois à quatre jours. Si cette barrière faiblit, l'acide attaque la chair : c'est l'ulcère."
+  },
+  {
+    question: "Tu fais tourner un œuf cru et un œuf dur sur la table. Pourquoi l'œuf dur tourne-t-il rond et longtemps, mais pas l'œuf cru ?",
+    options: [
+      { texte: "Le liquide de l'œuf cru freine la rotation de la coquille", correct: true },
+      { texte: "Parce qu'un œuf cru est plus lourd qu'un œuf dur", correct: false, pourquoi: "Ils ont presque le même poids : c'est leur contenu qui change tout (liquide contre solide)." },
+      { texte: "Parce que la cuisson rend la coquille plus lisse et plus ronde", correct: false, pourquoi: "La coquille est identique avant et après cuisson : c'est ce qu'il y a dedans qui fait la différence." },
+      { texte: "Ils tournent en fait exactement de la même manière", correct: false, pourquoi: "Fais l'expérience chez toi : l'œuf dur tourne comme une toupie, l'œuf cru s'arrête presque aussitôt." }
+    ],
+    explication: "Dans l'œuf dur, tout est solide : la coquille et l'intérieur tournent ensemble, comme une toupie. Dans l'œuf cru, la coquille tourne, mais le liquide dedans met du temps à la suivre : il frotte, perd l'énergie en chaleur, et freine le tout. Et l'astuce infaillible : fais tourner l'œuf, arrête-le du doigt, puis lâche — l'œuf cru se remet à tourner, car son liquide, lui, n'a jamais cessé !"
+  },
+  {
+    question: "Tu coupes un aimant en deux morceaux. Que se passe-t-il ?",
+    options: [
+      { texte: "Chaque morceau devient un nouvel aimant, avec son nord et son sud", correct: true },
+      { texte: "Un morceau garde le pôle nord, l'autre le pôle sud", correct: false, pourquoi: "On ne peut jamais isoler un pôle : chaque morceau se refait aussitôt son couple nord-sud." },
+      { texte: "Les morceaux perdent leur magnétisme en se coupant", correct: false, pourquoi: "L'aimant garde sa force : tu viens simplement de fabriquer deux aimants plus petits." },
+      { texte: "Seul le plus gros morceau reste un aimant", correct: false, pourquoi: "Les deux morceaux sont des aimants à part entière, même devenus tout petits." }
+    ],
+    explication: "Un aimant a toujours deux pôles, un nord et un sud, qu'on ne peut pas séparer : sa matière est faite de minuscules aimants microscopiques, tous rangés dans le même sens. En coupant l'aimant, tu coupes cette rangée en deux, et chaque partie se retrouve avec ses propres pôles nord et sud. Tu peux recommencer à l'infini, même avec un aimant plus petit qu'un grain de sable !"
+  },
+  {
+    question: "Le pétrole que l'on brûle aujourd'hui vient de quoi, à l'origine ?",
+    options: [
+      { texte: "De minuscules créatures marines fossilisées", correct: true },
+      { texte: "Des dinosaures transformés en profondeur", correct: false, pourquoi: "Fausse légende : le pétrole est bien plus ancien que les dinosaures, et il vient de l'océan, pas de la terre ferme." },
+      { texte: "Des arbres et des plantes tombés dans la mer", correct: false, pourquoi: "C'est plutôt l'histoire du charbon : les plantes fossilisées donnent du charbon, pas du pétrole." },
+      { texte: "Des roches fondues par la chaleur de la Terre", correct: false, pourquoi: "La chaleur et la pression sont indispensables, mais elles transforment de vieux êtres vivants, pas de la roche." }
+    ],
+    explication: "Il y a des centaines de millions d'années, d'innombrables algues et petites créatures marines sont mortes et sont tombées au fond des océans. Recouvertes de sédiments et privées d'air, elles ont cuit très lentement sous l'effet de la chaleur et de la pression : c'est devenu du pétrole et du gaz. Il a donc fallu des millions d'années pour le fabriquer, et il ne se reformera pas à notre échelle : c'est pour cela qu'on appelle ces énergies « fossiles »."
+  },
+  {
+    question: "Pourquoi le Soleil paraît-il rouge au coucher, alors qu'il est jaune en plein jour ?",
+    options: [
+      { texte: "Sa lumière traverse plus d'air, qui disperse surtout le bleu", correct: true },
+      { texte: "Parce qu'il se refroidit en fin de journée", correct: false, pourquoi: "Le Soleil reste brûlant : c'est le trajet de sa lumière dans l'air qui change, pas sa température." },
+      { texte: "Parce que la mer le reflète en rouge sur les nuages", correct: false, pourquoi: "Le Soleil est rouge au coucher même loin de la mer, au-dessus des montagnes ou du désert." },
+      { texte: "Parce que des poussières rouges montent dans le ciel le soir", correct: false, pourquoi: "Les poussières peuvent rougir encore plus le coucher de Soleil, mais même un ciel parfaitement propre devient rouge en fin de journée." }
+    ],
+    explication: "Au coucher, la lumière du Soleil traverse beaucoup plus d'air pour arriver jusqu'à nos yeux. L'air disperse (éparpille) les couleurs bleues et vertes sur le trajet ; il ne reste surtout que le rouge, qui arrive jusqu'à nous. C'est la même raison pour laquelle le ciel est bleu le jour : l'air disperse surtout le bleu."
   }
 ];
-
-const BONUS = {
-  question: "Pourquoi voit-on le Soleil rouge au coucher, alors qu'il est jaune en pleine journée ?",
-  reponse: "Au coucher, la lumière du Soleil traverse beaucoup plus d'air pour arriver jusqu'à nos yeux. L'air disperse (éparpille) les couleurs bleues et vertes sur le trajet ; il ne reste surtout que le rouge, qui arrive jusqu'à nous. C'est la même raison pour laquelle le ciel est bleu le jour : l'air disperse surtout le bleu."
-};
 
 /* ---------------- Préparation des diapositives ---------------- */
 
@@ -1681,7 +1715,7 @@ function rendreIntro() {
       <li>👀 Tu vois <strong>une question</strong>, puis sur l'écran suivant <strong>la réponse expliquée</strong>.</li>
       <li>🖱️ Clique sur la bonne réponse avant de passer à la suite (c'est pour ton score, mais on ne voit rien tout de suite !). Une fois la réponse découverte, ton choix est verrouillé.</li>
       <li>💡 Si tu te trompes, l'écran suivant t'explique <strong>pourquoi ta réponse était fausse</strong>.</li>
-      <li>🏆 À la fin : ton score, ta mention, et un <strong>défi bonus</strong>.</li>
+      <li>🏆 À la fin : ton score, ta mention et le barème des niveaux.</li>
     </ul>
     <div class="explication"><strong>Pas de triche !</strong> L'important, c'est de comprendre les explications. Même les scientifiques se trompent parfois... et c'est comme ça qu'on apprend.</div>`;
 }
@@ -1793,12 +1827,6 @@ function rendreFinal() {
         <tr><td>${SEUIL_CHERCHEUR}–${SEUIL_JEUNE - 1}</td><td>🌱 Chercheur en herbe</td></tr>
         <tr><td>0–${SEUIL_CHERCHEUR - 1}</td><td>🚀 Astronaute en formation</td></tr>
       </table>
-      <div class="zone-bonus">
-        <h3>🌟 Défi bonus (pour les plus rapides)</h3>
-        <p>${BONUS.question}</p>
-        <button class="bouton secondaire" id="btnBonus">Voir la réponse du bonus</button>
-        <div class="reponse-bonus" id="reponseBonus"><strong>Réponse :</strong> ${BONUS.reponse}</div>
-      </div>
       <button class="bouton primaire" id="btnRecommencer" style="max-width:100%;">🔄 Recommencer le quiz</button>
     </div>`;
 }
@@ -1827,12 +1855,6 @@ function rendre() {
   } else {
     carte.innerHTML = rendreFinal();
     compteur.textContent = "Terminé !";
-    const btnBonus = document.getElementById("btnBonus");
-    btnBonus.addEventListener("click", function () {
-      const bloc = document.getElementById("reponseBonus");
-      bloc.style.display = "block";
-      btnBonus.style.display = "none";
-    });
     document.getElementById("btnRecommencer").addEventListener("click", recommencer);
   }
 
