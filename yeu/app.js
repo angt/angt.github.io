@@ -281,9 +281,9 @@ function renderDay(date, label){
   const v = best ? verdict(coef) : {t:'—',e:'🌊',cls:'st-bad'};
 
   // Per-tide coefficient for each high tide (matches the official SHOM value).
-  // The equilibrium high tides run ~3.5h ahead of Yeu's actual highs (a constant
-  // local phase lag), so we match them to the actual high tides BY ORDER, not by
-  // absolute time: the k-th actual high of the day gets the k-th coefficient.
+  // coefficients() pairs each actual high with the nearest equilibrium high
+  // (3.35 h phase lag) and returns them in chronological order — the same order
+  // as the day's extrema, so pmSeen indexes both arrays in lockstep.
   const pmc = coefficients(date);
   let pmSeen = 0;
   const tidesHtml = extrema.map(e=>{
@@ -378,7 +378,8 @@ function drawCurve(date){
     const h = heightAt(t); pts.push({t,h});
     if(h<mn)mn=h; if(h>mx)mx=h;
   }
-  const pad=8, y0=H-22, y1=pad;
+  // keep vertical room for the extremum time labels (10px) and the hour row
+  const y0=H-36, y1=18;
   const Y = h => y0 - (h-mn)/(mx-mn||1)*(y0-y1);
   const X = i => i/N*W;
 
@@ -404,11 +405,13 @@ function drawCurve(date){
   const ext = findExtrema(d0,d1);
   for(const e of ext){
     const x=(e.time-d0)/dayMs*W, y=Y(e.height);
-    ctx.beginPath(); ctx.arc(x,y,4.5,0,7);
+    ctx.beginPath(); ctx.arc(x,y,4.5,0,2*Math.PI);
     ctx.fillStyle = e.type==='PM' ? '#12557a' : '#e1503f'; ctx.fill();
     ctx.fillStyle='#0b2239'; ctx.font='10px system-ui';
-    ctx.textAlign='center';
-    ctx.fillText(fmtTime(e.time), x, e.type==='PM'? y-8 : y+16);
+    ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    // clamp the label horizontally — a tide near midnight would clip at the edge
+    const lx = Math.max(16, Math.min(W-16, x));
+    ctx.fillText(fmtTime(e.time), lx, e.type==='PM' ? y-8 : y+15);
   }
 
   // "now" line if today
@@ -420,27 +423,39 @@ function drawCurve(date){
     ctx.setLineDash([]);
   }
 
-  // hour grid
-  ctx.fillStyle='#9db6c7'; ctx.font='9px system-ui'; ctx.textAlign='center';
-  for(let hh=0;hh<=24;hh+=6){ ctx.fillText(hh+'h', hh/24*W, H-8); }
+  // hour row — edge labels align inward so they don't clip at the canvas border
+  ctx.fillStyle='#9db6c7'; ctx.font='9px system-ui';
+  for(let hh=0;hh<=24;hh+=6){
+    ctx.textAlign = hh===0 ? 'left' : (hh===24 ? 'right' : 'center');
+    ctx.fillText(hh+'h', hh===0 ? 2 : (hh===24 ? W-2 : hh/24*W), H-8);
+  }
 }
 
 /* ======================= INIT ======================= */
-function init(){
+function renderDays(){
   const today = new Date();
-  const tomorrow = dayEnd(dayStart(today));
-
   $('dayGrid').innerHTML =
     renderDay(today, "Aujourd'hui") +
-    renderDay(tomorrow, 'Demain');
-
+    renderDay(dayEnd(dayStart(today)), 'Demain');
   $('curveDate').textContent = '· '+fmtDay(today);
-  renderNow();
-  drawCurve(today);
-  $('year').textContent = today.getFullYear();
+}
 
-  // refresh every minute
-  setInterval(()=>{ renderNow(); drawCurve(new Date()); }, 60000);
+function init(){
+  renderDays();
+  renderNow();
+  drawCurve(new Date());
+  $('year').textContent = new Date().getFullYear();
+
+  // refresh every minute; re-render the day cards when the local day rolls over
+  let day = dayStart(new Date()).getTime();
+  setInterval(()=>{
+    const now = new Date();
+    if (dayStart(now).getTime() !== day){
+      day = dayStart(now).getTime();
+      renderDays();
+    }
+    renderNow(); drawCurve(now);
+  }, 60000);
   window.addEventListener('resize', ()=>drawCurve(new Date()));
 }
 document.addEventListener('DOMContentLoaded', init);
