@@ -1,7 +1,4 @@
-#!/bin/sh
-
 cd &&
-git clone --bare https://github.com/angt/dotfiles .git &&
-git config --bool core.bare false &&
-git reset --hard HEAD &&
+git clone --bare git@github.com:angt/dotfiles .shell.git &&
+git --git-dir=.shell.git --work-tree=. reset --hard HEAD &&
 . ./.shell
