@@ -370,7 +370,7 @@ const QUESTIONS = [
     explication: "On peut casser un noyau : c'est ce qui se passe dans une centrale nucléaire ou dans le cœur d'une étoile. En libérant les morceaux, on récupère une énergie fantastique — mais attention, le mot « atome » veut dire « insécable » en grec, parce que les savants de l'Antiquité croyaient qu'on ne pouvait pas le diviser !"
   },
   {
-    question: "Quel est l'atome le plus simple de tous, avec un seul proton ?",
+    question: "Quel atome ne contient qu'un seul proton dans son noyau, et le plus souvent aucun neutron ?",
     options: [
       { texte: "L'hydrogène", correct: true },
       { texte: "L'hélium", correct: false, pourquoi: "L'hélium a deux protons, et deux neutrons dans son noyau le plus courant." },
@@ -425,7 +425,7 @@ const QUESTIONS = [
       { texte: "Parce que la Terre est inclinée sur son axe", correct: true },
       { texte: "Parce que la Terre se rapproche du Soleil en été", correct: false, pourquoi: "C'est même le contraire : la Terre est légèrement plus loin du Soleil en juillet !" },
       { texte: "Parce que le Soleil devient plus chaud en été", correct: false, pourquoi: "Le Soleil ne change pas : c'est la Terre qui tourne inclinée autour de lui." },
-      { texte: "Parce que la Lune nous protège du froid en hiver", correct: false, pourquoi: "La Lune n'a aucune action sur la température sur Terre." }
+      { texte: "Parce que l'axe de la Terre change de direction au fil de l'année", correct: false, pourquoi: "Non : l'axe reste penché dans la même direction, comme une toupie. C'est la Terre qui avance autour du Soleil en gardant son inclinaison, si bien que chaque hémisphère penche vers le Soleil à tour de rôle." }
     ],
     explication: "C'est l'inclinaison de la Terre (23,5°) qui change l'ensoleillement au cours de l'année, pas la distance au Soleil. En décembre, l'hémisphère nord est incliné à l'opposé du Soleil : c'est l'hiver."
   },
@@ -433,21 +433,21 @@ const QUESTIONS = [
     question: "Combien de temps met la lumière du Soleil pour arriver jusqu'à nous ?",
     options: [
       { texte: "Environ 8 minutes", correct: true },
-      { texte: "Environ 1 seconde", correct: false, pourquoi: "C'est 500 fois trop court : la lumière met 499 secondes à faire le trajet." },
-      { texte: "Environ 1 heure", correct: false, pourquoi: "1 heure, c'est le temps d'un long trajet en voiture, pas celui d'un rayon de lumière !" },
-      { texte: "Instantanément", correct: false, pourquoi: "Même la lumière met du temps : rien ne va plus vite qu'elle, mais elle n'est pas instantanée." }
+      { texte: "Environ 8 secondes", correct: false, pourquoi: "Attention à l'unité : c'est 8 minutes, pas 8 secondes. En 8 secondes, la lumière ne parcourt que 2,4 millions de km, à peine six fois la distance Terre-Lune." },
+      { texte: "Environ 1 minute", correct: false, pourquoi: "Presque huit fois trop court : en une minute, la lumière ne couvre que 18 millions de km, à peine un huitième du trajet." },
+      { texte: "Environ 8 heures", correct: false, pourquoi: "Bien trop long : en 8 heures, la lumière dépasserait Neptune, pourtant trente fois plus loin du Soleil que la Terre." }
     ],
     explication: "La lumière parcourt les 150 millions de km qui nous séparent du Soleil en 8 minutes et 19 secondes exactement (499 secondes). Si le Soleil disparaissait, on ne le saurait que 8 minutes plus tard !"
   },
   {
-    question: "Que devient une étoile très massive quand elle meurt, dans le cas le plus extrême ?",
+    question: "Après la mort d'une étoile très massive, son cœur peut laisser une étoile à neutrons. Dans quel cas laisse-t-il plutôt un trou noir ?",
     options: [
-      { texte: "Un trou noir", correct: true },
-      { texte: "Une étoile à neutrons", correct: false, pourquoi: "C'est la fin d'une étoile massive un peu moins lourde : sa matière est tassée, mais pas assez pour former un trou noir." },
-      { texte: "Une naine blanche", correct: false, pourquoi: "C'est la fin des étoiles comme le Soleil, bien moins massives qu'une étoile qui donne un trou noir." },
-      { texte: "Une géante rouge", correct: false, pourquoi: "C'est une étape AVANT la mort : l'étoile gonfle, puis finit par s'effondrer." }
+      { texte: "Quand l'étoile de départ était encore plus lourde", correct: true },
+      { texte: "Quand elle était plus légère et plus froide", correct: false, pourquoi: "C'est l'inverse : une étoile trop légère finit en naine blanche, une simple braise de la taille de la Terre." },
+      { texte: "Quand elle tournait très vite sur elle-même", correct: false, pourquoi: "La rotation change la forme de l'effondrement, mais c'est bien la masse qui décide s'il reste une étoile à neutrons ou un trou noir." },
+      { texte: "Quand elle se trouvait près d'une autre étoile", correct: false, pourquoi: "Le voisinage peut perturber une étoile, mais pas décider de ce qui reste après sa mort." }
     ],
-    explication: "Quand une étoile très massive a brûlé tout son carburant, son cœur s'effondre d'un coup : c'est une supernova. Il peut rester une étoile à neutrons... ou, si l'étoile était encore plus lourde, un trou noir, dont même la lumière ne peut pas s'échapper."
+    explication: "Tout dépend du poids du cœur qui s'effondre. Jusqu'à environ deux fois la masse du Soleil, les neutrons parviennent à le retenir : il reste une étoile à neutrons, une boule d'une vingtaine de kilomètres à peine. Au-delà d'environ trois masses solaires, rien ne peut plus arrêter l'effondrement : la matière se tasse sans limite et forme un trou noir, dont même la lumière ne peut pas ressortir."
   },
   {
     question: "Pourquoi les astronautes flottent-ils à l'intérieur de la Station spatiale internationale ?",
@@ -460,14 +460,14 @@ const QUESTIONS = [
     explication: "Il y a bien de la gravité là-haut (environ 88 % de celle de la surface !). Mais la station tombe en permanence autour de la Terre, et les astronautes tombent avec elle : c'est l'apesanteur."
   },
   {
-    question: "Pourquoi voit-on la Lune briller la nuit ?",
+    question: "La Lune se lève, énorme, juste au-dessus des toits. Une heure plus tard, en haut du ciel, elle paraît plus petite. A-t-elle changé de taille ?",
     options: [
-      { texte: "Elle reflète la lumière du Soleil", correct: true },
-      { texte: "Elle produit sa propre lumière", correct: false, pourquoi: "Seules les étoiles produisent leur propre lumière, pas les lunes ni les planètes." },
-      { texte: "Elle reflète la lumière des étoiles", correct: false, pourquoi: "Les étoiles sont bien trop loin : c'est la lumière du Soleil, tout près, qui éclaire la Lune." },
-      { texte: "Elle est chaude et rougeoie comme une braise", correct: false, pourquoi: "La Lune est un monde de roche froide : sa face éclairée monte vers 120 °C, bien trop froid pour rougeoier." }
+      { texte: "Non : elle paraît grosse parce qu'on la compare aux toits", correct: true },
+      { texte: "Oui : elle est vraiment plus près de nous quand elle est basse", correct: false, pourquoi: "La Lune reste à la même distance, environ 384 000 km, qu'elle soit près de l'horizon ou au sommet du ciel. La différence ne se passe pas dans le ciel, mais dans notre tête." },
+      { texte: "Oui : l'air de l'horizon l'agrandit comme une loupe", correct: false, pourquoi: "L'air déforme un peu la forme de la Lune, il l'aplatit légèrement, mais il ne la grossit pas : sur une photo prise le même soir, elle a exactement la même taille." },
+      { texte: "Oui, mais seulement les soirs de pleine Lune", correct: false, pourquoi: "L'effet se produit à toutes les phases, même avec un mince croissant tout fin." }
     ],
-    explication: "La Lune ne produit aucune lumière : elle réfléchit celle du Soleil, comme un miroir gris."
+    explication: "La Lune garde la même taille apparente d'un bout à l'autre du ciel : tends le bras et vise-la avec le bout de ton pouce, il la cache aussi bien quand elle est basse et « énorme » que lorsqu'elle est toute petite, en haut. C'est notre cerveau qui se trompe : il la compare aux maisons et aux arbres et la juge immense ; seul dans le ciel, sans repère, il la voit à sa vraie taille. Photographie-la deux fois le même soir, avec le même zoom : elle fait exactement la même taille sur les deux images. Ce mystère s'appelle l'illusion lunaire, et les scientifiques en discutent encore."
   },
   {
     question: "Quel objet est si dense qu'une cuillère à café de sa matière pèserait des milliards de tonnes ?",
@@ -514,7 +514,7 @@ const QUESTIONS = [
     options: [
       { texte: "La Lune passe entre la Terre et le Soleil", correct: true },
       { texte: "La Terre passe entre la Lune et le Soleil", correct: false, pourquoi: "C'est une éclipse de Lune : la Lune passe alors dans l'ombre de la Terre." },
-      { texte: "Le Soleil s'éteint pendant quelques minutes", correct: false, pourquoi: "Le Soleil ne s'éteint jamais : c'est son ombre qui passe sur nous." },
+      { texte: "Le Soleil s'éteint pendant quelques minutes", correct: false, pourquoi: "Le Soleil ne s'éteint pas : la Lune se glisse devant lui et cache son disque. Le Soleil brille toujours, mais l'ombre de la Lune nous prive de sa lumière." },
       { texte: "Une comète vient masquer le Soleil", correct: false, pourquoi: "Les comètes sont bien trop petites et bien trop loin pour cacher le Soleil." }
     ],
     explication: "La Lune se glisse devant le Soleil et projette son ombre sur la Terre. Quand c'est la Terre qui passe entre le Soleil et la Lune, c'est une éclipse de Lune."
@@ -522,7 +522,7 @@ const QUESTIONS = [
   {
     question: "Pourquoi Mars est-elle surnommée la « planète rouge » ?",
     options: [
-      { texte: "Parce que son sol est riche en oxyde de fer, c'est de la rouille", correct: true },
+      { texte: "Parce que son sol est couvert d'oxyde de fer", correct: true },
       { texte: "Parce que son atmosphère est rouge", correct: false, pourquoi: "Son atmosphère est très fine et pâle : la couleur vient du sol, pas de l'air." },
       { texte: "Parce qu'elle est très proche du Soleil", correct: false, pourquoi: "Mars est même plus loin du Soleil que la Terre." },
       { texte: "Parce que ses nuages sont rouges", correct: false, pourquoi: "Ses nuages sont pâles et minces : c'est le sol qui est rouge." }
@@ -564,20 +564,20 @@ const QUESTIONS = [
     options: [
       { texte: "Parce que leur lumière traverse l'air, qui bouge sans arrêt", correct: true },
       { texte: "Parce qu'elles s'allument et s'éteignent vraiment", correct: false, pourquoi: "Une étoile brille sans interruption pendant des millions d'années." },
-      { texte: "Parce qu'elles tremblent dans le ciel", correct: false, pourquoi: "Elles sont immenses et fixes : c'est leur lumière qui tremble, pas elles." },
-      { texte: "Parce que la Lune les fait clignoter", correct: false, pourquoi: "La Lune n'a aucune action sur la lumière des étoiles." }
+      { texte: "Parce que la Lune les fait clignoter", correct: false, pourquoi: "La Lune n'a aucune action sur la lumière des étoiles." },
+      { texte: "Parce que les planètes passent devant elles", correct: false, pourquoi: "Les planètes sont bien plus proches : elles passent parfois devant une étoile, mais pas toutes les secondes, et cela ne fait pas scintiller tout le ciel." }
     ],
     explication: "Notre atmosphère est en mouvement et dévie un peu la lumière des étoiles : on dirait qu'elles clignotent. Vu depuis l'espace, elles ne scintillent pas du tout."
   },
   {
-    question: "Pourquoi la Lune change-t-elle de forme au cours du mois ?",
+    question: "Un soir, la Lune est un mince croissant ; deux semaines plus tard, elle est presque pleine. Qu'est-ce qui a changé ?",
     options: [
-      { texte: "Parce qu'on voit une partie différente de sa face éclairée par le Soleil", correct: true },
-      { texte: "Parce qu'elle se déforme comme une boule de pâte", correct: false, pourquoi: "La Lune est un globe de roche solide : elle ne change jamais de forme, seulement d'éclairage." },
-      { texte: "Parce qu'un nuage passe devant elle", correct: false, pourquoi: "Un nuage peut masquer la Lune, mais il ne lui donne pas une forme de croissant." },
-      { texte: "Parce qu'elle tourne très vite sur elle-même", correct: false, pourquoi: "La Lune met un mois à faire un tour sur elle-même : ce n'est pas cela qui fait apparaître les phases." }
+      { texte: "La part de sa face éclairée que l'on voit depuis la Terre", correct: true },
+      { texte: "La Lune s'approche et s'éloigne du Soleil en s'éclairant elle-même", correct: false, pourquoi: "La Lune ne s'allume pas : elle n'a pas de lumière à elle. Elle reflète celle du Soleil, et c'est notre point de vue qui change au fil du mois." },
+      { texte: "L'ombre de la Terre recouvre une partie de la Lune", correct: false, pourquoi: "L'ombre de la Terre ne tombe sur la Lune qu'au moment des éclipses de Lune, deux ou trois fois par an. Les phases, elles, reviennent chaque mois." },
+      { texte: "La Lune est en partie cachée par l'atmosphère terrestre", correct: false, pourquoi: "L'atmosphère ne cache pas une moitié de Lune : elle la fait seulement paraître un peu rougeâtre quand elle est très basse." }
     ],
-    explication: "La Lune ne produit pas de lumière : elle reflète celle du Soleil. Selon sa position autour de la Terre, on voit une petite ou une grande partie de sa face éclairée : croissant, demi-Lune, pleine Lune... ce sont les phases de la Lune."
+    explication: "La Lune est éclairée par le Soleil, toujours à moitié : la moitié tournée vers le Soleil est en plein jour, l'autre en pleine nuit. En tournant autour de la Terre, elle nous présente cette moitié éclairée sous des angles différents. Quand elle se glisse entre nous et le Soleil, c'est sa face sombre qui nous fait face : nouvelle Lune, on ne voit rien. Quelques jours plus tard apparaît un mince croissant, puis une moitié à la fin de la première semaine ; quand elle est à l'opposé du Soleil, sa face éclairée est entièrement tournée vers nous : c'est la pleine Lune. Un cycle complet dure environ 29,5 jours."
   },
   {
     question: "Quelle est la planète la plus chaude du système solaire ?",
@@ -610,14 +610,14 @@ const QUESTIONS = [
     explication: "Vénus tourne si lentement qu'elle met 243 jours terrestres pour faire un tour sur elle-même... alors qu'elle fait le tour du Soleil en seulement 225 jours ! En plus, elle tourne à l'envers : sur Vénus, le Soleil se lève à l'ouest. D'où une bizarrerie : entre deux levers de Soleil, il ne s'écoule que 117 jours, parce que la planète avance autour du Soleil pendant qu'elle tourne."
   },
   {
-    question: "À quoi sert un télescope spatial comme Hubble ou James Webb ?",
+    question: "Le télescope spatial Hubble a un miroir plus petit que beaucoup de télescopes installés sur Terre, et pourtant il voit des étoiles plus nettes. Pourquoi ?",
     options: [
-      { texte: "À capter la lumière des objets les plus lointains de l'espace", correct: true },
-      { texte: "À photographier la Terre en très gros plan", correct: false, pourquoi: "Ce sont les satellites d'observation de la Terre qui font ce travail." },
-      { texte: "À emmener des astronautes plus loin", correct: false, pourquoi: "Ce sont des observatoires, pas des fusées : ils ne transportent personne." },
-      { texte: "À écouter les sons des autres planètes", correct: false, pourquoi: "Dans le vide de l'espace, le son ne se propage pas : il n'y a rien à écouter." }
+      { texte: "Parce que l'atmosphère ne vient plus brouiller la lumière", correct: true },
+      { texte: "Parce qu'il est beaucoup plus près des étoiles", correct: false, pourquoi: "Il orbite à 500 km au-dessus de nous : sur une distance de plusieurs années-lumière, cela ne rapproche de presque rien. Le gain vient de la qualité de l'image, pas de la distance." },
+      { texte: "Parce qu'il grossit bien plus que les télescopes du sol", correct: false, pourquoi: "Certains télescopes terrestres grossissent autant, voire plus. Mais un grossissement fort sur une image floue ne donne qu'une grande image floue." },
+      { texte: "Parce que le ciel noir de l'espace rend les étoiles plus brillantes", correct: false, pourquoi: "Le noir aide à voir les objets faibles, mais même sous un ciel parfaitement noir, un télescope au sol reste limité par l'air qui bouge au-dessus de lui." }
     ],
-    explication: "Au-dessus des nuages et de l'atmosphère, ces télescopes captent la lumière venue de très loin (parfois l'infrarouge, invisible à l'œil) : ils nous montrent des galaxies vieilles de milliards d'années."
+    explication: "L'air de l'atmosphère est en mouvement constant et dévie sans cesse la lumière : vue d'en bas, une étoile danse, et son image s'étale. Au-dessus de l'atmosphère, Hubble n'a plus ce problème, et il peut aussi capter l'infrarouge, que l'air absorbe en grande partie. C'est pour la même raison que les grands observatoires terrestres sont bâtis au sommet de montagnes très hautes, dans un air sec et stable — et qu'on équipe leurs miroirs de miroirs déformables qui corrigent les tremblements de l'air en temps réel."
   },
   {
     question: "Le Soleil, c'est quoi exactement ?",
@@ -630,20 +630,20 @@ const QUESTIONS = [
     explication: "Le Soleil est une étoile de taille moyenne, une boule de gaz (surtout de l'hydrogène) si chaude qu'elle brille. Les autres étoiles sont des soleils... mais beaucoup plus loin !"
   },
   {
-    question: "Quelle planète est la plus proche du Soleil ?",
+    question: "Si le Soleil était un ballon de 22 cm posé sur la ligne de but, où faudrait-il placer la Terre pour respecter les proportions ?",
     options: [
-      { texte: "Mercure", correct: true },
-      { texte: "Vénus", correct: false, pourquoi: "Vénus est la deuxième planète, juste après Mercure." },
-      { texte: "La Terre", correct: false, pourquoi: "La Terre est la troisième : deux planètes se trouvent entre elle et le Soleil." },
-      { texte: "Mars", correct: false, pourquoi: "Mars est la quatrième planète : le Soleil y paraît déjà plus petit." }
+      { texte: "À 24 m du ballon, un quart de terrain plus loin", correct: true },
+      { texte: "À 2,4 m, juste devant le ballon", correct: false, pourquoi: "Dix fois trop près : il faudrait pour cela que la Terre soit dix fois plus grosse, ou le Soleil dix fois plus petit." },
+      { texte: "À 240 m, de l'autre côté du stade", correct: false, pourquoi: "Dix fois trop loin : à cette distance, la lumière du Soleil mettrait 80 minutes à nous arriver, au lieu de 8." },
+      { texte: "À 24 km, dans la ville voisine", correct: false, pourquoi: "Mille fois trop loin : à cette échelle, Neptune, la dernière planète, se retrouverait à 700 km de là !" }
     ],
-    explication: "Mercure est la plus proche du Soleil : son année (un tour complet autour du Soleil) ne dure que 88 jours terrestres ! Sur Mercure, l'année passe plus vite que le mois sur Terre."
+    explication: "À cette échelle, le Soleil est un ballon de foot et la Terre un grain de sable de 2 mm posé à 24 m. La Lune, elle, n'est qu'à 6 cm de ce grain de sable. Et Neptune, la planète la plus lointaine, tourne à 700 m du ballon. Le système solaire, c'est donc surtout du vide : les planètes y sont des grains de poussière perdus autour d'une énorme boule de feu."
   },
   {
     question: "Quelle planète tourne presque couchée sur le côté ?",
     options: [
       { texte: "Uranus", correct: true },
-      { texte: "Vénus", correct: false, pourquoi: "Vénus tourne très lentement, et dans le sens inverse de la plupart des planètes... mais elle est droite sur son axe." },
+      { texte: "Vénus", correct: false, pourquoi: "Vénus a bien une particularité : elle tourne à l'envers, dans le sens contraire des autres planètes. Mais son axe reste presque perpendiculaire à son orbite : elle ne roule pas sur le côté." },
       { texte: "Saturne", correct: false, pourquoi: "Saturne tourne droite, avec ses célèbres anneaux autour d'elle." },
       { texte: "Mercure", correct: false, pourquoi: "Mercure tourne droite aussi : c'est Uranus qui est inclinée à près de 98°." }
     ],
@@ -740,14 +740,14 @@ const QUESTIONS = [
     explication: "La photosynthèse consomme du CO₂ et rejette de l'oxygène : c'est grâce aux plantes que l'on respire !"
   },
   {
-    question: "Quelle est la vraie couleur du sang qui circule dans les veines ?",
+    question: "On te fait une prise de sang dans une veine du bras. De quelle couleur est le sang dans la seringue ?",
     options: [
-      { texte: "Rouge foncé : il paraît bleu à travers la peau", correct: true },
-      { texte: "Bleu : sans oxygène, le sang est vraiment bleu", correct: false, pourquoi: "Le sang n'est jamais bleu : même dans les veines, il reste rouge. C'est la peau qui lui donne cet air bleuté." },
-      { texte: "Vert, comme chez certains animaux", correct: false, pourquoi: "Certains vers ou lézards ont du sang vert, mais le sang humain est toujours rouge." },
-      { texte: "Transparent, comme de l'eau", correct: false, pourquoi: "Le sang contient des milliards de globules rouges qui le colorent fortement." }
+      { texte: "Rouge foncé, presque grenat", correct: true },
+      { texte: "Rouge vif, comme celui des artères", correct: false, pourquoi: "Le sang des veines a déjà cédé son oxygène aux organes : il est plus sombre que celui des artères, qui partent des poumons bien chargées en oxygène." },
+      { texte: "Bleu, puisque l'oxygène lui manque", correct: false, pourquoi: "Le sang n'est jamais bleu : sans oxygène il est rouge foncé, avec oxygène il est rouge vif. Les veines paraissent bleues à travers la peau, mais ce n'est pas la couleur du sang." },
+      { texte: "Incolore : c'est l'air qui le rougit à la sortie", correct: false, pourquoi: "Le sang est rouge dès qu'il quitte la veine. Au contact de l'air il peut devenir un peu plus vif, mais il n'était pas transparent avant." }
     ],
-    explication: "Le sang des veines est rouge foncé, presque grenat. Il paraît bleu à travers la peau parce que la peau filtre la lumière : le bleu remonte vers nos yeux, alors que le rouge est absorbé. Si tu te fais prélever du sang, tu le vois bien : rouge !"
+    explication: "Le sang des veines est rouge foncé, presque grenat : il a livré son oxygène aux organes. Celui des artères, qui sort des poumons, est rouge vif. Si les veines semblent bleues sous la peau, c'est la peau qui trompe l'œil : elle laisse mieux passer la lumière bleue et absorbe le rouge. C'est donc la peau qui est bleutée, pas le sang."
   },
   {
     question: "Combien de chambres possède le cœur humain ?",
@@ -810,24 +810,24 @@ const QUESTIONS = [
     explication: "Chaque automne, les papillons monarques d'Amérique du Nord volent jusqu'à 4 000 km vers le Mexique pour passer l'hiver au chaud. Aucun ne fait l'aller-retour : il faut trois ou quatre générations pour revenir au printemps !"
   },
   {
-    question: "À quoi sert le squelette ?",
+    question: "Au cœur des os les plus gros se cache une substance qui fabrique quelque chose en continu. Quoi ?",
     options: [
-      { texte: "À soutenir le corps et protéger les organes", correct: true },
-      { texte: "À transporter l'oxygène vers les muscles", correct: false, pourquoi: "L'oxygène est transporté par le sang, pas par les os." },
-      { texte: "À digérer les aliments et absorber l'eau", correct: false, pourquoi: "La digestion est le travail de l'estomac et des intestins." },
-      { texte: "À faire circuler le sang dans le corps", correct: false, pourquoi: "C'est le cœur qui fait circuler le sang." }
+      { texte: "Les cellules du sang", correct: true },
+      { texte: "La graisse qui fait grossir", correct: false, pourquoi: "La moelle jaune contient bien de la graisse, mais ce n'est pas elle qui fabrique quelque chose d'utile au corps chaque seconde." },
+      { texte: "Le calcium qui durcit les os", correct: false, pourquoi: "Le calcium rend l'os solide, mais il ne le fabrique pas sur place : il vient des aliments, par le sang." },
+      { texte: "L'ADN des muscles", correct: false, pourquoi: "L'ADN est dans les cellules de chaque muscle, pas dans les os : la moelle fabrique des cellules, pas du code génétique." }
     ],
-    explication: "Les os tiennent le corps debout, protègent le cerveau (le crâne) et les organes (les côtes), et servent de points d'attache aux muscles pour bouger."
+    explication: "À l'intérieur des os se trouve la moelle, une sorte de tissu rouge qui produit chaque seconde des millions de globules rouges, de globules blancs et de plaquettes. C'est pour cela qu'on parle de « moelle osseuse » dans les hôpitaux : elle est une usine à cellules du sang, et les os servent aussi de réserve de calcium, qu'ils prêtent au corps quand il en manque."
   },
   {
-    question: "À quoi servent les racines d'une plante ?",
+    question: "Un arbre est coupé au ras du sol. Un an plus tard, une fine pousse sort du tronc. D'où vient-elle ?",
     options: [
-      { texte: "À puiser l'eau et les minéraux du sol", correct: true },
-      { texte: "À capter la lumière du Soleil", correct: false, pourquoi: "Ce sont les feuilles qui captent la lumière : les racines vivent enfouies dans le noir." },
-      { texte: "À attirer les insectes pour la pollinisation", correct: false, pourquoi: "Ce sont les fleurs, avec leurs couleurs et leur parfum, qui attirent les insectes." },
-      { texte: "À fabriquer le sucre de la plante", correct: false, pourquoi: "Le sucre est fabriqué dans les feuilles, grâce à la lumière : les racines n'apportent que l'eau et les minéraux." }
+      { texte: "Des réserves stockées dans les racines, qui font repartir un bourgeon", correct: true },
+      { texte: "De graines tombées de l'arbre l'an dernier", correct: false, pourquoi: "Une graine donnerait un jeune plant à côté du tronc, avec ses propres racines. Ici, la pousse sort du tronc coupé : elle vient de ses réserves." },
+      { texte: "De la pluie, qui ravive le bois mort", correct: false, pourquoi: "L'eau ne crée pas de vie : elle sert à transporter la sève, que les racines puisent dans le sol avec ses minéraux." },
+      { texte: "D'une bouture faite par un jardinier", correct: false, pourquoi: "Personne n'a planté de bouture : la pousse vient du tronc lui-même, par les réserves de l'arbre." }
     ],
-    explication: "Les racines sont comme des tuyaux : elles puisent l'eau et les minéraux dans le sol et les font monter dans la plante. Elles l'empêchent aussi de tomber !"
+    explication: "Les racines servent à puiser l'eau et les minéraux, mais aussi d'entrepôt : elles gardent le sucre fabriqué par les feuilles pendant l'été. Quand le tronc est coupé, ce sucre permet à un bourgeon de repartir avant même que la nouvelle pousse ait assez de feuilles pour se nourrir elle-même. C'est ce qui explique les « rejets » qui repoussent au pied des arbres coupés, et pourquoi une souche peut survivre des années."
   },
   {
     question: "Quelle part de l'énergie du corps le cerveau consomme-t-il, alors qu'il ne pèse que 2 % du poids ?",
@@ -900,14 +900,14 @@ const QUESTIONS = [
     explication: "Invisibles à l'œil nu, les bactéries vivent partout : dans le sol, l'eau, et même dans notre corps, où elles aident à digérer. Le yaourt, par exemple, est fabriqué grâce à des bactéries !"
   },
   {
-    question: "Comment certains oiseaux peuvent-ils dormir perchés sur une branche sans tomber ?",
+    question: "Un moineau dort depuis des heures sur sa branche, la tête sous l'aile. Qu'est-ce qui le maintient accroché ?",
     options: [
-      { texte: "Un tendon se bloque quand le poids de l'oiseau plie ses doigts", correct: true },
-      { texte: "Ils se réveillent dès qu'ils penchent, pour se rattraper à temps", correct: false, pourquoi: "Leur sommeil est profond : c'est justement la patte qui tient toute seule, sans que l'oiseau ait à intervenir." },
-      { texte: "Ils serrent la branche avec leurs muscles pendant toute la nuit", correct: false, pourquoi: "Contracter un muscle toute une nuit coûterait beaucoup d'énergie : chez eux, la prise est mécanique, sans effort." },
-      { texte: "Ils calent leurs ailes contre le tronc pour rester en équilibre", correct: false, pourquoi: "Beaucoup dorment au bout d'une branche, en plein vent, sans rien contre quoi s'appuyer." }
+      { texte: "Ses doigts, que son poids referme sur la branche", correct: true },
+      { texte: "Ses griffes se plantent dans l'écorce comme des clous", correct: false, pourquoi: "Les griffes ne percent pas le bois, et sur un perchoir bien lisse elles ne suffiraient pas. Un oiseau mort reste d'ailleurs suspendu : c'est la patte qui se bloque, pas la griffe qui s'accroche." },
+      { texte: "Il se réveille au moindre déséquilibre, pour se rattraper", correct: false, pourquoi: "Il dort d'un sommeil profond, sans surveiller son équilibre : le perchoir tient tout seul, même quand il a la tête sous l'aile." },
+      { texte: "Il garde les muscles de ses pattes contractés toute la nuit", correct: false, pourquoi: "Seriner un muscle pendant des heures épuiserait l'oiseau : chez lui, tenir ne coûte aucun effort, c'est purement mécanique." }
     ],
-    explication: "Quand l'oiseau se pose, son poids fait plier ses doigts autour de la branche ; un tendon les bloque dans cette position. Plus il pèse, plus la prise se ferme : il peut dormir sans contracter un seul muscle. Pour repartir, il se redresse, et le tendon se débloque. Ce mécanisme s'appelle le verrouillage tendineux, et il équipe les pattes de la plupart des passereaux."
+    explication: "Sa patte est un piège à ressort. En se posant, l'oiseau plie les genoux ; son poids tire un tendon qui referme les doigts sur la branche, et plus il pèse, plus la prise se serre. Il peut donc dormir sans contracter un seul muscle. Pour repartir, il se redresse : le tendon se détend et les doigts s'ouvrent. Ce système, le verrouillage tendineux, équipe les pattes de presque tous les oiseaux chanteurs."
   },
   {
     question: "Dans le vide de l'espace, que se passe-t-il si tu cries ?",
@@ -930,21 +930,21 @@ const QUESTIONS = [
     explication: "Quand l'air se refroidit, il se rétracte : il occupe moins de place que l'air chaud (les molécules s'agitent moins). Le ballon se dégonfle donc un peu. S'il se réchauffe, il reprend sa forme !"
   },
   {
-    question: "Quelle est la vitesse de la lumière dans le vide ?",
+    question: "La lumière file à travers le vide. Laquelle de ces vitesses est la bonne ?",
     options: [
-      { texte: "Environ 300 000 km/s", correct: true },
-      { texte: "Environ 1 000 km/s", correct: false, pourquoi: "C'est 300 fois moins : à cette vitesse, la lumière mettrait près de deux jours pour venir du Soleil." },
-      { texte: "Environ 10 000 km/s", correct: false, pourquoi: "Trop lent : à cette vitesse, la lumière mettrait plus de 4 heures pour venir du Soleil." },
-      { texte: "Environ 1 million de km/s", correct: false, pourquoi: "Trop rapide : c'est plus de 3 fois la vraie vitesse." }
+      { texte: "300 000 km par seconde", correct: true },
+      { texte: "300 000 km par heure", correct: false, pourquoi: "3 600 fois trop lent ! À cette allure, la lumière du Soleil mettrait presque trois semaines à nous rejoindre au lieu de 8 minutes." },
+      { texte: "300 000 mètres par seconde", correct: false, pourquoi: "Mille fois trop lent : 300 km/s, la vitesse d'une sonde spatiale. La lumière mettrait alors près de 6 jours pour venir du Soleil." },
+      { texte: "30 000 km par seconde", correct: false, pourquoi: "Dix fois trop lent : le Soleil serait à plus d'une heure de nous, et un aller-retour vers la Lune prendrait 26 secondes." }
     ],
-    explication: "Exactement 299 792 km par seconde dans le vide (on arrondit souvent à 300 000 km/s). C'est environ 7,5 fois le tour de la Terre... en une seule seconde !"
+    explication: "299 792 km par seconde exactement : le même nombre, mais des kilomètres, pas des mètres, et par seconde, pas par heure. En une seconde, la lumière fait environ 7,5 fois le tour de la Terre. C'est la vitesse la plus grande possible : rien ne va plus vite. Petit repère : la Lune est à 384 000 km, que la lumière franchit en 1,3 seconde. À 300 000 km/h, il faudrait plus d'une heure pour le même trajet."
   },
   {
     question: "Pourquoi la glace flotte-t-elle sur l'eau ?",
     options: [
       { texte: "Parce que la glace est moins dense que l'eau liquide", correct: true },
       { texte: "Parce que la glace contient de l'air", correct: false, pourquoi: "Des bulles peuvent s'y coincer, mais la glace pure flotte aussi." },
-      { texte: "Parce que la glace est plus lourde", correct: false, pourquoi: "Si elle était plus dense, elle coulerait : or, elle flotte, donc elle est plus légère à volume égal." },
+      { texte: "Parce que la glace contient moins de molécules à volume égal", correct: false, pourquoi: "Au contraire : la glace contient autant de molécules que l'eau dont elle vient, mais elles sont rangées de façon plus espacée, avec des « trous » entre elles. C'est ce qui la rend moins dense." },
       { texte: "Parce que l'eau sous la glace la pousse vers le haut", correct: false, pourquoi: "L'eau pousse dans tous les sens ; c'est bien la densité de la glace qui la fait remonter." }
     ],
     explication: "En gelant, les molécules d'eau s'organisent en cristaux avec des « trous » : la glace est moins dense que l'eau liquide. C'est très rare dans la nature, et vital pour la vie : les lacs gèlent par le haut, les poissons survivent dessous."
@@ -970,22 +970,22 @@ const QUESTIONS = [
     explication: "L'hydrogène : il représente environ 75 % de la matière visible de l'univers."
   },
   {
-    question: "Un aimant attire...",
+    question: "Tu approches un aimant d'une canette en aluminium, puis d'une cuillère en fer. Que se passe-t-il ?",
     options: [
-      { texte: "Certains métaux seulement", correct: true },
-      { texte: "Tous les métaux", correct: false, pourquoi: "L'aluminium et le cuivre, par exemple, ne sont pas attirés." },
-      { texte: "Le bois et le plastique", correct: false, pourquoi: "Ces matériaux ne contiennent pas de fer : aucune attraction." },
-      { texte: "L'eau et le verre", correct: false, pourquoi: "Ni l'eau ni le verre ne sont magnétiques : ils ne sont pas attirés." }
+      { texte: "Le fer est attiré, l'aluminium non", correct: true },
+      { texte: "Les deux sont attirés de la même façon", correct: false, pourquoi: "Beaucoup de gens le croient, mais l'aluminium n'est pas magnétique : l'aimant ne le tire pas d'un millimètre." },
+      { texte: "Aucun des deux n'est attiré", correct: false, pourquoi: "Le fer, lui, est bien attiré : une cuillère en fer se colle au pôle d'un aimant." },
+      { texte: "L'aluminium est attiré, mais pas le fer", correct: false, pourquoi: "C'est l'exact contraire : l'aluminium fait pourtant partie des métaux, mais l'aimant l'ignore." }
     ],
-    explication: "Seuls les métaux magnétiques le sont : le fer, le nickel et le cobalt. Un aimant n'attire donc pas tous les métaux, loin de là."
+    explication: "Seuls trois métaux sont magnétiques : le fer, le nickel et le cobalt. Tous les autres métaux, comme l'aluminium, le cuivre ou l'or, ne sont pas attirés. C'est pour ça qu'un aimant tient sur une porte de frigo en acier mais glisse sur une canette de soda : elle est en aluminium."
   },
   {
-    question: "Que devient l'eau quand elle passe de l'état liquide à l'état gazeux ?",
+    question: "Une flaque laissée au soleil disparaît en quelques heures. Où est passée l'eau ?",
     options: [
-      { texte: "Elle devient de la vapeur d'eau (un gaz invisible)", correct: true },
-      { texte: "Elle disparaît complètement, il n'en reste rien", correct: false, pourquoi: "Rien ne se perd : elle est devenue invisible, mais elle est bien là." },
-      { texte: "Elle se transforme en dioxyde de carbone", correct: false, pourquoi: "Le CO₂ est un autre gaz : l'eau reste de l'eau (H₂O)." },
-      { texte: "Elle devient plus lourde en se dilatant", correct: false, pourquoi: "Un gaz est même beaucoup plus léger que le liquide." }
+      { texte: "Dans l'air, sous forme de vapeur invisible", correct: true },
+      { texte: "Elle s'est transformée en dioxyde de carbone", correct: false, pourquoi: "Le CO₂ est un autre gaz : l'eau reste de l'eau (H₂O), même invisible. Elle ne change pas d'identité en s'évaporant." },
+      { texte: "Elle a été détruite : il n'en reste rien", correct: false, pourquoi: "Rien ne se perd : la même eau retombe en pluie quelques jours plus tard. Elle est seulement devenue invisible." },
+      { texte: "Elle est passée dans le sol sous la flaque", correct: false, pourquoi: "Un peu d'eau s'infiltre, c'est vrai, mais une flaque exposée au soleil disparaît surtout vers le haut, dans l'air." }
     ],
     explication: "L'eau devient vapeur d'eau, un gaz invisible : elle ne disparaît pas, elle reste dans l'air (c'est ce qui forme les nuages !)."
   },
@@ -1000,14 +1000,14 @@ const QUESTIONS = [
     explication: "La température, c'est en fait l'agitation des molécules. À −273,15 °C (0 kelvin), elles ne bougent presque plus : c'est le zéro absolu, et aucun froid ne peut exister plus bas. Les scientifiques s'en approchent à quelques millièmes de degré près pour fabriquer de la matière extraordinaire, comme les supraconducteurs."
   },
   {
-    question: "Pourquoi voit-on notre reflet dans un miroir ?",
+    question: "Devant un miroir, tu lèves la main droite. Ton reflet, lui, semble lever la main gauche. Pourquoi ?",
     options: [
-      { texte: "Parce que la lumière rebondit sur sa surface", correct: true },
-      { texte: "Parce que le miroir fabrique de la lumière", correct: false, pourquoi: "Un miroir n'émet aucune lumière : il la renvoie." },
-      { texte: "Parce que nos yeux projettent une image sur la vitre", correct: false, pourquoi: "Nos yeux reçoivent la lumière, ils ne la projettent pas." },
-      { texte: "Parce que le verre est très froid", correct: false, pourquoi: "La température du verre n'a rien à voir là-dedans." }
+      { texte: "Il inverse l'avant et l'arrière, pas la gauche et la droite", correct: true },
+      { texte: "Il inverse vraiment la gauche et la droite", correct: false, pourquoi: "Regarde bien : la main que tu lèves reste du même côté que toi dans la glace. Un miroir n'a ni gauche ni droite, il ne peut donc pas les échanger. L'impression vient de nous, pas de lui." },
+      { texte: "C'est le verre qui retourne l'image en la traversant", correct: false, pourquoi: "Le verre n'y est pour rien : il protège une fine couche de métal, et cette couche seule réfléchit déjà la lumière. Une plaque d'acier poli donne le même reflet." },
+      { texte: "Nos deux yeux ne voient pas la même image", correct: false, pourquoi: "Ferme un œil : ton reflet lève toujours la main du même côté. Ce n'est pas une affaire de vision en relief." }
     ],
-    explication: "La lumière se réfléchit sur le miroir comme une balle qui rebondit sur un mur, et nos yeux la reçoivent : c'est la réflexion."
+    explication: "Un miroir plat ne fait qu'une chose : il renvoie la lumière dans l'autre sens, comme un mur renvoie une balle. La lumière repart vers toi au lieu de continuer derrière la glace : le miroir inverse donc l'avant et l'arrière. Mais il ne touche ni à la gauche et la droite, ni au haut et au bas — sinon, avec une main levée, ton reflet aurait aussi la tête en bas ! L'impression de main inversée vient de nous : on s'imagine un jumeau qui nous fait face, et pour nous faire face il aurait dû se retourner, ce qui échangerait sa droite et sa gauche. Retourne une photo de toi, tu auras exactement la même impression."
   },
   {
     question: "La Terre attire la pomme... mais la pomme attire-t-elle la Terre ?",
@@ -1110,14 +1110,14 @@ const QUESTIONS = [
     explication: "La lumière ralentit un peu en entrant dans l'eau et change de direction : c'est la réfraction. Ton œil reçoit des rayons décalés, et l'image de la paille semble brisée à la surface de l'eau."
   },
   {
-    question: "Un sac de 1 kg de plumes et un sac de 1 kg de plomb : lequel est le plus lourd ?",
+    question: "Sur une balance de précision, un sac de 1 kg de plumes et un sac de 1 kg de plomb n'affichent pas tout à fait 1 000 g. Lequel affiche le moins ?",
     options: [
-      { texte: "Aucun des deux : même masse, donc même poids", correct: true },
-      { texte: "Le plomb, parce qu'il est plus dense", correct: false, pourquoi: "Le plomb est bien plus dense : il prend moins de place, mais le sac en contient juste assez pour faire 1 kg." },
-      { texte: "Les plumes, parce qu'elles sont plus volumineuses", correct: false, pourquoi: "Elles occupent plus de place, mais leur masse totale reste de 1 kg." },
-      { texte: "Il faut les peser pour le savoir", correct: false, pourquoi: "C'est écrit sur les deux sacs : 1 kg reste 1 kg !" }
+      { texte: "Les plumes : elles déplacent plus d'air, qui les soutient", correct: true },
+      { texte: "Le plomb, parce qu'il est plus dense", correct: false, pourquoi: "La densité dit seulement que le plomb prend moins de place. Comme il est compact, il déplace très peu d'air, et l'air le soutient donc très peu : c'est lui qui affiche le plus." },
+      { texte: "Aucun : les deux affichent exactement 1 000 g", correct: false, pourquoi: "C'est presque vrai, et c'est le piège : les deux ont bien la même masse, mais la balance mesure un poids, et l'air qui entoure les plumes les soulève légèrement. L'écart est petit, mais réel." },
+      { texte: "Impossible à prévoir : cela dépend de la forme des sacs", correct: false, pourquoi: "On peut le prévoir sans connaître leur forme : ce qui compte, c'est le volume d'air déplacé. Les plumes, bien plus volumineuses à masse égale, en déplacent toujours plus." }
     ],
-    explication: "La masse, c'est la quantité de matière : 1 kg reste 1 kg. La densité, elle, dit si la matière est serrée : le plomb est très dense, les plumes prennent énormément de place pour très peu de matière."
+    explication: "La masse, c'est la quantité de matière : 1 kg reste 1 kg dans les deux sacs. Mais une balance ne mesure pas la masse, elle mesure le poids, c'est-à-dire la force avec laquelle l'objet appuie sur le plateau. Or tout objet plongé dans l'air reçoit une poussée vers le haut, comme un bouchon dans l'eau : c'est la poussée d'Archimède. Les plumes occupent un volume bien plus grand, elles déplacent donc plus d'air, et l'air les soutient un peu plus. Résultat : la balance affiche quelques dizaines de grammes de moins pour les plumes — de quoi le voir sur une balance de cuisine. C'est exactement le même effet qui fait qu'un ballon d'hélium s'envole."
   },
   {
     question: "Pourquoi a-t-on chaud en frottant ses mains l'une contre l'autre ?",
@@ -1144,10 +1144,10 @@ const QUESTIONS = [
     options: [
       { texte: "Parce que le sel fait baisser la température de congélation de l'eau", correct: true },
       { texte: "Parce que le sel chauffe la route", correct: false, pourquoi: "Le sel n'apporte aucune chaleur : il agit sur la façon dont l'eau gèle." },
-      { texte: "Parce que le sel rend la route plus rugueuse", correct: false, pourquoi: "Le sable ou le gravier servent à l'adhérence ; le sel, lui, agit sur le verglas." },
-      { texte: "Parce que le sel absorbe la neige", correct: false, pourquoi: "Le sel n'avale pas la neige : il l'empêche de rester de la glace solide." }
+      { texte: "Parce que le sel rend la route plus rugueuse", correct: false, pourquoi: "Le sable ou le gravier servent à l'adhérence ; le sel, lui, agit sur le verglas et ne change rien à la texture du goudron." },
+      { texte: "Parce que le sel absorbe l'eau du verglas comme une éponge", correct: false, pourquoi: "Le sel ne boit pas l'eau : il se dissout dedans, et c'est ce mélange salé qui gèle à plus basse température. Il ne reste pas de sel solide pour absorber quoi que ce soit." }
     ],
-    explication: "Mélangé à l'eau, le sel l'empêche de geler à 0 °C : elle ne se solidifie qu'à une température bien plus basse. La glace fond donc... tant qu'il reste du sel !"
+    explication: "Mélangé à l'eau, le sel l'empêche de geler à 0 °C : l'eau salée ne se solidifie qu'à une température bien plus basse (environ −6 °C pour une eau très salée). Le verglas fond donc... tant qu'il reste du sel. Par grand froid, sous −10 °C, il devient inefficace et l'on doit ajouter du sable pour l'adhérence, ou du chlorure de calcium, qui agit plus bas."
   },
   {
     question: "Dans une pièce à 20 °C, pourquoi une cuillère en métal paraît-elle plus froide qu'une cuillère en bois ?",
@@ -1283,7 +1283,7 @@ const QUESTIONS = [
     question: "Au sommet du Mont-Blanc, à quelle température l'eau commence-t-elle à bouillir ?",
     options: [
       { texte: "Vers 85 °C", correct: true },
-      { texte: "Vers 70 °C", correct: false, pourquoi: "C'est encore trop bas : vers 70-75 °C, il faudrait être à plus de 7 000 m d'altitude." },
+      { texte: "Vers 70 °C", correct: false, pourquoi: "Il faudrait grimper au sommet de l'Everest (8 848 m) pour que l'eau bouille vers 71 °C." },
       { texte: "À 100 °C", correct: false, pourquoi: "100 °C, c'est au niveau de la mer : en altitude, la pression de l'air est plus faible et l'eau bout plus tôt." },
       { texte: "Vers 120 °C", correct: false, pourquoi: "C'est l'inverse d'une cocotte-minute, où la pression est plus forte et l'eau bout plus chaud." }
     ],
@@ -1300,14 +1300,14 @@ const QUESTIONS = [
     explication: "L'air chaud monte et l'air froid descend pour prendre sa place : ces grands déplacements d'air, c'est le vent !"
   },
   {
-    question: "D'où vient le sel de la mer ?",
+    question: "Sur une plage, tu remplis un seau d'eau de mer et tu le laisses dehors. Le lendemain, il reste une pellicule blanche au fond. D'où vient-elle ?",
     options: [
-      { texte: "Des roches, emportées par les rivières depuis des millions d'années", correct: true },
-      { texte: "Des poissons, qui en rejettent en nageant", correct: false, pourquoi: "Les poissons n'ajoutent pas de sel : c'est l'eau qui en contient naturellement." },
-      { texte: "Du sable des plages", correct: false, pourquoi: "Le sable est de la roche broyée : il n'est pas salé." },
-      { texte: "Du Soleil, qui en fabrique en évaporant l'eau", correct: false, pourquoi: "Le Soleil fait évaporer l'eau, mais il ne fabrique pas de sel : il le laisse sur place." }
+      { texte: "Du sel dissous dans l'eau de mer, resté pendant l'évaporation", correct: true },
+      { texte: "Du sable fin de la plage qui est entré dans le seau", correct: false, pourquoi: "Le sable ne formerait pas une pellicule blanche cristalline, et il serait resté au fond même sans évaporation." },
+      { texte: "Des poissons, qui en rejettent en nageant", correct: false, pourquoi: "Les poissons n'ajoutent pas de sel : c'est l'eau de mer qui en contient naturellement, environ 35 grammes par litre." },
+      { texte: "De la mousse de mer, montée en surface et séchée", correct: false, pourquoi: "La mousse séchée laisserait des débris bruns, pas des cristaux blancs réguliers." }
     ],
-    explication: "Les rivières lessivent les roches et emportent des minéraux jusqu'à la mer. L'eau s'évapore, mais le sel reste : il s'accumule depuis des millions d'années. C'est pour cela que la mer est salée et que les lacs fermés, comme la mer Morte, le sont encore plus."
+    explication: "L'eau de mer contient environ 35 grammes de sel par litre. En s'évaporant, l'eau part dans l'air mais le sel ne s'évapore pas : il reste et forme ces cristaux blancs. C'est exactement la recette des marais salants. Et ce sel vient de loin : les rivières lessivent les roches et portent leurs minéraux jusqu'à la mer depuis des millions d'années. Comme l'eau s'évapore en permanence, le sel s'y accumule — c'est pour cela que la mer Morte, où rien ne s'écoule vers l'extérieur, est encore bien plus salée."
   },
   {
     question: "Quelle est la composition de l'air que nous respirons ?",
@@ -1353,7 +1353,7 @@ const QUESTIONS = [
     question: "À quoi sert la couche d'ozone ?",
     options: [
       { texte: "À nous protéger des rayons ultraviolets (UV) du Soleil", correct: true },
-      { texte: "À garder la chaleur de la Terre", correct: false, pourquoi: "C'est l'atmosphère et les gaz à effet de serre qui gardent la chaleur, pas l'ozone." },
+      { texte: "À retenir la chaleur de la Terre comme une couverture", correct: false, pourquoi: "L'ozone participe bien un peu à l'effet de serre, mais son rôle vital est ailleurs : il absorbe les ultraviolets, ces rayons qui abîment la peau et les yeux." },
       { texte: "À fabriquer l'oxygène que l'on respire", correct: false, pourquoi: "L'oxygène vient de la photosynthèse des plantes et des algues ; l'ozone a un autre rôle." },
       { texte: "À créer les aurores boréales", correct: false, pourquoi: "Les aurores viennent de particules solaires qui percutent l'atmosphère près des pôles." }
     ],
@@ -1380,14 +1380,14 @@ const QUESTIONS = [
     explication: "Tout — l'air, l'eau, ton corps, les roches, les étoiles — est fait d'atomes : des milliards de milliards dans une seule goutte d'eau. Un atome d'oxygène compte toujours 8 protons, qu'il soit ici ou au bout de la galaxie : c'est ce qui définit l'élément."
   },
   {
-    question: "Que se passe-t-il quand un volcan entre en éruption ?",
+    question: "Un volcan entre en éruption et crache de la lave. D'où vient cette roche en fusion ?",
     options: [
-      { texte: "Du magma, la roche en fusion, sort par le cratère", correct: true },
-      { texte: "La montagne explose et disparaît", correct: false, pourquoi: "La montagne ne disparaît pas : elle crache du magma et des cendres, parfois pendant des semaines." },
-      { texte: "Un tremblement de terre soulève la montagne", correct: false, pourquoi: "Les séismes font vibrer le sol, mais ils ne font pas sortir de lave." },
-      { texte: "Une nappe d'eau souterraine remonte", correct: false, pourquoi: "Il peut y avoir de la vapeur d'eau, mais ce qui sort du volcan, c'est de la roche en fusion." }
+      { texte: "De roches fondues en profondeur par la chaleur de la Terre", correct: true },
+      { texte: "Du Soleil : la chaleur de ses rayons fait fondre la montagne", correct: false, pourquoi: "Les rayons du Soleil chauffent à peine la surface : ils ne pourraient pas faire fondre de la roche, qui fond vers 1 000 °C et bien plus profond." },
+      { texte: "De l'eau souterraine chauffée jusqu'à devenir de la roche", correct: false, pourquoi: "L'eau peut devenir de la vapeur brûlante, mais elle ne se transforme jamais en roche : la lave est bien de la roche fondue." },
+      { texte: "Des roches tombées du ciel pendant l'éruption", correct: false, pourquoi: "Ce sont au contraire des morceaux de lave projetés en l'air qui retombent : ils viennent de l'intérieur du volcan, pas du ciel." }
     ],
-    explication: "Sous la croûte terrestre, des roches sont si chaudes qu'elles fondent : c'est le magma. Quand la pression devient trop forte, il remonte et sort par le volcan : en surface, on l'appelle la lave, qui coule parfois à plus de 1 000 °C."
+    explication: "Sous la croûte terrestre, à des dizaines de kilomètres de profondeur, la chaleur est telle que les roches fondent : c'est le magma. Il est plus léger que la roche autour de lui, alors il remonte lentement, et quand il arrive près de la surface il sort par une fissure : c'est l'éruption. Une fois dehors, on ne l'appelle plus magma mais lave, et elle peut couler à plus de 1 000 °C."
   },
   {
     question: "Pourquoi dit-on que les forêts sont les « poumons de la Terre » ?",
@@ -1405,7 +1405,7 @@ const QUESTIONS = [
       { texte: "À fabriquer de nouveaux objets avec les anciens", correct: true },
       { texte: "À faire disparaître les déchets sans rien en faire", correct: false, pourquoi: "Rien ne disparaît : un déchet trié est transformé, pas effacé." },
       { texte: "À transformer les déchets en électricité", correct: false, pourquoi: "C'est l'incinération qui produit de l'énergie en brûlant ; le recyclage, lui, refabrique de la matière." },
-      { texte: "À remplir les bacs de jolies couleurs", correct: false, pourquoi: "Les bacs colorés servent à séparer les matières pour qu'elles puissent être recyclées." }
+      { texte: "À transformer tous les déchets en compost", correct: false, pourquoi: "Le compost ne concerne que les restes de nourriture et les feuilles mortes. Une bouteille ou une boîte de conserve ne se compostent pas : elles se recyclent en nouvelle matière." }
     ],
     explication: "Une bouteille en plastique triée peut devenir une fibre de vêtement, un canapé... ou une nouvelle bouteille ! Le recyclage économise les ressources (arbres, pétrole, minerais) et l'énergie."
   },
@@ -1424,7 +1424,7 @@ const QUESTIONS = [
     options: [
       { texte: "Elles transportent le pollen d'une fleur à l'autre", correct: true },
       { texte: "Seulement parce qu'elles fabriquent du miel", correct: false, pourquoi: "Le miel est un délicieux bonus ; leur grand rôle pour la nature, c'est la pollinisation." },
-      { texte: "Parce qu'elles fabriquent la cire des arbres", correct: false, pourquoi: "La cire des abeilles vient de leur propre corps, et ce n'est pas leur mission principale !" },
+      { texte: "Parce qu'elles butinent toutes les fleurs d'un même jardin", correct: false, pourquoi: "Au contraire : en changeant de fleur, l'abeille transporte le pollen d'une plante à l'autre. Une abeille qui ne visiterait qu'une seule fleur ne polliniserait rien." },
       { texte: "Parce qu'elles mangent les insectes nuisibles", correct: false, pourquoi: "Ce sont plutôt les coccinelles ou les oiseaux qui mangent les pucerons." }
     ],
     explication: "En butinant, les abeilles couvrent de pollen les fleurs qu'elles visitent : c'est la pollinisation, indispensable pour que les fleurs deviennent des fruits et des graines. Une grande partie de ce que nous mangeons en dépend !"
@@ -1444,8 +1444,8 @@ const QUESTIONS = [
     options: [
       { texte: "Plusieurs centaines d'années", correct: true },
       { texte: "Quelques jours", correct: false, pourquoi: "Quelques jours, c'est le temps d'une peau de banane ou d'un morceau de papier." },
-      { texte: "Quelques semaines", correct: false, pourquoi: "Trop court : même une bouteille met des décennies à se fragmenter." },
-      { texte: "Quelques mois", correct: false, pourquoi: "Non : le plastique se dégrade extrêmement lentement." }
+      { texte: "Quelques décennies", correct: false, pourquoi: "C'est l'ordre de grandeur d'un sac plastique fin, mais une bouteille en PET résiste bien plus longtemps : des siècles avant de se fragmenter." },
+      { texte: "Quelques années", correct: false, pourquoi: "Non : le plastique ne se dégrade pas comme un trognon de pomme. Il résiste des siècles, puis se fragmente en microplastiques." }
     ],
     explication: "Une bouteille en plastique met plusieurs centaines d'années à se dégrader, et elle ne disparaît pas vraiment : elle se fragmente en microplastiques qui polluent les sols, les rivières et l'océan. Mieux vaut la trier et la recycler !"
   },
@@ -1510,14 +1510,14 @@ const QUESTIONS = [
     explication: "Ada Lovelace, mathématicienne anglaise, a écrit en 1843 les premières instructions destinées à une machine calculatrice (la machine de Charles Babbage)... bien avant l'invention de l'ordinateur électronique. Un langage de programmation porte aujourd'hui son nom."
   },
   {
-    question: "Que fait un capteur sur un robot ?",
+    question: "Un robot aspirateur repère un mur et s'arrête juste devant. Quel élément lui a permis de le voir ?",
     options: [
-      { texte: "Il détecte ce qui l'entoure", correct: true },
-      { texte: "Il fait avancer les roues", correct: false, pourquoi: "Ce sont les moteurs qui font bouger le robot ; le capteur lui indique ce qui se passe autour." },
-      { texte: "Il recharge la batterie", correct: false, pourquoi: "La batterie stocke l'énergie ; le capteur, lui, recueille des informations." },
-      { texte: "Il répare le robot", correct: false, pourquoi: "Un capteur ne répare rien : il informe le « cerveau » du robot." }
+      { texte: "Son capteur, qui détecte les obstacles", correct: true },
+      { texte: "Sa batterie, qui lui donne de l'énergie", correct: false, pourquoi: "La batterie fournit l'énergie, mais elle n'informe pas le robot : sans capteur, il foncerait droit dans le mur." },
+      { texte: "Ses moteurs, qui font tourner les roues", correct: false, pourquoi: "Les moteurs font avancer le robot, ils ne lui disent pas ce qu'il y a devant lui." },
+      { texte: "Son programme, qui contient le plan de la maison", correct: false, pourquoi: "Un plan aide à se repérer, mais une chaise déplacée n'y figure pas : c'est le capteur qui la détecte sur le moment." }
     ],
-    explication: "Un capteur, c'est comme un organe des sens : caméra ou radar pour une voiture autonome, détecteur de chaleur, micro... Le programme utilise ces informations pour décider la prochaine action du robot."
+    explication: "Un capteur, c'est comme un organe des sens : un radar pour une voiture autonome, un détecteur de chaleur, un micro... Il transforme ce qu'il perçoit (une distance, une lumière, un son) en information que le programme du robot peut lire, et c'est ce programme qui décide ensuite d'avancer, de tourner ou de s'arrêter."
   },
   {
     question: "Qu'est-ce qu'un nombre premier ?",
@@ -1540,12 +1540,12 @@ const QUESTIONS = [
     explication: "C'est la ruse d'Archimède : plus ton bras de levier est long par rapport à celui de la pierre, moins tu as besoin de force. En échange, tu dois pousser sur une plus grande distance. Ce principe du levier sert dans les balances, les ciseaux, les rames... et bien sûr dans les grues géantes."
   },
   {
-    question: "Que sont les pixels sur un écran ?",
+    question: "À quoi servent les pixels d'un écran ?",
     options: [
-      { texte: "De minuscules points de lumière rouge, verte et bleue", correct: true },
-      { texte: "Des petites fenêtres ouvertes sur Internet", correct: false, pourquoi: "Les fenêtres sont des zones de l'écran, composées de millions de pixels." },
-      { texte: "Des touches du clavier", correct: false, pourquoi: "Le clavier sert à taper ; les pixels, eux, affichent l'image." },
-      { texte: "Des antennes qui captent le wifi", correct: false, pourquoi: "Le wifi est invisible ; les pixels, on peut les voir avec une loupe sur l'écran !" }
+      { texte: "Ce sont les points de lumière qui dessinent l'image", correct: true },
+      { texte: "Ce sont les petits haut-parleurs du téléphone", correct: false, pourquoi: "Les haut-parleurs font du son ; les pixels, eux, font de la lumière pour afficher l'image." },
+      { texte: "Ce sont les touches du clavier", correct: false, pourquoi: "Le clavier sert à taper : les pixels sont sur l'écran, pas sur les touches." },
+      { texte: "Ce sont les fils qui apportent le courant", correct: false, pourquoi: "Les fils transportent l'électricité à l'intérieur, invisibles. Les pixels, eux, brillent et on peut les voir à la loupe !" }
     ],
     explication: "Un écran affiche des milliers, voire des millions de pixels. Chacun mélange trois lumières colorées, rouge, verte et bleue, en différentes intensités : rapprochés, ils donnent toutes les couleurs et forment l'image."
   },
@@ -1587,7 +1587,7 @@ const QUESTIONS = [
       { texte: "Parce que ses parois sont faites d'un matériau différent de la viande", correct: false, pourquoi: "L'estomac est fait de cellules, comme le reste du corps : seul le mucus le protège de son propre acide." },
       { texte: "Parce que l'acide est trop dilué pour attaquer la paroi de l'estomac", correct: false, pourquoi: "L'acide gastrique est très concentré (autour de pH 2) : sans le mucus, il digérerait la paroi en quelques heures." }
     ],
-    explication: "Le suc gastrique est si corrossif qu'il dissoudrait la paroi de l'estomac. Le corps se défend avec un épais mucus qui tapisse l'intérieur, et en renouvelant ses cellules à toute vitesse : la paroi se refait entièrement tous les trois à quatre jours. Si cette barrière faiblit, l'acide attaque la chair : c'est l'ulcère."
+    explication: "Le suc gastrique est si corrosif qu'il dissoudrait la paroi de l'estomac. Le corps se défend avec un épais mucus qui tapisse l'intérieur, et en renouvelant ses cellules à toute vitesse : la paroi se refait entièrement tous les trois à quatre jours. Si cette barrière faiblit, l'acide attaque la chair : c'est l'ulcère."
   },
   {
     question: "Tu fais tourner un œuf cru et un œuf dur sur la table. Pourquoi l'œuf dur tourne-t-il rond et longtemps, mais pas l'œuf cru ?",
@@ -1628,6 +1628,106 @@ const QUESTIONS = [
       { texte: "Parce que des poussières rouges montent dans le ciel le soir", correct: false, pourquoi: "Les poussières peuvent rougir encore plus le coucher de Soleil, mais même un ciel parfaitement propre devient rouge en fin de journée." }
     ],
     explication: "Au coucher, la lumière du Soleil traverse beaucoup plus d'air pour arriver jusqu'à nos yeux. L'air disperse (éparpille) les couleurs bleues et vertes sur le trajet ; il ne reste surtout que le rouge, qui arrive jusqu'à nous. C'est la même raison pour laquelle le ciel est bleu le jour : l'air disperse surtout le bleu."
+  },
+  {
+    question: "La purée sort brûlante du micro-ondes, mais l'assiette en porcelaine est presque froide. Pourquoi ?",
+    options: [
+      { texte: "Les ondes chauffent l'eau de la purée, pas l'assiette sèche", correct: true },
+      { texte: "Le four souffle de l'air très chaud sur la purée", correct: false, pourquoi: "Un micro-ondes ne chauffe pas comme un four classique : il ne souffle pas d'air chaud, il envoie des ondes. C'est pour ça qu'il chauffe si vite." },
+      { texte: "L'assiette est un isolant : elle empêche la chaleur de passer", correct: false, pourquoi: "Un isolant, ça garde la chaleur du côté chaud (comme une thermos). Ici le problème est l'inverse : l'assiette reste froide parce que les ondes n'y trouvent presque pas d'eau à chauffer." },
+      { texte: "L'assiette renvoie les ondes au lieu de les absorber", correct: false, pourquoi: "C'est vrai du métal, pas de la porcelaine : la porcelaine laisse passer les ondes. Mais comme elle contient très peu d'eau, ces ondes n'y trouvent presque rien à faire bouger." }
+    ],
+    explication: "Le micro-ondes envoie des ondes qui font vibrer les molécules d'eau (et aussi de graisse et de sucre) environ 2,45 milliards de fois par seconde. Ces vibrations, c'est de la chaleur. La purée est pleine d'eau : elle chauffe très vite. L'assiette sèche n'a presque pas d'eau, alors les ondes la traversent sans la réchauffer : elle ne devient tiède qu'au contact de la purée. Et non, un micro-ondes ne rend pas les aliments radioactifs : il s'arrête dès que la porte s'ouvre."
+  },
+  {
+    question: "Le Wi-Fi traverse les murs, mais tu perds des barres dès que tu t'éloignes de la box. Qu'est-ce qui porte le signal ?",
+    options: [
+      { texte: "Des ondes radio, comme celles de la radio FM", correct: true },
+      { texte: "De la lumière infrarouge, arrêtée par les murs", correct: false, pourquoi: "La télécommande de ta télé, elle, utilise bien des infrarouges : c'est pour ça qu'elle ne marche pas si tu caches le boîtier. Le Wi-Fi, lui, traverse le plâtre." },
+      { texte: "Du son très aigu, inaudible pour nous", correct: false, pourquoi: "Un son a besoin d'air pour voyager et il est vite arrêté par un mur épais. Le Wi-Fi, lui, traverse une cloison : ce n'est pas du son." },
+      { texte: "De l'électricité qui circule dans l'air", correct: false, pourquoi: "Le courant ne saute pas dans l'air comme ça (sinon les prises feraient des étincelles partout). Le Wi-Fi est une onde, pas un courant électrique." }
+    ],
+    explication: "Le Wi-Fi utilise des ondes radio, la même famille que celles qui transportent la radio FM, la télévision ou les appels de ton téléphone. Elles traversent le plâtre et le bois, mais s'affaiblissent avec la distance et sont bien arrêtées par le métal et par l'eau : un mur épais et humide, un aquarium, un four en marche et le signal baisse. Astuce : le Wi-Fi, la lumière visible et les rayons X sont tous des ondes électromagnétiques ; seule la fréquence change."
+  },
+  {
+    question: "Tu as la grippe et le médecin ne te prescrit pas d'antibiotiques. Pourquoi ceux-ci seraient-ils inutiles ?",
+    options: [
+      { texte: "La grippe est due à un virus, pas à une bactérie", correct: true },
+      { texte: "Il faudrait une dose beaucoup plus forte pour un virus", correct: false, pourquoi: "Augmenter la dose ne changerait rien : un antibiotique n'a aucune prise sur un virus, quelle que soit la quantité. Il cherche des cibles qui n'existent pas chez lui." },
+      { texte: "Les antibiotiques renforcent les défenses, donc ils aideraient quand même", correct: false, pourquoi: "C'est une idée reçue : un antibiotique ne renforce rien, il attaque directement les bactéries. Contre un virus, il n'a aucune cible et ne fait donc rien du tout." },
+      { texte: "Ils seraient efficaces, mais seulement après plusieurs jours de fièvre", correct: false, pourquoi: "Attendre ne change rien : c'est la nature du microbe qui compte. Un antibiotique n'a aucune prise sur un virus, qu'on le prenne le premier jour ou le cinquième." },
+    ],
+    explication: "Une bactérie est une cellule vivante, capable de se nourrir et de se multiplier seule : l'antibiotique casse sa paroi ou bloque sa machine. Un virus, lui, n'est qu'un bout de code génétique dans une coque : sans cellule à parasiter, il ne fait rien, et il n'a aucune des pièces que l'antibiotique sait attaquer. Prendre des antibiotiques « au cas où » est donc inutile — et même nuisible, car cela habitue les bactéries à résister. Contre les virus, on mise sur les vaccins et sur nos défenses."
+  },
+  {
+    question: "Tu mélanges farine, eau et un peu de levure. Une heure plus tard, la pâte a doublé de volume. Qui a fait ce travail ?",
+    options: [
+      { texte: "Des champignons microscopiques qui rejettent un gaz", correct: true },
+      { texte: "La farine, qui boit l'eau et gonfle comme une éponge", correct: false, pourquoi: "La farine absorbe bien l'eau, mais elle ne gonfle pas toute seule au point de doubler : sans levure, la pâte reste plate comme une galette." },
+      { texte: "Les bactéries, comme celles du yaourt", correct: false, pourquoi: "Dans le yaourt, les bactéries transforment le lait en acide : la texture change, mais rien ne gonfle. Pour faire lever une pâte, c'est un champignon, la levure, qui travaille." },
+      { texte: "L'air que tu as emprisonné en pétrissant", correct: false, pourquoi: "Le pétrissage attrape un peu d'air, mais c'est négligeable à côté du gaz que la levure fabrique pendant des heures." }
+    ],
+    explication: "La levure de boulanger est un champignon formé d'une seule cellule invisible à l'œil nu. Elle mange le sucre de la farine et rejette du dioxyde de carbone : des milliards de bulles de gaz se retrouvent prisonnières du réseau élastique de la pâte, qui gonfle. Au four, les bulles s'agrandissent encore, puis la pâte se fige autour d'elles : c'est la mie avec ses trous. Et le même champignon, dans une cuve sans air, fabrique l'alcool de la bière. Un gramme de levure contient des milliards de cellules, et les champignons ne sont ni des plantes ni des animaux : ils ont leur propre règne."
+  },
+  {
+    question: "Les dinosaures ont disparu il y a 66 millions d'années. Pourtant, tu en croises peut-être un chaque matin dans ton jardin. Lequel de ces animaux descend directement d'eux ?",
+    options: [
+      { texte: "Le merle", correct: true },
+      { texte: "Le lézard", correct: false, pourquoi: "Le lézard est un reptile apparu à côté des dinosaures, pas dans leur famille. Il a survécu à la catastrophe, mais sa lignée n'est pas celle des dinosaures." },
+      { texte: "Le crocodile", correct: false, pourquoi: "Le crocodile est un cousin proche, mais pas un descendant : sa lignée s'est séparée bien avant la disparition des dinosaures. Il a traversé la même catastrophe, sans être l'un d'eux." },
+      { texte: "La tortue", correct: false, pourquoi: "La tortue est un autre reptile très ancien, plus proche des lézards que des dinosaures. Sa carapace ne fait pas d'elle une descendante du T. rex." }
+    ],
+    explication: "Les oiseaux sont des dinosaures : leur lignée a survécu à la chute de l'astéroïde, il y a 66 millions d'années. Le merle, le pigeon et le poulet descendent d'un petit dinosaure à plumes, et portent encore des écailles sur les pattes et des os creux comme lui. Certains cousins du T. rex, comme le Yutyrannus, étaient même couverts d'un duvet de plumes, et des protéines du collagène du T. rex ressemblent à celles d'un poulet. Autrement dit, un moineau descend du même groupe que le T. rex, tandis que le crocodile n'en est qu'un cousin éloigné."
+  },
+  {
+    question: "Sur ton vélo, une côte approche : tu passes sur le petit plateau à l'avant et sur le grand pignon à l'arrière. Qu'est-ce que cela change ?",
+    options: [
+      { texte: "Chaque coup de pédale fait moins avancer, mais demande moins d'effort", correct: true },
+      { texte: "La roue arrière tourne plus vite, donc le vélo va plus vite", correct: false, pourquoi: "C'est l'inverse : la roue tourne moins vite. Pour aller plus vite sur le plat, tu choisis justement le grand plateau et le petit pignon." },
+      { texte: "La chaîne force davantage, donc le vélo accélère plus vite", correct: false, pourquoi: "Le vélo va au contraire moins vite : pour un même nombre de coups de pédale, la roue fait moins de tours. C'est le prix à payer pour grimper sans s'épuiser." },
+      { texte: "Le plateau et le pignon s'usent moins vite dans cette position", correct: false, pourquoi: "L'usure ne dépend pas du rapport choisi : ce sont les dents qui s'usent, à force de frotter la chaîne, quel que soit le braquet." },
+    ],
+    explication: "Avec un petit plateau devant et un grand pignon derrière, la roue tourne moins vite à chaque tour de pédale : tu avances moins loin, mais chaque coup de pédale coûte moins d'effort. C'est le principe du levier, appliqué aux dents : le rapport entre le nombre de dents des deux roues dentées décide de la vitesse et de l'effort. Sur le plat, tu fais l'inverse — grand plateau, petit pignon — pour aller plus vite. Le même système fait tourner les aiguilles d'une montre : une petite roue rapide entraîne une grande roue lente, et deux roues qui s'engrènent tournent toujours en sens contraire."
+  },
+  {
+    question: "Où se trouve la plus grande réserve d'eau douce de la planète ?",
+    options: [
+      { texte: "Dans les glaciers et les calottes polaires", correct: true },
+      { texte: "Dans les lacs et les rivières", correct: false, pourquoi: "C'est ce qu'on imagine, mais tous les lacs et rivières du monde réunis ne font qu'une toute petite part de l'eau douce : moins de 1 %, soit environ cent fois moins que les glaces." },
+      { texte: "Dans les nappes d'eau souterraine", correct: false, pourquoi: "Excellente intuition : c'est la deuxième réserve, avec près de 30 % de l'eau douce. Mais les glaces en gardent plus du double, autour de 68 %." },
+      { texte: "Dans l'atmosphère, sous forme de nuages", correct: false, pourquoi: "Les nuages paraissent immenses, mais leur eau, étalée sur toute la planète, ne formerait qu'une couche de quelques centimètres : une infime fraction de l'eau douce." }
+    ],
+    explication: "Environ 68 % de l'eau douce de la planète est prisonnière des glaces : l'Antarctique, le Groenland et les glaciers de montagne. Les nappes souterraines en gardent près de 30 %, et tout le reste — lacs, rivières, humidité des sols — moins de 2 %. Or l'eau douce elle-même ne représente que 2,5 % de toute l'eau de la Terre : le reste est salé, dans les océans. Autrement dit, l'eau que nous buvons sort presque toujours d'un puits, pas d'une rivière, et les glaciers sont le vrai château d'eau de la planète."
+  },
+  {
+    question: "Des astronomes pensent avoir trouvé une planète entièrement en diamant. Comment une telle planète peut-elle exister ?",
+    options: [
+      { texte: "C'est un cœur de carbone d'étoile morte, tassé par la gravité", correct: true },
+      { texte: "Les diamants y ont poussé lentement, comme les cristaux d'une grotte", correct: false, pourquoi: "Les cristaux d'une grotte grandissent dans l'eau, sur des milliers d'années. Un diamant, lui, se forme quand du carbone est écrasé : il n'y a pas d'eau pour le faire pousser à cette échelle." },
+      { texte: "Le froid de l'espace a gelé son carbone en cristaux", correct: false, pourquoi: "Le froid ne fabrique pas de diamant : c'est la très forte pression qui serre les atomes de carbone en cristal. Dans l'espace, le froid aurait plutôt tendance à figer la matière telle quelle." },
+      { texte: "C'est une légende : aucun indice ne permet de le penser", correct: false, pourquoi: "Il y a bien un indice : la masse et la taille de cette planète n'ont pu être mesurées qu'en supposant une matière très dense et cristalline, comme le diamant." }
+    ],
+    explication: "En 2011, des astronomes ont repéré autour d'un pulsar — une étoile à neutrons qui tourne très vite — une petite planète dont la masse et le diamètre ne collaient qu'avec une matière très dense et cristalline : du carbone compressé, autrement dit du diamant. Elle serait le reste du cœur d'une étoile géante, dont l'immense gravité a tassé le carbone, tandis que ses couches externes ont été arrachées. Ce n'est pas une photo : c'est la seule matière connue qui explique sa densité. Et le phénomène pourrait être courant : dans Uranus et Neptune, le méthane enfoui en profondeur se transformerait en pluie de diamants."
+  },
+  {
+    question: "Quelle est la capitale de l'Australie ?",
+    options: [
+      { texte: "Canberra", correct: true },
+      { texte: "Sydney", correct: false, pourquoi: "Sydney est la plus grande ville du pays, mais pas sa capitale : c'est d'ailleurs le piège de cette question. La capitale a été construite exprès entre Sydney et Melbourne." },
+      { texte: "Melbourne", correct: false, pourquoi: "Melbourne a bien accueilli le gouvernement jusqu'en 1927, mais elle a perdu ce rôle : la capitale fédérale a déménagé à Canberra, choisie comme un compromis entre les deux villes." },
+      { texte: "Perth", correct: false, pourquoi: "Perth est une grande ville de la côte ouest, la plus isolée du monde. Ce n'est pas pour autant une capitale de pays." }
+    ],
+    explication: "Canberra est une ville construite de toutes pièces pour devenir la capitale fédérale, au début du XXe siècle : Sydney et Melbourne se disputaient ce titre, alors on a tranché en bâtissant une ville neuve à mi-chemin. Être la plus grande ville ne fait donc pas de toi la capitale. Autres exemples à retenir : Brasilia (et non Rio) au Brésil, Ottawa (et non Toronto) au Canada, Berne (et non Zurich) en Suisse, Ankara (et non Istanbul) en Turquie."
+  },
+  {
+    question: "Pourquoi les pneus de voiture sont-ils creusés de rainures ?",
+    options: [
+      { texte: "Pour évacuer l'eau et garder le pneu au contact de la route", correct: true },
+      { texte: "Pour mieux accrocher sur la neige et sur la glace", correct: false, pourquoi: "Les sculptures aident un peu, mais ce n'est pas leur rôle premier : les pneus d'hiver ont en plus des lamelles finement découpées. Les rainures servent d'abord à chasser l'eau." },
+      { texte: "Pour économiser du caoutchouc et alléger la roue", correct: false, pourquoi: "Un pneu rainuré utilise plus de caoutchouc à sculpter, et la différence de poids est négligeable. Le but est la sécurité sur route mouillée." },
+      { texte: "Pour faire moins de bruit en roulant", correct: false, pourquoi: "Le dessin des sculptures influence bien le bruit, mais ce n'est pas leur raison d'être : un pneu lisse serait plus silencieux et pourtant très dangereux sous la pluie." }
+    ],
+    explication: "Sur une route mouillée, une pellicule d'eau s'intercale entre le pneu et le goudron. À vitesse, un pneu lisse se met à flotter dessus : c'est l'aquaplaning, et le volant ne répond plus. Les rainures servent de gouttières : elles évacuent plusieurs litres d'eau par seconde sur les côtés, sinon le pneu ne touche plus la route. Il faut au moins 1,6 mm de sculptures pour que cela marche encore (c'est le minimum légal), et l'eau s'évacue de moins en moins bien à mesure que la gomme s'use — c'est pourquoi on change les pneus bien avant qu'ils soient lisses."
   }
 ];
 
