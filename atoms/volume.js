@@ -6,22 +6,17 @@
 // for "all we have is geometry". Here the field itself is an analytic
 // function (spherical harmonic x hydrogenic radial), so every sample on
 // every ray evaluates the real thing — no mesh, no voxels, no distance
-// field. Two looks out of one shader:
-//
-//   glow  — accumulates |phi|^2 along the ray: literally the chance of
-//           finding the electron on that line. Nodes are transparent
-//           gaps, the nested shells of an s orbital show as rings.
-//           Two looks live here as well: `body` amplifies the wave above
-//           a chosen `level` (and thins it below) until the integral
-//           reads as a solid body — but the ray still walks the whole
-//           atom, so the far side and the node windows survive; `light`
-//           shades every sample by the gradient of psi, fog included.
-//           body = 0, light = 0 is exactly the pure glow.
-//   solid — marches the isosurface |psi| = const and shades it with the
-//           gradient of psi: the crisp textbook lobes.
+// field. The shader accumulates |phi|^2 along the ray: literally the
+// chance of finding the electron on that line. Nodes are transparent
+// gaps, the nested shells of an s orbital show as rings. Two looks live
+// on top of that: `body` amplifies the wave above a chosen `level` (and
+// thins it below) until the integral reads as a body — but the ray still
+// walks the whole atom, so the far side and the node windows survive;
+// `light` shades every sample by the gradient of psi, fog included.
+// body = 0, light = 0 is exactly the pure glow.
 //
 // Hue always carries the sign of psi (blue +, rose -), and depth fog
-// matches the dot renderer, so all drawing modes frame identically.
+// matches the dot renderer, so both drawing modes frame identically.
 // Precomputed per state: q90 (the scale that puts 90% of the radial
 // probability inside the unit sphere, same framing as makeCloud),
 // vmax (so |psi| <= 1 after normalization, like the clouds' val),
@@ -150,8 +145,7 @@ uniform mat3 uInvRot;
 uniform ivec3 uStA, uStB;
 uniform vec4 uQA, uQB;        // (q90, 1/vmax, unit-mass k, level) per state
 uniform float uMix, uRad, uRadB;
-uniform int uMode;            // 0 = glow, 1 = solid
-uniform float uBody;          // 0 = pure glow, 1 = hardened solid body
+uniform float uBody;          // 0 = pure glow, 1 = hardened body
 uniform float uLight;         // gradient lighting amount
 
 const float D = 3.4;
@@ -164,7 +158,6 @@ const vec3 LDIR = vec3(0.410368, 0.729540, 0.547152);  // normalize(0.45, 0.8, 0
 const vec3 POS = vec3(125.0, 185.0, 255.0) / 255.0;
 const vec3 NEG = vec3(255.0, 120.0, 170.0) / 255.0;
 const int STEPS = 96;
-const int BISECT = 8;
 
 float hash (vec2 p) {
     return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
@@ -216,18 +209,15 @@ float psiRaw (vec3 q, ivec3 st, float q90, float invV) {
 
 // Signed morph: the interpolated wavefunction between the two states.
 // Where the phases disagree the mix passes through zero — the nodes
-// pinch and flip exactly as in the dot renderer. kA/kB scale each
-// state before mixing: 1.0 for the peak-normalized isosurface, the
-// unit-mass scale for the |phi|^2 glow.
-float psiMix (vec3 p, float kA, float kB) {
+// pinch and flip exactly as in the dot renderer. Each state is scaled
+// by its unit-mass k (uQA.z/uQB.z) before mixing, so every state
+// carries the same total glow.
+float psiMix (vec3 p) {
     vec3 q = uInvRot * p;
-    float va = psiRaw(q, uStA, uQA.x, uQA.y) * kA;
+    float va = psiRaw(q, uStA, uQA.x, uQA.y) * uQA.z;
     if (uMix < 0.001) return va;
-    return mix(va, psiRaw(q, uStB, uQB.x, uQB.y) * kB, uMix);
+    return mix(va, psiRaw(q, uStB, uQB.x, uQB.y) * uQB.z, uMix);
 }
-
-// Peak-normalized psi: the level is tuned to this scale.
-float psiS (vec3 p) { return psiMix(p, 1.0, 1.0); }
 
 vec4 shadeGlow (vec3 ro, vec3 rd, float l0, float l1) {
     float dl = (l1 - l0) / float(STEPS);
@@ -242,13 +232,13 @@ vec4 shadeGlow (vec3 ro, vec3 rd, float l0, float l1) {
     float T = 1.0;
     for (int i = 0; i < STEPS; i++) {
         vec3 p = ro + rd * lam;
-        float psi = psiMix(p, uQA.z, uQB.z);
+        float psi = psiMix(p);
         float den = psi * psi;         // |phi|^2: probability density
         float x2 = den;
         float tau = den;
         if (uBody > 0.001) {
             // Hardened transfer: x is |psi| as a fraction of its peak (so
-            // the level means the same thing as the solid isosurface), and
+            // the level means the same thing for every state), and
             // kMix cancels — every state hardens at the same relative
             // level with the same opacity. Below the band the medium is
             // nearly clear, above it the ray saturates into a body.
@@ -265,12 +255,12 @@ vec4 shadeGlow (vec3 ro, vec3 rd, float l0, float l1) {
         vec3 c = mix(psi > 0.0 ? POS : NEG, vec3(1.0), t) * f;
         if (uLight > 0.004 && wgt > 0.0015) {
             // Gradient lighting — the outward normal of the |psi| hill,
-            // wrapped Lambert + rim. Same light as the solid surface.
+            // wrapped Lambert + rim.
             float e = 0.006;
             vec3 g = vec3(
-                psiMix(p + vec3(e, 0.0, 0.0), uQA.z, uQB.z) - psi,
-                psiMix(p + vec3(0.0, e, 0.0), uQA.z, uQB.z) - psi,
-                psiMix(p + vec3(0.0, 0.0, e), uQA.z, uQB.z) - psi);
+                psiMix(p + vec3(e, 0.0, 0.0)) - psi,
+                psiMix(p + vec3(0.0, e, 0.0)) - psi,
+                psiMix(p + vec3(0.0, 0.0, e)) - psi);
             g *= (psi > 0.0 ? -1.0 : 1.0);  // outward = away from dense
             float gn = length(g);
             if (gn > 1e-8) {
@@ -288,42 +278,6 @@ vec4 shadeGlow (vec3 ro, vec3 rd, float l0, float l1) {
     return vec4(col, 1.0 - T);
 }
 
-vec4 shadeSolid (vec3 ro, vec3 rd, float l0, float l1) {
-    float iso = mix(uQA.w, uQB.w, uMix);    // the same level the glow body uses
-    float dl = (l1 - l0) / float(STEPS);
-    float lam = l0 + dl * hash(gl_FragCoord.xy);
-    float prev = abs(psiS(ro + rd * lam)) - iso;
-    for (int i = 1; i <= STEPS; i++) {
-        float lam2 = lam + dl;
-        float g = abs(psiS(ro + rd * lam2)) - iso;
-        if ((prev < 0.0) != (g < 0.0)) {
-            float lo = lam, hi = lam2;
-            for (int j = 0; j < BISECT; j++) {
-                float mid = 0.5 * (lo + hi);
-                float gm = abs(psiS(ro + rd * mid)) - iso;
-                if ((gm < 0.0) == (prev < 0.0)) lo = mid; else hi = mid;
-            }
-            vec3 p = ro + rd * (0.5 * (lo + hi));
-            float e = 0.004;
-            vec3 g3 = vec3(
-                abs(psiS(p + vec3(e, 0.0, 0.0))) - abs(psiS(p - vec3(e, 0.0, 0.0))),
-                abs(psiS(p + vec3(0.0, e, 0.0))) - abs(psiS(p - vec3(0.0, e, 0.0))),
-                abs(psiS(p + vec3(0.0, 0.0, e))) - abs(psiS(p - vec3(0.0, 0.0, e))));
-            vec3 nr = normalize(g3);
-            float dif = abs(dot(nr, LDIR));
-            float rim = pow(1.0 - abs(nr.y), 3.0);
-            float psi = psiS(p);
-            float yw = (p.y + uRad) / (2.0 * uRad);
-            float f = FOG0 + (1.0 - FOG0) * yw * yw;
-            vec3 c = (mix(psi > 0.0 ? POS : NEG, vec3(1.0), 0.06) * (0.30 + 0.70 * dif) + vec3(0.22) * rim) * f;
-            return vec4(c, 1.0);
-        }
-        prev = g;
-        lam = lam2;
-    }
-    return vec4(0.0);
-}
-
 void main () {
     vec2 uv = (gl_FragCoord.xy - uCenter) / uFS;
     vec3 ro = vec3(0.0, D, 0.0);
@@ -337,7 +291,7 @@ void main () {
     float l0 = max(0.0, (-b - s) / (2.0 * a));
     float l1 = (-b + s) / (2.0 * a);
     if (l1 <= l0) { fragColor = vec4(0.0); return; }
-    fragColor = uMode == 0 ? shadeGlow(ro, rd, l0, l1) : shadeSolid(ro, rd, l0, l1);
+    fragColor = shadeGlow(ro, rd, l0, l1);
 }`;
 
     // ---------- renderer ----------
@@ -358,7 +312,7 @@ void main () {
     // row-major, uploaded as-is — a rotation matrix's transpose is its
     // inverse, so uInvRot gets world -> orbital for free.
 
-    function createRenderer (canvas, mode) {
+    function createRenderer (canvas) {
         const gl = canvas.getContext('webgl2', { alpha: true, antialias: false, premultipliedAlpha: true });
         if (!gl) return null;
         const vs = compile(gl, gl.VERTEX_SHADER, VERT);
@@ -373,7 +327,7 @@ void main () {
             return null;
         }
         const uni = {};
-        for (const name of ['uCenter', 'uFS', 'uInvRot', 'uStA', 'uStB', 'uQA', 'uQB', 'uMix', 'uRad', 'uRadB', 'uMode', 'uBody', 'uLight']) {
+        for (const name of ['uCenter', 'uFS', 'uInvRot', 'uStA', 'uStB', 'uQA', 'uQB', 'uMix', 'uRad', 'uRadB', 'uBody', 'uLight']) {
             uni[name] = gl.getUniformLocation(prog, name);
         }
         gl.useProgram(prog);
@@ -410,7 +364,6 @@ void main () {
             gl.uniform1f(uni.uMix, e);
             gl.uniform1f(uni.uRad, Math.max(pa.rad, pb.rad));
             gl.uniform1f(uni.uRadB, RBOUND);
-            gl.uniform1i(uni.uMode, mode === 'glow' ? 0 : 1);
             gl.uniform1f(uni.uBody, look ? look.body : 0);
             gl.uniform1f(uni.uLight, look ? look.light : 0);
             gl.clearColor(0, 0, 0, 0);

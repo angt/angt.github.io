@@ -56,9 +56,9 @@
     // ---------- orbital viewer (holds, then morphs through zero) ----------
 
     // The glow's dials. level = the strongest share of the wave that
-    // forms the body/surface (0.15 = the strongest 15% of its probability,
+    // forms the body (0.15 = the strongest 15% of its probability,
     // the level auto-adapts per state); body hardens the accumulated glow
-    // into a solid (0 = the pure glow); light shades the medium itself.
+    // into a firm shell (0 = the pure glow); light shades the medium itself.
     const look = { level: 0.15, body: 0.65, light: 0.55 };
 
     const HOLD = 5.4, MORPH = 1.9, CYCLE = HOLD + MORPH;
@@ -66,20 +66,20 @@
     function makeViewer (canvasId, ketId, noteId) {
         const ketEl = $(ketId), noteEl = $(noteId);
         let canvas = $(canvasId);
-        let R = null, mode = 'solid';
+        let R = null, mode = 'dots';
         let states = [], vt = 0, segBase = 0, freeze = 0, last = null, shown = '';
         let rotT = 1.7, uRot = [1, 0, 0, 0, 1, 0, 0, 0, 1], vYaw = 0, vPitch = 0;
         let dragging = false, lastX = 0, lastY = 0, lastT = 0;
 
         // A canvas holds one kind of context forever, so switching drawing
-        // modes swaps in a fresh canvas node first. Falls back to the dot
-        // renderer whenever WebGL2 is unavailable.
+        // modes swaps in a fresh canvas node first. Dots is the default;
+        // glow needs WebGL2 and stays on dots when it is unavailable.
         function buildRenderer () {
             const fresh = canvas.cloneNode(false);
             canvas.replaceWith(fresh);
             canvas = fresh;
-            R = (mode !== 'dots' && window.OrbitalVolume &&
-                 window.OrbitalVolume.createRenderer(canvas, mode)) ||
+            R = (mode === 'glow' && window.OrbitalVolume &&
+                 window.OrbitalVolume.createRenderer(canvas)) ||
                 window.Orbital.createRenderer(canvas);
             attachPointer();
         }
@@ -550,18 +550,14 @@
     $('prevEl').addEventListener('click', () => select(currentZ - 1, false));
     $('nextEl').addEventListener('click', () => select(currentZ + 1, false));
 
-    // ---------- drawing mode: solid / glow / dots + the glow's dials ----------
+    // ---------- drawing mode: dots / glow + the glow's dials ----------
     const HOW = {
-        solid: 'solid = the surface where the wave is strong · colour = its sign',
-        glow: 'glow = |ψ|² added up along each ray · the dials harden and light it',
         dots: 'each dot = one likely place to find the electron · colour = its sign',
+        glow: 'glow = |ψ|² added up along each ray · the dials harden and light it',
     };
     const lookEl = $('elLook');
     function showLook (m) {
-        lookEl.style.display = m === 'dots' ? 'none' : 'flex';
-        lookEl.querySelectorAll('.glowonly').forEach((x) => {
-            x.style.display = m === 'glow' ? '' : 'none';
-        });
+        lookEl.style.display = m === 'glow' ? 'flex' : 'none';
     }
     $('elModes').querySelectorAll('.chip').forEach((c) => {
         c.addEventListener('click', () => {
@@ -584,5 +580,5 @@
         $('slBody').value = 0; $('slLight').value = 0;
         elViewer.still();
     });
-    showLook('solid');
+    showLook('dots');
 })();
