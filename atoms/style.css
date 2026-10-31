@@ -164,9 +164,6 @@ section { margin-top: 42px; }
 .notes { font-size: .84rem; color: var(--text-dim); }
 .notes li { margin-bottom: 8px; }
 .notes b { color: var(--text); }
-footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: .8rem; }
-footer a { color: var(--accent); text-decoration: none; }
-footer a:hover { text-decoration: underline; }
 
 @media (max-height: 480px) {
   section { margin-top: 28px; }
