@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0e16" />
+<meta name="color-scheme" content="dark" />
+<title>Atoms · a visual library of every element</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<main>
+  <header>
+    <h1>Atoms</h1>
+    <p class="tag">A visual library of every element — see where its electrons live.</p>
+  </header>
+
+  <section id="table">
+    <h2>The periodic table</h2>
+    <p class="lede">Tap any element to explore it. Colour shows what kind of stuff it is.</p>
+    <div class="pt-wrap"><div class="pt" id="pt"></div></div>
+    <div class="legend" id="catLegend"></div>
+  </section>
+
+  <section id="detail">
+    <div class="detail-head">
+      <button class="navbtn" id="prevEl" type="button" aria-label="previous element">←</button>
+      <h2 id="elName">Carbon</h2>
+      <button class="navbtn" id="nextEl" type="button" aria-label="next element">→</button>
+    </div>
+    <div class="detail-grid">
+      <div class="facts">
+        <div class="symrow">
+          <div class="sym" id="elSym">C</div>
+          <div class="z">atomic number <span id="elZ">6</span></div>
+        </div>
+        <dl>
+          <dt>mass</dt><dd id="elMass"></dd>
+          <dt>place</dt><dd id="elPlace"></dd>
+          <dt>family</dt><dd><span class="chip-cat" id="elCat"></span></dd>
+          <dt>at 25 °C</dt><dd id="elPhase"></dd>
+        </dl>
+        <div class="config" id="elConfig"></div>
+        <div class="shells" id="elShells"></div>
+        <div class="nuclear" id="elNuclear"></div>
+        <p class="blurb" id="elBlurb"></p>
+      </div>
+      <figure class="bohr-fig">
+        <canvas id="bohr" aria-hidden="true"></canvas>
+        <div class="bohr-legend">
+          <span><i style="background:#ff78aa"></i>protons</span>
+          <span><i style="background:#8b98ad"></i>neutrons</span>
+          <span><i style="background:#96c3ff"></i>electrons</span>
+        </div>
+        <figcaption>the school model: nucleus + electron shells</figcaption>
+      </figure>
+    </div>
+
+    <figure class="orb">
+      <canvas id="elOrb" aria-hidden="true"></canvas>
+      <figcaption>
+        <span class="ket" id="elKet"></span>
+        <span class="note" id="elNote"></span>
+        <span class="note hint">drag the cloud to rotate around the atom</span>
+        <span class="note" id="elHow">solid = the surface where the wave is strong · colour = its sign</span>
+        <span class="chips" id="elModes">
+          <button type="button" class="chip on" data-mode="solid">solid</button>
+          <button type="button" class="chip" data-mode="glow">glow</button>
+          <button type="button" class="chip" data-mode="dots">dots</button>
+        </span>
+        <span class="look" id="elLook">
+          <label class="sl" title="how strong the wave must be to form the surface: the strongest X% of its probability">level<input type="range" id="slLevel" min="5" max="50" value="15" /></label>
+          <label class="sl glowonly" title="0 = the pure glow · 1 = the wave above the level reads as a solid body">body<input type="range" id="slBody" min="0" max="100" value="65" /></label>
+          <label class="sl glowonly" title="shades the medium by the wave's gradient — the fog gets lighting too">light<input type="range" id="slLight" min="0" max="100" value="55" /></label>
+          <button type="button" class="chip glowonly" id="lookPure">pure glow</button>
+        </span>
+        <span class="chips" id="elChips"></span>
+      </figcaption>
+    </figure>
+  </section>
+
+  <section id="notes">
+    <h2>How to read the clouds</h2>
+    <p class="lede">
+      Electrons don't orbit like tiny planets — they live in fuzzy clouds called
+      <b>orbitals</b>, and the cloud above shows where the electron is likely to
+      be found. Here's the secret: <b>every atom in the universe uses these
+      same shapes</b> — carbon's 2p and gold's 5d look alike because the maths
+      behind them depends only on the quantum numbers, not on the element.
+    </p>
+    <ul class="notes">
+      <li><b>Blue and rose show the wavefunction's sign.</b> Like a wave, an orbital has positive and negative regions. Where they meet, the value is zero — a <b>node</b>, a place the electron can never be.</li>
+      <li><b>Radial nodes</b> are gaps between shells (a 4s orbital has three!), <b>angular nodes</b> are the flat cuts that split lobes. The label under each cloud counts them.</li>
+      <li><b>One wavefunction, three drawings.</b> <i>solid</i> shows the surface where the wave is strong — the textbook lobes. <i>glow</i> adds the electron's probability along each line of sight, like a long-exposure photo. <i>dots</i> samples the same probability dot by dot. The dials tune the drawing; <i>pure glow</i> puts them back.</li>
+      <li><b>One honest caveat:</b> these are hydrogen's exact orbitals used as shapes for all atoms. In heavy atoms, the many electrons screen each other and squeeze the clouds a little — the shapes survive, the sizes shift.</li>
+      <li><b>Isotopes: same element, different neutrons.</b> The nucleus shows the <i>typical atom</i> — the average atomic mass rounded to a whole number. Nature builds others too (carbon-12, carbon-13, and radioactive carbon-14, used to date ancient bones), but only the nucleus changes — the electron clouds stay exactly the same.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <a href="../">← home</a> · every shape is computed live from Legendre &amp;
+    Laguerre recurrences, sampled from |ψ|². No images, no 3D models.
+  </footer>
+</main>
+<script src="data.js"></script>
+<script src="orbital.js"></script>
+<script src="volume.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
