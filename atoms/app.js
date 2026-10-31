@@ -6,8 +6,26 @@
 
     // ---------- small helpers ----------
 
-    const SUP = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+    const SUP = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹', '-': '⁻' };
     const sup = (n) => String(n).split('').map((c) => SUP[c] || c).join('');
+
+    // Nuclear data comes in seconds; write half-lives the way nuclear physics
+    // does — 3 significant digits, wide ranges as 2.01×10¹⁹.
+    function sci (x) {
+        let e = Math.floor(Math.log10(x)), m = x / Math.pow(10, e);
+        if (m >= 9.9995) { m = 1; e += 1; }
+        return e >= 4 || e <= -3 ? m.toFixed(2) + '×10' + sup(e) : String(+x.toPrecision(3));
+    }
+    const HL_UNITS = [
+        [3.156e7, 'y'], [86400, 'd'], [3600, 'h'], [60, 'min'], [1, 's'],
+        [1e-3, 'ms'], [1e-6, 'µs'], [1e-9, 'ns'], [1e-12, 'ps'], [1e-15, 'fs'],
+        [1e-18, 'as'], [1e-21, 'zs'], [1e-24, 'ys'],
+    ];
+    const fmtHalf = (sec) => {
+        for (const [s, u] of HL_UNITS) if (sec >= s) return sci(sec / s) + ' ' + u;
+        return sci(sec) + ' s';
+    };
+    const fmtPct = (pct) => String(+pct.toPrecision(4)) + '%';
     const smoother = (u) => u * u * u * (u * (u * 6 - 15) + 10);
 
     // Real-orbital names for the m variants (tesseral harmonics).
@@ -286,7 +304,6 @@
         $('elCat').style.color = cat.color;
         $('elCat').style.borderColor = cat.color;
         $('elPhase').textContent = el.phase === 'unknown' ? 'unknown — made one atom at a time' : el.phase;
-        $('elNuclear').innerHTML = 'typical atom: <b>' + el.z + '</b> protons · <b>' + el.neutrons + '</b> neutrons · <b>' + el.z + '</b> electrons';
         $('elConfig').textContent = configString(el);
         $('elShells').innerHTML = el.shells.map((s, i) =>
             '<span class="shell"><i>' + SHELLS[i] + '</i>' + s.k + '</span>').join('');
@@ -309,7 +326,7 @@
 
         elViewer.setStates(states);
         elViewer.resize();
-        layoutNucleus(el);
+        setIso(el, el.home);
         if (reduce) elViewer.still();
 
         if (cellByZ[currentZ]) {
@@ -325,14 +342,14 @@
     const bctx = bohr.getContext('2d');
     let nucleons = [];
 
-    // Exactly z protons mixed through the cluster. The labels are shuffled
-    // with a fixed seed (interleaving them in order along the spiral reads
-    // as false spiral stripes), and the disk is recentred afterwards, so
-    // even a single nucleon sits in the middle — hydrogen's nucleus used
-    // to be drawn visibly off-axis.
-    function layoutNucleus (el) {
-        const A = Math.max(1, Math.round(el.mass)), GA = Math.PI * (1 + Math.sqrt(5));
-        let seed = el.z * 97 + 13;
+    // Exactly el.z protons and iso.n neutrons in one cluster. Which nucleon
+    // is which gets shuffled with a fixed seed (interleaving them in order
+    // along the spiral reads as false spiral stripes), and the disk is
+    // recentred afterwards, so even a single nucleon sits in the middle —
+    // hydrogen's nucleus used to be drawn visibly off-axis.
+    function layoutNucleus (el, iso) {
+        const A = Math.max(1, iso.a), GA = Math.PI * (1 + Math.sqrt(5));
+        let seed = el.z * 97 + iso.a;
         const rnd = () => (seed = (1103515245 * seed + 12345) % 2147483648) / 2147483648;
         const proton = new Array(A);
         for (let i = 0; i < A; i++) proton[i] = i < el.z;
@@ -410,12 +427,105 @@
         }
     }
 
+    // ---------- isotope histogram ----------
+    // One bar per known isotope (NUBASE2020 — see nuclides.js), along the mass
+    // number axis. Height = the isotope's share of the natural element; red =
+    // radioactive. Clicking a bar rebuilds the nucleus above.
+
+    const isoCv = $('isoChart');
+    const ictx = isoCv.getContext('2d');
+    let isoBars = [];
+    let isoTipIdx = -1;
+    let curIso = null;
+
+    function drawIso () {
+        const el = ELEMENTS[currentZ - 1];
+        const W = isoCv.clientWidth, H = isoCv.clientHeight;
+        if (!W || !H) return;
+        const DPR = Math.min(3, window.devicePixelRatio || 1);
+        const Wp = Math.round(W * DPR), Hp = Math.round(H * DPR);
+        if (isoCv.width !== Wp || isoCv.height !== Hp) { isoCv.width = Wp; isoCv.height = Hp; }
+        ictx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        ictx.clearRect(0, 0, W, H);
+        const iso = el.isotopes, n = iso.length;
+        if (!n) return;
+
+        // Bars are equally wide with a small gap. Isotopes with no natural
+        // abundance still get a stub — they exist, that is the point.
+        const bw = W / n, base = H - 1, plot = H - 8;
+        isoBars = [];
+        for (let i = 0; i < n; i++) {
+            const it = iso[i];
+            const w = Math.max(1, bw * 0.72), x = i * bw + (bw - w) / 2;
+            const h = Math.max(3, it.pct / 100 * plot);
+            ictx.globalAlpha = (it === curIso || i === isoTipIdx) ? 1 : 0.78;
+            ictx.fillStyle = it.stable ? '#63e6a0' : '#ff5f6d';
+            ictx.fillRect(x, base - h, w, h);
+            if (it === curIso) {
+                ictx.globalAlpha = 1;
+                ictx.strokeStyle = '#e6edf3';
+                ictx.lineWidth = 1;
+                ictx.strokeRect(x + 0.5, base - h + 0.5, w - 1, h - 1);
+            }
+            isoBars.push({ x: i * bw, w: bw, i, it });
+        }
+        ictx.globalAlpha = 1;
+    }
+
+    // The selected isotope drives the nuclear line and the school-model
+    // nucleus: click another bar and the nucleus is rebuilt from real data.
+    function setIso (el, iso) {
+        showTip(null);
+        curIso = iso;
+        layoutNucleus(el, iso);
+        $('elNuclear').innerHTML = '<b class="name">' + sup(iso.a) + el.symbol + '</b> · <b>' + el.z +
+            '</b> protons · <b class="n">' + iso.n + '</b> neutrons · <b>' + el.z + '</b> electrons';
+        const bits = [iso.stable ? 'stable' : 'radioactive'];
+        if (iso.hl > 0) bits.push('half-life ' + fmtHalf(iso.hl));
+        else if (iso.hl < 0) bits.push('half-life not yet measured');
+        bits.push(iso.pct > 0 ? fmtPct(iso.pct) + ' of natural ' + el.name.toLowerCase()
+            : 'does not occur in nature');
+        $('elIsoInfo').textContent = bits.join(' · ');
+        const As = el.isotopes.map((x) => x.a);
+        $('elIsoCap').textContent = el.isotopes.length + ' known isotopes · mass numbers ' +
+            Math.min.apply(null, As) + '–' + Math.max.apply(null, As) +
+            ' · click a bar to rebuild the nucleus';
+        drawIso();
+    }
+
+    const isoTip = $('isoTip');
+    function showTip (bar) {
+        isoTipIdx = bar ? bar.i : -1;
+        if (!bar) { isoTip.hidden = true; drawIso(); return; }
+        const el = ELEMENTS[currentZ - 1], it = bar.it;
+        isoTip.innerHTML = '<b>' + sup(it.a) + el.symbol + '</b> · ' + el.z + ' protons · ' + it.n + ' neutrons<br>' +
+            (it.stable ? 'stable' : it.hl > 0 ? 'half-life ' + fmtHalf(it.hl) : 'half-life not yet measured') +
+            (it.pct > 0 ? ' · ' + fmtPct(it.pct) + ' of nature' : ' · not found in nature');
+        isoTip.hidden = false;
+        isoTip.style.left = Math.min(Math.max(bar.x + bar.w / 2, 80), isoCv.clientWidth - 80) + 'px';
+        drawIso();
+    }
+    const barAt = (e) => {
+        const x = e.clientX - isoCv.getBoundingClientRect().left;
+        return isoBars.find((b) => x >= b.x && x < b.x + b.w) || null;
+    };
+    isoCv.addEventListener('pointermove', (e) => {
+        const bar = barAt(e);
+        if ((bar ? bar.i : -1) !== isoTipIdx) showTip(bar);
+    });
+    isoCv.addEventListener('pointerleave', () => showTip(null));
+    isoCv.addEventListener('click', (e) => {
+        const bar = barAt(e);
+        if (bar) setIso(ELEMENTS[currentZ - 1], bar.it);
+    });
+
     // ---------- wiring ----------
 
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function resizeAll () {
         elViewer.resize();
+        drawIso();
         if (reduce) { elViewer.still(); drawBohr(1.2); }
     }
 

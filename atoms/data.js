@@ -1,7 +1,8 @@
 'use strict';
 // Element data + electron configurations for the atom library.
 // Masses are standard atomic weights (most stable isotope for the
-// short-lived synthetic elements).
+// short-lived synthetic elements). The nuclei are real isotopes from
+// nuclides.js (IAEA/NUBASE2020) — not masses rounded to whole numbers.
 (function (root) {
     const CATEGORY = {
         alkali:     { name: 'alkali metal',     color: '#ff8b6b', blurb: 'Soft, shiny metals that react dramatically with water — watch sodium fizz in a pond!' },
@@ -215,14 +216,27 @@
         }
         shells.sort((a, b) => a.n - b.n);
         const nMax = shells[shells.length - 1].n;
+        // Real isotopes from nuclides.js (IAEA/NUBASE2020), sorted by mass
+        // number. `home` is the isotope the nucleus shows first: the one
+        // nature actually uses most (abundance decides), or for elements that
+        // never occur in nature, the longest-lived one known.
+        const nominal = Math.round(e[2]);
+        const iso = (root.AtomNuclides[z] || []).map(([a, hl, pct]) => ({
+            a, n: a - z, hl, pct, stable: hl === 0,
+        }));
+        const rank = (it) => (it.hl === 0 ? Infinity : it.hl);
+        let home = null;
+        for (const it of iso) {
+            if (!home) { home = it; continue; }
+            const better = it.pct !== home.pct ? it.pct > home.pct
+                : rank(it) !== rank(home) ? rank(it) > rank(home)
+                : Math.abs(it.a - nominal) < Math.abs(home.a - nominal);
+            if (better) home = it;
+        }
         return {
             z, symbol: e[0], name: e[1], mass: e[2], category: e[3],
             phase: z >= 104 ? 'unknown' : GAS.has(z) ? 'gas' : LIQUID.has(z) ? 'liquid' : 'solid',
-            // Neutrons: A = round(standard atomic weight) is the mass number of
-            // the element's typical atom, so A - z is its neutron count. For most
-            // elements that lands on the most common isotope (isotopes = same
-            // element, different neutron counts — see the page notes).
-            neutrons: Math.round(e[2]) - z,
+            isotopes: iso, home,
             subs, shells, nMax,
             ...placement(z),
         };

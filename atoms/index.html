@@ -44,6 +44,16 @@
         <div class="config" id="elConfig"></div>
         <div class="shells" id="elShells"></div>
         <div class="nuclear" id="elNuclear"></div>
+        <div class="iso-info" id="elIsoInfo"></div>
+        <figure class="iso">
+          <canvas id="isoChart" aria-label="isotopes of the element"></canvas>
+          <div class="iso-key">
+            <span><i style="background:#63e6a0"></i>stable · height = share in nature</span>
+            <span><i style="background:#ff5f6d"></i>radioactive</span>
+          </div>
+          <figcaption id="elIsoCap"></figcaption>
+          <div class="iso-tip" id="isoTip" hidden></div>
+        </figure>
         <p class="blurb" id="elBlurb"></p>
       </div>
       <figure class="bohr-fig">
@@ -94,7 +104,7 @@
       <li><b>Radial nodes</b> are gaps between shells (a 4s orbital has three!), <b>angular nodes</b> are the flat cuts that split lobes. The label under each cloud counts them.</li>
       <li><b>One wavefunction, three drawings.</b> <i>solid</i> shows the surface where the wave is strong — the textbook lobes. <i>glow</i> adds the electron's probability along each line of sight, like a long-exposure photo. <i>dots</i> samples the same probability dot by dot. The dials tune the drawing; <i>pure glow</i> puts them back.</li>
       <li><b>One honest caveat:</b> these are hydrogen's exact orbitals used as shapes for all atoms. In heavy atoms, the many electrons screen each other and squeeze the clouds a little — the shapes survive, the sizes shift.</li>
-      <li><b>Isotopes: same element, different neutrons.</b> The nucleus shows the <i>typical atom</i> — the average atomic mass rounded to a whole number. Nature builds others too (carbon-12, carbon-13, and radioactive carbon-14, used to date ancient bones), but only the nucleus changes — the electron clouds stay exactly the same.</li>
+      <li><b>Isotopes: same element, different neutrons.</b> The bars list every isotope ever observed — the NUBASE2020 evaluation served by the IAEA Live Chart of Nuclides. Green is stable, and the bar's height is the isotope's share of the natural element; red is radioactive, including the rare natural ones (all of bismuth is red: bismuth-209 does decay, but takes 2.01×10¹⁹ years to do it). Click any bar to rebuild the nucleus — only the nucleus changes, the electron clouds stay exactly the same.</li>
     </ul>
   </section>
 
@@ -103,6 +113,7 @@
     Laguerre recurrences, sampled from |ψ|². No images, no 3D models.
   </footer>
 </main>
+<script src="nuclides.js"></script>
 <script src="data.js"></script>
 <script src="orbital.js"></script>
 <script src="volume.js"></script>

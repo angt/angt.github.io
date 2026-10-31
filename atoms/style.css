@@ -110,6 +110,23 @@ section { margin-top: 42px; }
 .nuclear { margin-top: 12px; font-size: .82rem; color: var(--text-dim); }
 .nuclear b { color: #ff9dc0; }
 .nuclear b:last-of-type { color: #96c3ff; }
+.nuclear b.name { color: var(--text); font-size: .95rem; }
+.nuclear b.n { color: #8b98ad; }
+.iso-info { margin-top: 4px; font-family: var(--mono); font-size: .72rem; color: var(--text-faint); }
+.iso { margin: 10px 0 0; position: relative; }
+.iso canvas { display: block; width: 100%; height: 92px; cursor: pointer; }
+.iso-key {
+  display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px;
+  font-family: var(--mono); font-size: .68rem; color: var(--text-faint);
+}
+.iso-key i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; margin-right: 5px; }
+.iso figcaption { font-family: var(--mono); font-size: .68rem; color: var(--text-faint); margin-top: 4px; }
+.iso-tip {
+  position: absolute; top: 0; transform: translate(-50%, -100%);
+  background: #1b2230; border: 1px solid var(--border); border-radius: 8px;
+  padding: 6px 10px; font-family: var(--mono); font-size: .72rem; color: var(--text-dim);
+  pointer-events: none; white-space: nowrap; z-index: 4;
+}
 .blurb { margin: 12px 0 0; font-size: .82rem; color: var(--text-dim); }
 
 .bohr-fig { margin: 0; text-align: center; }
