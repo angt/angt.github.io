@@ -9,33 +9,51 @@
     --violet: #6c5ce7;
     --violet-dark: #5a4bd4;
     --rose: #e84393;
-    --vert: #00b894;
-    --rouge: #e74c3c;
+    --vert-fonce: #00785f;   /* fonds de pastilles : contraste suffisant avec du blanc */
+    --rouge-fonce: #b8342a;
     --jaune: #fdcb6e;
     --fond1: #a29bfe;
     --fond2: #74b9ff;
     --texte: #2d3436;
+    --encre: #1f2540;
     --carte: #ffffff;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* Contenu réservé aux lecteurs d'écran */
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  html { height: 100%; }
   body {
     font-family: "Trebuchet MS", "Segoe UI", Verdana, sans-serif;
     background: linear-gradient(135deg, var(--fond1) 0%, var(--fond2) 100%);
-    min-height: 100vh;
+    /* La page ne défile jamais : seule la carte défile, pour que le compteur
+       et les boutons de navigation restent visibles en permanence. */
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
     color: var(--texte);
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 16px;
+    padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+             max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
   }
 
   .conteneur {
     width: 100%;
     max-width: 820px;
+    height: 100%;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     gap: 14px;
-    flex: 1;
   }
 
   header {
@@ -43,20 +61,27 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    color: #fff;
-    flex-wrap: wrap;
+    color: var(--encre);
+    flex-wrap: nowrap;
+    flex-shrink: 0;
   }
   header h1 {
     font-size: 1.15rem;
-    text-shadow: 0 2px 4px rgba(0,0,0,.2);
+    text-shadow: 0 1px 0 rgba(255,255,255,.45);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .compteur {
-    background: rgba(255,255,255,.25);
+    background: rgba(255,255,255,.55);
+    color: var(--encre);
     padding: 6px 14px;
     border-radius: 999px;
     font-weight: bold;
     font-size: .95rem;
     white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .barre-progression {
@@ -64,6 +89,7 @@
     background: rgba(255,255,255,.35);
     border-radius: 999px;
     overflow: hidden;
+    flex-shrink: 0;
   }
   .barre-progression .rempli {
     height: 100%;
@@ -73,21 +99,31 @@
     transition: width .35s ease;
   }
 
+  /* La carte est le seul conteneur défilant : elle prend la place restante
+     (min-height:0 l'autorise à rétrécir sous son contenu). */
   .carte {
     background: var(--carte);
     border-radius: 24px;
     padding: 28px 26px;
     box-shadow: 0 18px 40px rgba(0,0,0,.18);
-    flex: 1;
+    flex: 1 1 auto;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     gap: 18px;
     animation: apparition .35s ease;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
   @keyframes apparition {
     from { opacity: 0; transform: translateY(16px); }
     to   { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .carte { animation: none; }
+    .rempli, .option, .bouton { transition: none; }
+    .option:hover:not(.verrouillee), .bouton:hover { transform: none; }
   }
 
   .badge-etape {
@@ -106,14 +142,6 @@
     justify-content: space-between;
     gap: 10px;
     flex-wrap: wrap;
-  }
-  .numero-question {
-    font-size: .95rem;
-    font-weight: bold;
-    color: var(--violet-dark);
-    background: #f1edff;
-    padding: 6px 14px;
-    border-radius: 999px;
   }
 
   .question-texte {
@@ -166,16 +194,26 @@
     background: #ede9ff;
   }
   .option.bonne {
-    border-color: var(--vert);
+    border-color: var(--vert-fonce);
     background: #e6fff7;
   }
-  .option.bonne .lettre { background: var(--vert); }
+  .option.bonne .lettre { background: var(--vert-fonce); }
   .option.fausse {
-    border-color: var(--rouge);
+    border-color: var(--rouge-fonce);
     background: #ffecec;
   }
-  .option.fausse .lettre { background: var(--rouge); }
+  .option.fausse .lettre { background: var(--rouge-fonce); }
   .option.verrouillee { cursor: default; }
+  /* Récapitulatif sur l'écran de réponse : compact, non interactif */
+  .options.recap .option {
+    padding: 8px 12px;
+    font-size: .98rem;
+    gap: 10px;
+    border-width: 2px;
+    align-items: flex-start;
+  }
+  .options.recap .option .lettre { width: 26px; height: 26px; font-size: .85rem; border-radius: 8px; }
+  .options.recap .option:not(.bonne):not(.fausse) { opacity: .75; }
 
   .etiquette-reponse {
     display: inline-flex;
@@ -201,10 +239,10 @@
     font-size: 1.08rem;
     line-height: 1.55;
   }
-  .explication strong { color: #b07d17; }
+  .explication strong { color: #8a5f0a; }
   .explication.erreur {
     background: #ffecec;
-    border-left-color: var(--rouge);
+    border-left-color: var(--rouge-fonce);
   }
   .explication.erreur strong { color: #b0392e; }
 
@@ -245,6 +283,7 @@
     gap: 12px;
     justify-content: space-between;
     padding-bottom: 10px;
+    flex-shrink: 0;
   }
   .bouton {
     border: none;
@@ -257,7 +296,8 @@
     transition: transform .12s ease, opacity .12s ease;
   }
   .bouton:hover { transform: translateY(-2px); }
-  .bouton:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+  .bouton:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+  .bouton:focus-visible { outline: 3px solid var(--encre); outline-offset: 3px; }
   .bouton.primaire {
     background: var(--violet);
     color: #fff;
@@ -271,16 +311,21 @@
   }
 
   .astuce-clavier {
-    color: rgba(255,255,255,.9);
+    color: var(--encre);
     font-size: .85rem;
     text-align: center;
     padding-bottom: 6px;
+    flex-shrink: 0;
   }
   kbd {
-    background: rgba(255,255,255,.3);
+    background: rgba(255,255,255,.55);
     border-radius: 6px;
     padding: 1px 7px;
     font-family: inherit;
+  }
+  /* L'astuce clavier n'a aucun sens au doigt : on la masque sur écran tactile */
+  @media (hover: none) and (pointer: coarse) {
+    .astuce-clavier { display: none; }
   }
 
   .intro-liste {
@@ -292,11 +337,35 @@
   }
   .intro-liste li { list-style: none; background: #f7f8fc; border-radius: 12px; padding: 12px 16px; }
 
+  /* Téléphones courts : on comprime plutôt que de faire défiler la page */
   @media (max-width: 560px) {
-    .question-texte { font-size: 1.25rem; }
-    .carte { padding: 20px 16px; }
+    body { padding: 10px; }
+    .conteneur { gap: 10px; }
+    header h1 { font-size: 1rem; }
+    .question-texte { font-size: 1.2rem; }
+    .carte { padding: 16px 14px; gap: 12px; border-radius: 18px; }
+    .options { gap: 9px; }
+    .option { padding: 12px 13px; font-size: 1rem; gap: 12px; }
+    .option .lettre { width: 32px; height: 32px; font-size: 1rem; }
+    .explication, .intro-liste { font-size: 1rem; }
+    .explication { padding: 12px 14px; }
     .bouton { padding: 13px 18px; font-size: 1rem; }
     .bouton.primaire { max-width: 58%; }
+  }
+  @media (max-height: 560px) {
+    body { padding: 8px; }
+    .conteneur { gap: 8px; }
+    header h1 { font-size: .95rem; }
+    .carte { padding: 14px 16px; gap: 12px; border-radius: 16px; }
+    .question-texte { font-size: 1.1rem; }
+    .options { gap: 8px; }
+    .option { padding: 10px 12px; font-size: 1rem; gap: 10px; }
+    .option .lettre { width: 30px; height: 30px; font-size: .95rem; }
+    .explication, .intro-liste { font-size: 1rem; }
+    .intro-liste li { padding: 8px 12px; }
+    .bouton { padding: 11px 16px; font-size: .98rem; }
+    .navigation { padding-bottom: 0; }
+    .astuce-clavier { display: none; }
   }
 </style>
 </head>
@@ -944,7 +1013,7 @@ const QUESTIONS = [
     options: [
       { texte: "Parce que la glace est moins dense que l'eau liquide", correct: true },
       { texte: "Parce que la glace contient de l'air", correct: false, pourquoi: "Des bulles peuvent s'y coincer, mais la glace pure flotte aussi." },
-      { texte: "Parce que la glace contient moins de molécules à volume égal", correct: false, pourquoi: "Au contraire : la glace contient autant de molécules que l'eau dont elle vient, mais elles sont rangées de façon plus espacée, avec des « trous » entre elles. C'est ce qui la rend moins dense." },
+      { texte: "Parce que les molécules d'eau gelée sont plus légères que celles de l'eau liquide", correct: false, pourquoi: "Une molécule de glace, c'est exactement la même molécule d'eau : elle ne devient pas plus légère. Ce qui change, c'est la façon dont elles se rangent : en gelant, elles laissent des « trous » entre elles." },
       { texte: "Parce que l'eau sous la glace la pousse vers le haut", correct: false, pourquoi: "L'eau pousse dans tous les sens ; c'est bien la densité de la glace qui la fait remonter." }
     ],
     explication: "En gelant, les molécules d'eau s'organisent en cristaux avec des « trous » : la glace est moins dense que l'eau liquide. C'est très rare dans la nature, et vital pour la vie : les lacs gèlent par le haut, les poissons survivent dessous."
@@ -1811,21 +1880,18 @@ function rendreIntro() {
     <div class="type-ligne"><span class="badge-etape">🔬 Présentation</span></div>
     <h2 class="question-texte">Prêt(e) pour le défi science ?</h2>
     <ul class="intro-liste">
-      <li>🎲 <strong>${NB_QUESTIONS} questions tirées au hasard</strong> parmi les ${QUESTIONS.length} du quiz : à chaque partie, jamais tout à fait le même défi !</li>
-      <li>👀 Tu vois <strong>une question</strong>, puis sur l'écran suivant <strong>la réponse expliquée</strong>.</li>
-      <li>🖱️ Clique sur la bonne réponse avant de passer à la suite (c'est pour ton score, mais on ne voit rien tout de suite !). Une fois la réponse découverte, ton choix est verrouillé.</li>
-      <li>💡 Si tu te trompes, l'écran suivant t'explique <strong>pourquoi ta réponse était fausse</strong>.</li>
-      <li>🏆 À la fin : ton score, ta mention et le barème des niveaux.</li>
+      <li>🎲 <strong>${NB_QUESTIONS} questions</strong> tirées au hasard parmi ${QUESTIONS.length} : jamais deux fois la même partie.</li>
+      <li>👀 Réponds, puis découvre <strong>la réponse expliquée</strong>. Ton choix est alors verrouillé.</li>
+      <li>💡 Si tu te trompes, on t'explique <strong>pourquoi ta réponse était fausse</strong>.</li>
+      <li>🏆 À la fin : ton score et ta mention.</li>
     </ul>
-    <div class="explication"><strong>Pas de triche !</strong> L'important, c'est de comprendre les explications. Même les scientifiques se trompent parfois... et c'est comme ça qu'on apprend.</div>`;
+    <div class="explication">L'important, c'est de comprendre. Même les scientifiques se trompent... c'est comme ça qu'on apprend.</div>`;
 }
 
 function rendreQuestion(i) {
   const q = selection[i];
+  // Le numéro de question est déjà affiché par le compteur de l'en-tête.
   let html = `
-    <div class="type-ligne">
-      <span class="numero-question">Question ${i + 1} / ${selection.length}</span>
-    </div>
     <h2 class="question-texte">${q.question}</h2>
     <div class="options">`;
 
@@ -1843,10 +1909,20 @@ function rendreQuestion(i) {
       classe += " choisie";
     }
     const balise = q.revelee ? "div" : "button";
+    // Sur l'écran de réponse, l'état n'est porté que par la couleur : on ajoute
+    // une mention lisible par les lecteurs d'écran (et masquée à l'œil).
+    let mention = "";
+    if (q.revelee) {
+      const estChoisi = q.choix === j;
+      if (opt.correct) mention = `<span class="sr-only">(${estChoisi ? "ta réponse, juste" : "bonne réponse"})</span>`;
+      else if (estChoisi) mention = '<span class="sr-only">(ta réponse, incorrecte)</span>';
+    }
     html += `
-      <${balise} class="${classe}" data-option="${j}">
-        <span class="lettre">${LETTRES[j]}</span>
-        <span>${opt.texte}</span>
+      <${balise} class="${classe}" data-option="${j}"${q.revelee
+        ? ""
+        : ' aria-pressed="' + (q.choix === j) + '"'}>
+        <span class="lettre" aria-hidden="true">${LETTRES[j]}</span>
+        <span>${opt.texte}${mention}</span>
       </${balise}>`;
   });
 
@@ -1881,24 +1957,25 @@ function rendreReponse(i) {
   }
 
   let html = `
-    <div class="type-ligne">
-      <span class="numero-question">Réponse ${i + 1} / ${selection.length}</span>
-    </div>
     ${etiquette}
     <h2 class="question-texte">${q.question}</h2>
-    <div class="options">`;
+    <div class="options recap">`;
 
+  // Les options sont reprises en version compacte : elles ne sont plus cliquables,
+  // et leur format réduit laisse la place à l'explication (le vrai contenu à lire).
   q.optionsAffichees.forEach(function (opt, j) {
-    let classe = "option verrouillee";
-    if (opt.correct) {
-      classe += " bonne";
-    } else if (q.choix === j) {
-      classe += " fausse";
-    }
+    const estBon = opt.correct;
+    const estChoisi = q.choix === j;
+    let classe = "option verrouillee" + (estBon ? " bonne" : estChoisi ? " fausse" : "");
+    const mention = estBon
+      ? `<span class="sr-only">(${estChoisi ? "ta réponse, juste" : "bonne réponse"})</span>`
+      : estChoisi
+        ? '<span class="sr-only">(ta réponse, incorrecte)</span>'
+        : "";
     html += `
       <div class="${classe}">
-        <span class="lettre">${LETTRES[j]}</span>
-        <span>${opt.texte}</span>
+        <span class="lettre" aria-hidden="true">${LETTRES[j]}</span>
+        <span>${opt.texte}${mention}</span>
       </div>`;
   });
 
@@ -1943,8 +2020,13 @@ function rendre() {
     if (!selection[dia.index].revelee) {
       carte.querySelectorAll(".option").forEach(function (bouton) {
         bouton.addEventListener("click", function () {
-          selection[dia.index].choix = parseInt(bouton.getAttribute("data-option"), 10);
+          const rang = parseInt(bouton.getAttribute("data-option"), 10);
+          selection[dia.index].choix = rang;
           rendre();
+          // Le rendu recrée les boutons : on remet le focus sur l'option choisie
+          // pour que la navigation au clavier ne reparte pas de zéro.
+          const meme = carte.querySelector('.option[data-option="' + rang + '"]');
+          if (meme) meme.focus({ preventScroll: true });
         });
       });
     }
@@ -2010,11 +2092,10 @@ btnSuivant.addEventListener("click", avancer);
 btnPrecedent.addEventListener("click", reculer);
 
 document.addEventListener("keydown", function (e) {
-  if (e.key === "ArrowRight" || e.key === " ") {
-    // Sur un bouton, la barre d'espace doit activer le bouton (choisir une option,
-    // ou cliquer sur « Suivant »), pas faire avancer en double.
-    if (e.key === " " && e.target && e.target.closest && e.target.closest("button")) return;
-    if (DIAPOS[position].type !== "final" && btnSuivant.style.display !== "none") {
+  // La barre d'espace et Entrée restent réservées au bouton qui a le focus
+  // (choisir une option, valider, avancer) : on ne les intercepte jamais.
+  if (e.key === "ArrowRight") {
+    if (DIAPOS[position].type !== "final") {
       e.preventDefault();
       avancer();
     }
