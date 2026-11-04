@@ -63,7 +63,7 @@
           <span><i style="background:#8b98ad"></i>neutrons</span>
           <span><i style="background:#96c3ff"></i>electrons</span>
         </div>
-        <figcaption>the school model: nucleus + electron shells</figcaption>
+        <figcaption>the school model — schematic, not to scale; electrons do not follow these rings</figcaption>
       </figure>
     </div>
 
@@ -79,7 +79,7 @@
           <button type="button" class="chip" data-mode="glow">glow</button>
         </span>
         <span class="look" id="elLook">
-          <label class="sl" title="how strong the wave must be to harden into the body: the strongest X% of its probability">level<input type="range" id="slLevel" min="5" max="50" value="15" /></label>
+          <label class="sl" title="approximate probability-mass threshold used to harden the glow; not a physical surface">level<input type="range" id="slLevel" min="5" max="50" value="15" /></label>
           <label class="sl" title="0 = the pure glow · 1 = the wave above the level hardens into a body">body<input type="range" id="slBody" min="0" max="100" value="65" /></label>
           <label class="sl" title="shades the medium by the wave's gradient — the fog gets lighting too">light<input type="range" id="slLight" min="0" max="100" value="55" /></label>
           <button type="button" class="chip" id="lookPure">pure glow</button>
@@ -101,8 +101,8 @@
     <ul class="notes">
       <li><b>Blue and rose show the wavefunction's sign.</b> Like a wave, an orbital has positive and negative regions. Where they meet, the value is zero — a <b>node</b>, a place the electron can never be.</li>
       <li><b>Radial nodes</b> are gaps between shells (a 4s orbital has three!), <b>angular nodes</b> are the flat cuts that split lobes. The label under each cloud counts them.</li>
-      <li><b>One wavefunction, two drawings.</b> <i>dots</i> samples the electron's probability dot by dot — the fastest drawing. <i>glow</i> adds the same probability along each line of sight, like a long-exposure photo. The dials tune the glow; <i>pure glow</i> puts them back.</li>
-      <li><b>One honest caveat:</b> these are hydrogen's exact orbitals used as shapes for all atoms. In heavy atoms, the many electrons screen each other and squeeze the clouds a little — the shapes survive, the sizes shift.</li>
+      <li><b>One wavefunction, two drawings.</b> <i>dots</i> samples the electron's probability dot by dot — the fastest drawing. <i>glow</i> adds the same probability along each line of sight, like a long-exposure photo. The dials tune the glow; <i>pure glow</i> puts them back. The automatic morphs and rotations are visual aids, not electron motion.</li>
+      <li><b>One honest caveat:</b> these are hydrogen's exact one-electron orbitals, reused as a shape gallery for all elements and rescaled to fit the same frame. They are not full many-electron wavefunctions or relative atom sizes. In real atoms, electron–electron interactions change the radial shapes, and degenerate orbitals can mix.</li>
       <li><b>Isotopes: same element, different neutrons.</b> The bars list every isotope ever observed — the NUBASE2020 evaluation served by the IAEA Live Chart of Nuclides. Green is stable, and the bar's height is the isotope's share of the natural element; red is radioactive, including the rare natural ones (all of bismuth is red: bismuth-209 does decay, but takes 2.01×10¹⁹ years to do it). Click any bar to rebuild the nucleus — only the nucleus changes, the electron clouds stay exactly the same.</li>
     </ul>
   </section>

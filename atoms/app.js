@@ -68,6 +68,7 @@
         let canvas = $(canvasId);
         let R = null, mode = 'dots';
         let states = [], vt = 0, segBase = 0, freeze = 0, last = null, shown = '';
+        let active = false, dirty = true;
         let rotT = 1.7, uRot = [1, 0, 0, 0, 1, 0, 0, 0, 1], vYaw = 0, vPitch = 0;
         let dragging = false, lastX = 0, lastY = 0, lastT = 0;
 
@@ -114,6 +115,7 @@
                 const dtm = Math.max(0.008, (ev.timeStamp - lastT) / 1000);
                 lastX = ev.clientX; lastY = ev.clientY; lastT = ev.timeStamp;
                 orbit(-dx * K, -dy * K);
+                dirty = true;
                 if (reduce) {
                     still();
                 } else {
@@ -167,7 +169,7 @@
             } else {
                 e = smoother((phase - HOLD) / MORPH);
                 txt = ketOf(A) + ' → ' + ketOf(B);
-                note = 'morphing through zero — nodes stay honest';
+                note = 'visual morph between orbitals — not an electron trajectory';
             }
             if (txt !== shown && ketEl) {
                 shown = txt;
@@ -199,11 +201,20 @@
                 }
             }
             last = now;
-            drawAt(vt, rotT);
+            if (active) { drawAt(vt, rotT); dirty = false; }
         }
-        function still () { drawAt(segBase * CYCLE, rotT); }
-        function resize () { R.resize(); }
-        return { setStates, jump, frame, still, resize, setMode };
+        function still () {
+            if (active) { drawAt(segBase * CYCLE, rotT); dirty = false; }
+            else dirty = true;
+        }
+        function resize () { R.resize(); dirty = true; }
+        function setActive (value) {
+            if (active === value) return;
+            active = value;
+            last = null;
+            if (active && dirty) { drawAt(vt, rotT); dirty = false; }
+        }
+        return { setStates, jump, frame, still, resize, setMode, setActive };
     }
 
     // ---------- periodic table ----------
@@ -379,7 +390,7 @@
         const el = ELEMENTS[currentZ - 1];
         const W = bohr.clientWidth, H = bohr.clientHeight;
         if (!W || !H) return;
-        const DPR = Math.min(3, window.devicePixelRatio || 1);
+        const DPR = Math.min(2, window.devicePixelRatio || 1);
         const Wp = Math.round(W * DPR), Hp = Math.round(H * DPR);
         // Both buffer axes update together — a stale height squashes the
         // drawing vertically (that is how the school model got distorted).
@@ -442,7 +453,7 @@
         const el = ELEMENTS[currentZ - 1];
         const W = isoCv.clientWidth, H = isoCv.clientHeight;
         if (!W || !H) return;
-        const DPR = Math.min(3, window.devicePixelRatio || 1);
+        const DPR = Math.min(2, window.devicePixelRatio || 1);
         const Wp = Math.round(W * DPR), Hp = Math.round(H * DPR);
         if (isoCv.width !== Wp || isoCv.height !== Hp) { isoCv.width = Wp; isoCv.height = Hp; }
         ictx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -523,15 +534,34 @@
 
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    let orbVisible = true, lastDraw = -Infinity;
+    const FRAME_MS = 1000 / 30; // plenty for a gentle tumble; halves mobile work
+
+    function updateActive () {
+        elViewer.setActive(orbVisible && !document.hidden);
+    }
+
     function resizeAll () {
         elViewer.resize();
         drawIso();
         if (reduce) { elViewer.still(); drawBohr(1.2); }
+        else if (orbVisible && !document.hidden) drawBohr(performance.now() / 1000);
     }
 
     buildTable();
     select(6, false);
     resizeAll();
+
+    if ('IntersectionObserver' in window) {
+        orbVisible = false;
+        const observer = new IntersectionObserver((entries) => {
+            orbVisible = entries[0].isIntersecting;
+            updateActive();
+        });
+        // Observe the stable figure: switching dots/glow replaces the canvas.
+        observer.observe(document.querySelector('.orb'));
+    }
+    updateActive();
 
     if (reduce) {
         elViewer.still();
@@ -540,12 +570,18 @@
         const t0 = performance.now() / 1000;
         requestAnimationFrame(function tick (nowMs) {
             requestAnimationFrame(tick);
+            if (document.hidden || !orbVisible || nowMs - lastDraw < FRAME_MS) return;
+            lastDraw = nowMs;
             const now = nowMs / 1000 - t0;
             elViewer.frame(now);
             drawBohr(now);
         });
     }
 
+    document.addEventListener('visibilitychange', () => {
+        lastDraw = -Infinity;
+        updateActive();
+    });
     window.addEventListener('resize', resizeAll);
     $('prevEl').addEventListener('click', () => select(currentZ - 1, false));
     $('nextEl').addEventListener('click', () => select(currentZ + 1, false));

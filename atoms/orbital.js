@@ -6,7 +6,7 @@
 // spherical coordinates into three one-dimensional marginals:
 //     r          ~ r^2 R_nl(r)^2
 //     cos(theta) ~ P_l^|m|(x)^2
-//     phi        ~ cos^2(m phi)   (uniform when m = 0)
+//     phi        ~ cos^2(m phi) or sin^2(m phi) (uniform when m = 0)
 // so every point is drawn by inverse-CDF sampling of each marginal —
 // the product is exactly the quantum density |psi|^2, nodes and all.
 // Each point keeps fixed random quantiles, so two states stay in
@@ -114,7 +114,7 @@
         const xs = new Float64Array(ng), ws = new Float64Array(ng);
         for (let i = 0; i < ng; i++) {
             xs[i] = 2 * Math.PI * i / (ng - 1);
-            ws[i] = a === 0 ? 1 : Math.pow(Math.cos(a * xs[i]), 2);
+            ws[i] = a === 0 ? 1 : Math.pow(m > 0 ? Math.cos(a * xs[i]) : Math.sin(a * xs[i]), 2);
         }
         return { xs, cdf: makeCdf(xs, ws) };
     }
@@ -244,10 +244,12 @@
 
         function resize () {
             // The screen's real pixel ratio, capped only for fill rate.
-            DPR = Math.min(3, window.devicePixelRatio || 1);
+            DPR = Math.min(2, window.devicePixelRatio || 1);
             W = canvas.clientWidth; H = canvas.clientHeight;
             if (!W || !H) return;
-            Wp = Math.round(W * DPR); Hp = Math.round(H * DPR);
+            const wp = Math.round(W * DPR), hp = Math.round(H * DPR);
+            if (wp === Wp && hp === Hp) return;
+            Wp = wp; Hp = hp;
             canvas.width = Wp; canvas.height = Hp;
             P = Wp * Hp;
             img = ctx.createImageData(Wp, Hp);

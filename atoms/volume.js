@@ -26,6 +26,7 @@
 // p/d/f lobes and the s states' needle peak + weak shells.
 (function (root) {
     const D = 3.4, FOG0 = 0.14, CORE = 0.35, SIGMA = 4.0, HARDK = 2.2, GLO = 0.02, RBOUND = 2.6;
+    const MOBILE = root.matchMedia && root.matchMedia('(pointer: coarse)').matches;
 
     // ---------- per-state CPU parameters (cached) ----------
 
@@ -92,17 +93,18 @@
         const hist = new Float64Array(NB);
         const nR = 72, nT = 36, nP = 18;
         const invVv = 1 / (maxR * maxY);
-        const rmaxS = 2.5 * q90;            // scaled units -> the visible frame
+        const rmaxS = RBOUND;               // shader-space radius
+        const rmaxPhysH = rmaxS * q90;
         for (let i = 0; i < nR; i++) {
             const t = (i + 0.5) / nR;
-            const r = rmaxS * t * t;        // quadratic grid: dense near r = 0
-            const dr = rmaxS * 4 * t / nR;
+            const r = rmaxPhysH * t * t;    // Bohr units for radialR
+            const dr = rmaxPhysH * 2 * t / nR;
             const rad = R.radialR(n, l, r);
             for (let j = 0; j < nT; j++) {
                 const x = -1 + 2 * (j + 0.5) / nT;
                 for (let k = 0; k < nP; k++) {
                     const v = Math.abs(rad * R.ylm(l, m, x, 2 * Math.PI * (k + 0.5) / nP)) * invVv;
-                    hist[Math.min(NB - 1, (v * NB) | 0)] += v * v * r * r * dr;
+                    hist[Math.min(NB - 1, (v * NB) | 0)] += v * v * r * r * dr / (q90 * q90 * q90);
                 }
             }
         }
@@ -137,6 +139,7 @@ void main () {
 
     const FRAG = `#version 300 es
 precision highp float;
+precision highp int;
 out vec4 fragColor;
 
 uniform vec2 uCenter;
@@ -157,7 +160,7 @@ const float GLO = 0.02;       // amplification below the level (nearly transpare
 const vec3 LDIR = vec3(0.410368, 0.729540, 0.547152);  // normalize(0.45, 0.8, 0.6)
 const vec3 POS = vec3(125.0, 185.0, 255.0) / 255.0;
 const vec3 NEG = vec3(255.0, 120.0, 170.0) / 255.0;
-const int STEPS = 96;
+const int STEPS = ${MOBILE ? 64 : 96};
 
 float hash (vec2 p) {
     return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
@@ -337,13 +340,15 @@ void main () {
         let Wp = 0, Hp = 0, FS = 1;
 
         function resize () {
-            // The screen's real pixel ratio (capped only for fill rate) —
-            // the glow must land on the display's actual pixel grid, not be
-            // resampled onto it. Framing comes from the buffer itself.
-            const DPR = Math.min(3, window.devicePixelRatio || 1);
+            // The glow is fill-rate bound: high-DPI phones otherwise shade
+            // almost a million pixels, 64–96 samples deep, on every frame.
+            // Keep crisp CSS-sized framing with a modest mobile DPR cap.
+            const DPR = Math.min(MOBILE ? 1.5 : 2, window.devicePixelRatio || 1);
             const W = canvas.clientWidth, H = canvas.clientHeight;
             if (!W || !H) return;
-            Wp = Math.round(W * DPR); Hp = Math.round(H * DPR);
+            const wp = Math.round(W * DPR), hp = Math.round(H * DPR);
+            if (wp === Wp && hp === Hp) return;
+            Wp = wp; Hp = hp;
             canvas.width = Wp; canvas.height = Hp;
             FS = 0.32 * Math.min(Wp, Hp);
             gl.viewport(0, 0, Wp, Hp);
