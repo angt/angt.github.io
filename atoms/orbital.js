@@ -315,12 +315,17 @@
                     const row = py * Wp;
                     for (let pxx = x0; pxx <= x1; pxx++) {
                         const dx = pxx + 0.5 - cx;
-                        const dist = Math.sqrt(dx * dx + dy * dy);
-                        let cov = r + 0.5 - dist;
-                        if (cov <= 0) continue;
+                        const dist2 = dx * dx + dy * dy;
+                        const outer = r + 0.5;
+                        if (dist2 >= outer * outer) continue;
+                        const idx = row + pxx;
+                        // A fully covered pixel cannot be changed by a
+                        // farther disc. Skip its square root and compositing.
+                        if (z < zbuf[idx] && ca[idx] >= 1) continue;
+                        const dist = Math.sqrt(dist2);
+                        let cov = outer - dist;
                         if (cov > 1) cov = 1;
                         cov = cov * cov * (3 - 2 * cov); // smoothstep edge
-                        const idx = row + pxx;
                         const t = dist < r ? CORE * (1 - dist / r) : 0;
                         const rr = er + (wc - er) * t, gg = eg + (wc - eg) * t, bb = eb + (wc - eb) * t;
                         if (z >= zbuf[idx]) {

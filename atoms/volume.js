@@ -28,6 +28,88 @@
     const D = 3.4, FOG0 = 0.14, CORE = 0.35, SIGMA = 4.0, HARDK = 2.2, GLO = 0.02, RBOUND = 2.6;
     const MOBILE = root.matchMedia && root.matchMedia('(pointer: coarse)').matches;
 
+    // Expand L_(n-l-1)^(2l+1)(2*a*r) once, in ascending powers of r.
+    function radialPolynomial (n, l, a) {
+        const k = n - l - 1, alpha = 2 * l + 1;
+        let p = [1], q = k ? [1 + alpha, -1] : [1];
+        for (let i = 1; i < k; i++) {
+            const next = new Array(q.length + 1).fill(0);
+            for (let j = 0; j < q.length; j++) {
+                next[j] += (2 * i + 1 + alpha) * q[j];
+                next[j + 1] -= q[j];
+            }
+            for (let j = 0; j < p.length; j++) next[j] -= (i + alpha) * p[j];
+            for (let j = 0; j < next.length; j++) next[j] /= i + 1;
+            p = q; q = next;
+        }
+        const out = [0, 0, 0, 0];
+        for (let i = 0; i < q.length; i++) out[i] = q[i] * Math.pow(2 * a, i);
+        return out;
+    }
+
+    // r^l*Y_lm is a polynomial in x,y,z (a real solid harmonic). Build it
+    // from the same associated-Legendre recurrence used by Orbital.ylm.
+    // The gallery stops at 4f, hence degree <= 3 and at most three terms.
+    function solidHarmonic (l, m) {
+        const a = Math.abs(m), degree = l - a;
+        let first = 1;
+        for (let i = 0; i < a; i++) first *= -(2 * i + 1);
+        let p = [first], q = degree ? [0, (2 * a + 1) * first] : p;
+        for (let n = a + 2; n <= l; n++) {
+            const next = new Array(q.length + 1).fill(0);
+            for (let j = 0; j < q.length; j++) next[j + 1] += (2 * n - 1) * q[j];
+            for (let j = 0; j < p.length; j++) next[j] -= (n + a - 1) * p[j];
+            for (let j = 0; j < next.length; j++) next[j] /= n - a;
+            p = q; q = next;
+        }
+        const poly = degree ? q : p;
+        const add = (map, x, y, z, v) => {
+            const key = x + ',' + y + ',' + z;
+            const value = (map.get(key) || 0) + v;
+            if (value) map.set(key, value); else map.delete(key);
+        };
+        const angular = new Map();
+        for (let j = 0; j < poly.length; j++) {
+            if (!poly[j]) continue;
+            let terms = new Map([['0,0,' + j, poly[j]]]);
+            for (let k = 0; k < (degree - j) / 2; k++) {
+                const next = new Map();
+                for (const [key, v] of terms) {
+                    const [x, y, z] = key.split(',').map(Number);
+                    add(next, x + 2, y, z, v);
+                    add(next, x, y + 2, z, v);
+                    add(next, x, y, z + 2, v);
+                }
+                terms = next;
+            }
+            for (const [key, v] of terms) {
+                const [x, y, z] = key.split(',').map(Number);
+                add(angular, x, y, z, v);
+            }
+        }
+        let factorial = 1;
+        for (let k = l - a + 1; k <= l + a; k++) factorial *= k;
+        let norm = Math.sqrt((2 * l + 1) / (4 * Math.PI * factorial));
+        if (m) norm *= Math.SQRT2;
+        const fact = [1, 1, 2, 6, 24], out = new Map();
+        for (const [key, v] of angular) {
+            const [x, y, z] = key.split(',').map(Number);
+            for (let j = 0; j <= a; j++) {
+                if (m > 0 ? j % 2 : m < 0 ? !(j % 2) : j) continue;
+                const phase = m >= 0 ? (j % 4 === 0 ? 1 : -1) : (j % 4 === 1 ? 1 : -1);
+                const choose = fact[a] / fact[j] / fact[a - j];
+                add(out, x + a - j, y + j, z, v * norm * choose * phase);
+            }
+        }
+        const terms = Array.from(out, ([key, coefficient]) => {
+            const powers = key.split(',').map(Number);
+            return [coefficient, ...powers];
+        });
+        while (terms.length < 3) terms.push([0, 0, 0, 0]);
+        if (terms.length > 3) throw new Error('solid harmonic exceeds shader budget');
+        return terms.flat();
+    }
+
     // ---------- per-state CPU parameters (cached) ----------
 
     const PARAMS = new Map();
@@ -93,6 +175,11 @@
         const hist = new Float64Array(NB);
         const nR = 72, nT = 36, nP = 18;
         const invVv = 1 / (maxR * maxY);
+        const decay = q90 / n;
+        const radial = radialPolynomial(n, l, decay);
+        const scale = kGlow * invVv * Math.pow(2 * decay, l);
+        const rp = radial.map((v) => v * scale);
+        const dp = [rp[1], 2 * rp[2], 3 * rp[3], 0];
         const rmaxS = RBOUND;               // shader-space radius
         const rmaxPhysH = rmaxS * q90;
         for (let i = 0; i < nR; i++) {
@@ -124,7 +211,10 @@
             return 0;
         };
 
-        const p = { q90, invV: invVv, kGlow, rad: rTail / q90, levelFor };
+        const p = {
+            q90, invV: invVv, kGlow, rad: rTail / q90, levelFor,
+            decay, scale, rp, dp, hp: solidHarmonic(l, m),
+        };
         PARAMS.set(key, p);
         return p;
     }
@@ -145,8 +235,10 @@ out vec4 fragColor;
 uniform vec2 uCenter;
 uniform float uFS;
 uniform mat3 uInvRot;
-uniform ivec3 uStA, uStB;
-uniform vec4 uQA, uQB;        // (q90, 1/vmax, unit-mass k, level) per state
+uniform vec4 uQA, uQB;        // (decay, normalization already in radial coeffs, k, level)
+uniform vec4 uRA, uRB;        // normalized radial polynomial coefficients
+uniform vec4 uDA, uDB;        // radial derivative coefficients
+uniform vec4 uHA[3], uHB[3];  // coefficient, x exponent, y exponent, z exponent
 uniform float uMix, uRad, uRadB;
 uniform float uBody;          // 0 = pure glow, 1 = hardened body
 uniform float uLight;         // gradient lighting amount
@@ -166,60 +258,42 @@ float hash (vec2 p) {
     return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
-// Associated Laguerre L_k^alpha by recurrence (same as orbital.js).
-float lag (int k, float alpha, float x) {
-    if (k <= 0) return 1.0;
-    float p = 1.0, q = 1.0 + alpha - x;
-    for (int i = 1; i < k; i++) {
-        float t = ((2.0 * float(i) + 1.0 + alpha - x) * q - (float(i) + alpha) * p) / (float(i) + 1.0);
-        p = q; q = t;
-    }
-    return q;
+// One monomial c*x^t.y*y^t.z*z^t.w and its analytic gradient.
+// Displayed orbitals have degree <= 3, so no pow() calls are needed.
+vec4 harmonicTerm (vec3 p, vec4 t) {
+    vec3 p2 = p * p;
+    float vx = t.y < 0.5 ? 1.0 : t.y < 1.5 ? p.x : t.y < 2.5 ? p2.x : p2.x * p.x;
+    float vy = t.z < 0.5 ? 1.0 : t.z < 1.5 ? p.y : t.z < 2.5 ? p2.y : p2.y * p.y;
+    float vz = t.w < 0.5 ? 1.0 : t.w < 1.5 ? p.z : t.w < 2.5 ? p2.z : p2.z * p.z;
+    float dx = t.y < 0.5 ? 0.0 : t.y < 1.5 ? 1.0 : t.y < 2.5 ? 2.0 * p.x : 3.0 * p2.x;
+    float dy = t.z < 0.5 ? 0.0 : t.z < 1.5 ? 1.0 : t.z < 2.5 ? 2.0 * p.y : 3.0 * p2.y;
+    float dz = t.w < 0.5 ? 0.0 : t.w < 1.5 ? 1.0 : t.w < 2.5 ? 2.0 * p.z : 3.0 * p2.z;
+    return t.x * vec4(dx * vy * vz, vx * dy * vz, vx * vy * dz, vx * vy * vz);
 }
 
-// Associated Legendre P_l^m, Condon-Shortley phase (same as orbital.js).
-float plmf (int l, int m, float x) {
-    float p = 1.0;
-    if (m > 0) {
-        float s = sqrt(max(0.0, 1.0 - x * x));
-        float f = 1.0;
-        for (int i = 0; i < m; i++) { p *= -f * s; f += 2.0; }
-    }
-    if (l == m) return p;
-    float q = x * float(2 * m + 1) * p;
-    for (int n = m + 2; n <= l; n++) {
-        float t = ((2.0 * float(n) - 1.0) * x * q - float(n + m - 1) * p) / float(n - m);
-        p = q; q = t;
-    }
-    return q;
+// Unit-mass wavefunction and gradient. stateParams expands both the radial
+// recurrence and r^l*Y_lm into polynomials on the CPU. This is algebraically
+// the same psi as orbital.js, but the GPU evaluates only short dot products
+// and at most three harmonic monomials per state.
+vec4 fieldState (vec3 q, vec4 par, vec4 rad, vec4 dif, vec4 h[3]) {
+    float r = max(length(q), 1e-5);
+    float r2 = r * r;
+    vec4 powers = vec4(1.0, r, r2, r2 * r);
+    float rp = dot(rad, powers), dp = dot(dif, powers);
+    vec4 hp = vec4(0.0);
+    for (int i = 0; i < 3; i++) hp += harmonicTerm(q, h[i]);
+    float e = exp(-par.x * r);
+    vec3 g = e * (rp * hp.xyz + hp.w * (dp - par.x * rp) * q / r);
+    return vec4(g, e * rp * hp.w);
 }
 
-// psi(n,l,m) at orbital-frame point q (scaled units), normalized by vmax.
-float psiRaw (vec3 q, ivec3 st, float q90, float invV) {
-    int n = st.x, l = st.y, m = st.z;
-    float r = max(length(q), 1e-6);
-    float x = clamp(q.z / r, -1.0, 1.0);
-    float phi = atan(q.y, q.x);
-    float rho = 2.0 * r * q90 / float(n);
-    float rad = pow(rho, float(l)) * exp(-rho * 0.5) * lag(n - l - 1, float(2 * l + 1), rho);
-    int am = m < 0 ? -m : m;
-    float d = 1.0;
-    for (int k = l - am + 1; k <= l + am; k++) d *= float(k);
-    float y = plmf(l, am, x) * sqrt((2.0 * float(l) + 1.0) / (12.566370614 * d));
-    if (m != 0) y *= 1.414213562 * (m > 0 ? cos(float(am) * phi) : sin(float(am) * phi));
-    return rad * y * invV;
-}
-
-// Signed morph: the interpolated wavefunction between the two states.
-// Where the phases disagree the mix passes through zero — the nodes
-// pinch and flip exactly as in the dot renderer. Each state is scaled
-// by its unit-mass k (uQA.z/uQB.z) before mixing, so every state
-// carries the same total glow.
-float psiMix (vec3 p) {
+// Value in w, gradient in xyz. Linear morphing also mixes the gradients.
+vec4 psiMix (vec3 p) {
     vec3 q = uInvRot * p;
-    float va = psiRaw(q, uStA, uQA.x, uQA.y) * uQA.z;
-    if (uMix < 0.001) return va;
-    return mix(va, psiRaw(q, uStB, uQB.x, uQB.y) * uQB.z, uMix);
+    vec4 a = fieldState(q, uQA, uRA, uDA, uHA);
+    if (uMix >= 0.001) a = mix(a, fieldState(q, uQB, uRB, uDB, uHB), uMix);
+    a.xyz = a.xyz * uInvRot; // transpose: orbital-frame -> world-frame
+    return a;
 }
 
 vec4 shadeGlow (vec3 ro, vec3 rd, float l0, float l1) {
@@ -235,7 +309,8 @@ vec4 shadeGlow (vec3 ro, vec3 rd, float l0, float l1) {
     float T = 1.0;
     for (int i = 0; i < STEPS; i++) {
         vec3 p = ro + rd * lam;
-        float psi = psiMix(p);
+        vec4 field = psiMix(p);
+        float psi = field.w;
         float den = psi * psi;         // |phi|^2: probability density
         float x2 = den;
         float tau = den;
@@ -257,14 +332,8 @@ vec4 shadeGlow (vec3 ro, vec3 rd, float l0, float l1) {
         float t = CORE * min(1.0, mix(den, x2, uBody) * 2.0);
         vec3 c = mix(psi > 0.0 ? POS : NEG, vec3(1.0), t) * f;
         if (uLight > 0.004 && wgt > 0.0015) {
-            // Gradient lighting — the outward normal of the |psi| hill,
-            // wrapped Lambert + rim.
-            float e = 0.006;
-            vec3 g = vec3(
-                psiMix(p + vec3(e, 0.0, 0.0)) - psi,
-                psiMix(p + vec3(0.0, e, 0.0)) - psi,
-                psiMix(p + vec3(0.0, 0.0, e)) - psi);
-            g *= (psi > 0.0 ? -1.0 : 1.0);  // outward = away from dense
+            // Exact gradient: no three extra wavefunction evaluations.
+            vec3 g = field.xyz * (psi > 0.0 ? -1.0 : 1.0);
             float gn = length(g);
             if (gn > 1e-8) {
                 vec3 n = g / gn;
@@ -330,7 +399,7 @@ void main () {
             return null;
         }
         const uni = {};
-        for (const name of ['uCenter', 'uFS', 'uInvRot', 'uStA', 'uStB', 'uQA', 'uQB', 'uMix', 'uRad', 'uRadB', 'uBody', 'uLight']) {
+        for (const name of ['uCenter', 'uFS', 'uInvRot', 'uQA', 'uQB', 'uRA', 'uRB', 'uDA', 'uDB', 'uHA[0]', 'uHB[0]', 'uMix', 'uRad', 'uRadB', 'uBody', 'uLight']) {
             uni[name] = gl.getUniformLocation(prog, name);
         }
         gl.useProgram(prog);
@@ -343,7 +412,7 @@ void main () {
             // The glow is fill-rate bound: high-DPI phones otherwise shade
             // almost a million pixels, 64–96 samples deep, on every frame.
             // Keep crisp CSS-sized framing with a modest mobile DPR cap.
-            const DPR = Math.min(MOBILE ? 1.5 : 2, window.devicePixelRatio || 1);
+            const DPR = Math.min(2, window.devicePixelRatio || 1);
             const W = canvas.clientWidth, H = canvas.clientHeight;
             if (!W || !H) return;
             const wp = Math.round(W * DPR), hp = Math.round(H * DPR);
@@ -361,11 +430,15 @@ void main () {
             gl.uniform2f(uni.uCenter, Wp / 2, Hp / 2);
             gl.uniform1f(uni.uFS, FS);
             gl.uniformMatrix3fv(uni.uInvRot, false, rot);
-            gl.uniform3i(uni.uStA, a.n, a.l, a.m);
-            gl.uniform3i(uni.uStB, b.n, b.l, b.m);
             const lv = look ? look.level : 0.15;
-            gl.uniform4f(uni.uQA, pa.q90, pa.invV, pa.kGlow, pa.levelFor(lv));
-            gl.uniform4f(uni.uQB, pb.q90, pb.invV, pb.kGlow, pb.levelFor(lv));
+            gl.uniform4f(uni.uQA, pa.decay, pa.scale, pa.kGlow, pa.levelFor(lv));
+            gl.uniform4f(uni.uQB, pb.decay, pb.scale, pb.kGlow, pb.levelFor(lv));
+            gl.uniform4fv(uni.uRA, pa.rp);
+            gl.uniform4fv(uni.uRB, pb.rp);
+            gl.uniform4fv(uni.uDA, pa.dp);
+            gl.uniform4fv(uni.uDB, pb.dp);
+            gl.uniform4fv(uni['uHA[0]'], pa.hp);
+            gl.uniform4fv(uni['uHB[0]'], pb.hp);
             gl.uniform1f(uni.uMix, e);
             gl.uniform1f(uni.uRad, Math.max(pa.rad, pb.rad));
             gl.uniform1f(uni.uRadB, RBOUND);

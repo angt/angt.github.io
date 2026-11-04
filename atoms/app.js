@@ -535,7 +535,7 @@
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     let orbVisible = true, lastDraw = -Infinity;
-    const FRAME_MS = 1000 / 30; // plenty for a gentle tumble; halves mobile work
+    const FRAME_MS = 1000 / 60 - 1; // avoid skipping every other 60 Hz frame
 
     function updateActive () {
         elViewer.setActive(orbVisible && !document.hidden);
