@@ -342,7 +342,7 @@ async function start() {
   try {
     const [module, response] = await Promise.all([
       modulePromise ||= (async () => {
-        const r = await fetch(WASM_URL, {cache: "force-cache"});
+        const r = await fetch(WASM_URL, {cache: "no-cache"});
         if (!r.ok) throw new Error(`WASM HTTP ${r.status}`);
         return WebAssembly.compile(await r.arrayBuffer());
       })().catch(error => {
@@ -372,7 +372,8 @@ async function start() {
     $("pass").focus();
     msg("Store ready");
   } catch (error) {
-    msg("Unable to load the store or module", true);
+    modulePromise = null;
+    msg(`Unable to load: ${error?.message || error}`, true);
     $("retry").hidden = false;
     $("retry").disabled = false;
   }
