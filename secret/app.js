@@ -8,6 +8,61 @@ const utf8 = new TextDecoder("utf-8", {fatal: true});
 let wasm, store, storeLen, passPtr, outPtr, secretPtr;
 let entries = [], unlocked = false, modulePromise;
 
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+let glitchTimer;
+
+function randomBetween(min, max) {
+  return min + Math.random() * (max - min);
+}
+
+function stopLogoGlitch() {
+  clearTimeout(glitchTimer);
+  glitchTimer = undefined;
+  $("welcome-logo").classList.remove("glitching");
+}
+
+function glitchLogo() {
+  const logo = $("welcome-logo");
+  if (unlocked || logo.hidden || document.hidden || reducedMotion.matches) return;
+
+  const top = randomBetween(5, 80);
+  const height = randomBetween(3, 13);
+  logo.style.setProperty("--slice-a", `inset(${top}% 0 ${97 - top - height}% 0)`);
+  logo.style.setProperty("--slice-a-x", `${randomBetween(-22, 22).toFixed(1)}px`);
+  for (const [name, position] of [["b", 31], ["c", 45], ["d", 61]]) {
+    const sliceTop = Math.min(88, Math.max(3, position + randomBetween(-16, 16)));
+    const sliceHeight = randomBetween(3, 15);
+    logo.style.setProperty(`--slice-${name}`,
+      `inset(${sliceTop.toFixed(1)}% 0 ${(97 - sliceTop - sliceHeight).toFixed(1)}% 0)`);
+    logo.style.setProperty(`--slice-${name}-x`, `${randomBetween(-22, 22).toFixed(1)}px`);
+  }
+
+  const direction = Math.random() < .5 ? -1 : 1;
+  const jolt = randomBetween(4, 10);
+  const lift = randomBetween(-4, 4);
+  logo.style.setProperty("--jolt-x", `${direction * jolt}px`);
+  logo.style.setProperty("--jolt-y", `${lift.toFixed(1)}px`);
+  logo.style.setProperty("--jolt-return-x", `${(-direction * jolt * .7).toFixed(1)}px`);
+  logo.style.setProperty("--jolt-return-y", `${(-lift).toFixed(1)}px`);
+  logo.style.setProperty("--jolt-skew", `${(direction * randomBetween(.5, 1.8)).toFixed(2)}deg`);
+  logo.style.setProperty("--echo-cyan", `${(-direction * randomBetween(9, 18)).toFixed(1)}px`);
+  logo.style.setProperty("--echo-red", `${(direction * randomBetween(9, 18)).toFixed(1)}px`);
+
+  const duration = Math.round(randomBetween(480, 760));
+  logo.style.setProperty("--glitch-duration", `${duration}ms`);
+  logo.classList.add("glitching");
+  glitchTimer = setTimeout(() => {
+    logo.classList.remove("glitching");
+    scheduleLogoGlitch();
+  }, duration);
+}
+
+function scheduleLogoGlitch() {
+  stopLogoGlitch();
+  if (unlocked || $("welcome-logo").hidden || document.hidden || reducedMotion.matches) return;
+  glitchTimer = setTimeout(glitchLogo, randomBetween(8000, 22000));
+}
+
 function msg(text, error = false) {
   $("msg").textContent = text;
   $("msg").className = error ? "error" : "";
@@ -295,6 +350,7 @@ function lock() {
   $("welcome-logo").hidden = false;
   $("lock").hidden = true;
   $("unlock-form").hidden = false;
+  scheduleLogoGlitch();
 }
 
 function unlock(event) {
@@ -329,6 +385,7 @@ function unlock(event) {
     $("list").hidden = false;
     $("lock").hidden = false;
     $("brand-logo").hidden = false;
+    stopLogoGlitch();
     $("welcome-logo").hidden = true;
     $("unlock-form").hidden = true;
     msg(`${entries.length} secrets · tap to copy · hold to reveal`);
@@ -390,6 +447,11 @@ $("lock").onclick = () => {
   lock();
   msg("Locked");
 };
-document.addEventListener("visibilitychange", tick);
+document.addEventListener("visibilitychange", () => {
+  tick();
+  scheduleLogoGlitch();
+});
+reducedMotion.addEventListener("change", scheduleLogoGlitch);
 setInterval(tick, 1000);
+scheduleLogoGlitch();
 start();
