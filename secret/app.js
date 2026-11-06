@@ -6,7 +6,7 @@ const dec = new TextDecoder();
 const utf8 = new TextDecoder("utf-8", {fatal: true});
 
 let wasm, store, storeLen, passPtr, outPtr, secretPtr;
-let entries = [], selected = -1, unlocked = false, modulePromise;
+let entries = [], unlocked = false, modulePromise;
 
 function msg(text, error = false) {
   $("msg").textContent = text;
@@ -59,23 +59,19 @@ function updateTotp(entry) {
 
   entry.code = dec.decode(bytes(outPtr, 6));
   entry.period = current;
-  entry.preview.firstChild.nodeValue = entry.code;
-  if (selected === entry.index) showTotp(entry);
 }
 
 function tick() {
   if (!unlocked || document.hidden) return;
-  try {
-    for (const entry of entries) {
-      if (entry.totp) updateTotp(entry);
-      entry.preview.lastChild.textContent = entry.totp
-        ? `${30 - Math.floor(Date.now() / 1000) % 30}s` : "raw";
+  for (const entry of entries) {
+    if (!entry.revealed || !entry.totp) continue;
+    try {
+      showTotp(entry);
+    } catch (error) {
+      lock();
+      msg(error, true);
+      return;
     }
-    if (selected >= 0 && entries[selected].totp)
-      showTotp(entries[selected]);
-  } catch (error) {
-    lock();
-    msg(error, true);
   }
 }
 
@@ -109,52 +105,53 @@ function rawValue(entry) {
   }
 }
 
-function showTotp(entry, manual = false) {
-  $("value").className = "totp";
-  const code = manual ? entry.code : entry.code.slice(0, 3) + " " + entry.code.slice(3);
-  if (manual || $("value").textContent.replace(" ", "") !== entry.code)
-    $("value").textContent = code;
-  $("remaining").hidden = false;
-  $("remaining").textContent = `${30 - Math.floor(Date.now() / 1000) % 30} seconds`;
+function hide(entry) {
+  entry.revealed = false;
+  entry.code = "";
+  entry.period = -1;
+  entry.row.className = "entry";
+  entry.button.setAttribute("aria-expanded", "false");
+  entry.button.setAttribute("aria-label", `Copy ${entry.name}; hold to reveal`);
+  entry.value.hidden = true;
+  entry.value.textContent = "";
+  entry.remaining.hidden = true;
+  entry.remaining.textContent = "";
 }
 
-function reveal(index, manual = false) {
+function showTotp(entry) {
+  updateTotp(entry);
+  entry.value.className = "value totp";
+  const code = entry.code.slice(0, 3) + " " + entry.code.slice(3);
+  if (entry.value.textContent !== code) entry.value.textContent = code;
+  entry.remaining.hidden = false;
+  entry.remaining.textContent = `${30 - Math.floor(Date.now() / 1000) % 30} seconds`;
+}
+
+function reveal(index) {
   if (!unlocked) return;
-  if (selected === index && !manual) {
-    $("viewer").hidden = true;
-    entries[index].row.className = "entry";
-    entries[index].button.setAttribute("aria-expanded", "false");
-    entries[index].button.setAttribute("aria-label", `Reveal ${entries[index].name}`);
-    selected = -1;
+  const entry = entries[index];
+  if (entry.revealed) {
+    hide(entry);
     return;
   }
-  if (selected >= 0) {
-    entries[selected].row.className = "entry";
-    entries[selected].button.setAttribute("aria-expanded", "false");
-    entries[selected].button.setAttribute("aria-label", `Reveal ${entries[selected].name}`);
+  for (const other of entries) {
+    if (other.revealed) hide(other);
   }
-  selected = index;
-  const entry = entries[index];
   entry.row.className = "entry selected";
   entry.button.setAttribute("aria-expanded", "true");
-  entry.button.setAttribute("aria-label", `Hide ${entry.name}`);
-  $("selected-name").textContent = entry.name;
-  $("remaining").hidden = true;
+  entry.button.setAttribute("aria-label", `Copy ${entry.name}; hold to hide`);
   try {
     if (entry.totp) {
-      updateTotp(entry);
-      showTotp(entry, manual);
+      showTotp(entry);
     } else {
       const raw = rawValue(entry);
-      $("value").className = "";
-      $("value").textContent = (manual ? raw.copy : raw.text) || "(empty)";
+      entry.value.className = "value";
+      entry.value.textContent = raw.text || "(empty)";
     }
-    $("viewer").hidden = false;
+    entry.value.hidden = false;
+    entry.revealed = true;
   } catch (error) {
-    entry.row.className = "entry";
-    entry.button.setAttribute("aria-expanded", "false");
-    entry.button.setAttribute("aria-label", `Reveal ${entry.name}`);
-    selected = -1;
+    hide(entry);
     msg(error, true);
   }
 }
@@ -175,20 +172,64 @@ async function copy(entry) {
     await navigator.clipboard.writeText(value);
     msg(`copied ${entry.name}`);
   } catch (error) {
-    if (!unlocked || !entries.includes(entry)) return;
-    reveal(entry.index, true);
-    const range = document.createRange();
-    range.selectNodeContents($("value"));
-    const selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
-    msg("Clipboard blocked — selected for manual copy", true);
+    if (unlocked && entries.includes(entry))
+      msg("Clipboard blocked — hold to reveal, then copy manually", true);
   }
+}
+
+function bindPress(entry) {
+  const button = entry.button;
+  let timer, pointer = null, startX = 0, startY = 0;
+  let held = false, suppressClick = false;
+
+  function cancel() {
+    clearTimeout(timer);
+    timer = null;
+    if (held) suppressClick = true;
+    pointer = null;
+    held = false;
+  }
+
+  button.onpointerdown = event => {
+    if (!event.isPrimary || (event.pointerType === "mouse" && event.button !== 0)) return;
+    cancel();
+    suppressClick = false;
+    pointer = event.pointerId;
+    startX = event.clientX;
+    startY = event.clientY;
+    button.setPointerCapture(pointer);
+    timer = setTimeout(() => {
+      timer = null;
+      held = true;
+      reveal(entry.index);
+    }, 550);
+  };
+  button.onpointermove = event => {
+    if (event.pointerId !== pointer) return;
+    if (Math.hypot(event.clientX - startX, event.clientY - startY) > 10) cancel();
+  };
+  button.onpointerup = event => {
+    if (event.pointerId === pointer) cancel();
+  };
+  button.onpointercancel = cancel;
+  button.onlostpointercapture = cancel;
+  button.oncontextmenu = event => {
+    if (event.pointerType !== "mouse") event.preventDefault();
+  };
+  button.onclick = () => {
+    if (suppressClick) {
+      suppressClick = false;
+      return;
+    }
+    copy(entry);
+  };
 }
 
 function render() {
   $("list").replaceChildren(...entries.map((entry, index) => {
     entry.index = index;
+    entry.revealed = false;
+    entry.period = -1;
     const row = document.createElement("div");
     row.className = "entry";
     entry.row = row;
@@ -196,33 +237,31 @@ function render() {
     const name = document.createElement("button");
     name.className = "name";
     name.textContent = entry.name;
-    name.setAttribute("aria-label", `Reveal ${entry.name}`);
+    name.setAttribute("aria-label", `Copy ${entry.name}; hold to reveal`);
     name.setAttribute("aria-expanded", "false");
-    name.setAttribute("aria-controls", "viewer");
-    name.onclick = () => reveal(index);
+    const valueId = `secret-${index}`;
+    name.setAttribute("aria-controls", valueId);
     entry.button = name;
 
-    const preview = document.createElement("code");
-    preview.className = "preview";
-    preview.append(document.createTextNode(entry.totp ? "······" : "•••"));
-    const time = document.createElement("small");
-    preview.append(time);
-    entry.preview = preview;
+    const value = document.createElement("pre");
+    value.id = valueId;
+    value.className = "value";
+    value.hidden = true;
+    entry.value = value;
 
-    const copyButton = document.createElement("button");
-    copyButton.className = "copy";
-    copyButton.textContent = "copy";
-    copyButton.setAttribute("aria-label", `Copy ${entry.name}`);
-    copyButton.onclick = () => copy(entry);
+    const remaining = document.createElement("div");
+    remaining.className = "remaining";
+    remaining.hidden = true;
+    entry.remaining = remaining;
 
-    row.append(name, preview, copyButton);
+    bindPress(entry);
+    row.append(name, value, remaining);
     return row;
   }));
 }
 
 function lock() {
   unlocked = false;
-  selected = -1;
   entries = [];
   wasm?.secret_lock();
   if (wasm && passPtr) {
@@ -232,13 +271,8 @@ function lock() {
   window.getSelection()?.removeAllRanges();
   $("list").replaceChildren();
   $("list").hidden = true;
-  $("viewer").hidden = true;
-  $("value").textContent = "";
   $("lock").hidden = true;
   $("unlock-form").hidden = false;
-  $("selected-name").textContent = "";
-  $("remaining").textContent = "";
-  $("remaining").hidden = true;
 }
 
 function unlock(event) {
@@ -270,11 +304,10 @@ function unlock(event) {
     }
     unlocked = true;
     render();
-    tick();
     $("list").hidden = false;
     $("lock").hidden = false;
     $("unlock-form").hidden = true;
-    msg(`${entries.length} secrets`);
+    msg(`${entries.length} secrets · tap to copy · hold to reveal`);
   } catch (error) {
     lock();
     msg(error, true);
