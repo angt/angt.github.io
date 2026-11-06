@@ -109,57 +109,80 @@ function rawValue(entry) {
   }
 }
 
-function showTotp(entry) {
+function showTotp(entry, manual = false) {
   $("value").className = "totp";
-  $("value").textContent = entry.code.slice(0, 3) + " " + entry.code.slice(3);
+  const code = manual ? entry.code : entry.code.slice(0, 3) + " " + entry.code.slice(3);
+  if (manual || $("value").textContent.replace(" ", "") !== entry.code)
+    $("value").textContent = code;
   $("remaining").hidden = false;
   $("remaining").textContent = `${30 - Math.floor(Date.now() / 1000) % 30} seconds`;
 }
 
-function reveal(index) {
+function reveal(index, manual = false) {
   if (!unlocked) return;
-  if (selected === index) {
+  if (selected === index && !manual) {
     $("viewer").hidden = true;
     entries[index].row.className = "entry";
+    entries[index].button.setAttribute("aria-expanded", "false");
+    entries[index].button.setAttribute("aria-label", `Reveal ${entries[index].name}`);
     selected = -1;
     return;
   }
-  if (selected >= 0) entries[selected].row.className = "entry";
+  if (selected >= 0) {
+    entries[selected].row.className = "entry";
+    entries[selected].button.setAttribute("aria-expanded", "false");
+    entries[selected].button.setAttribute("aria-label", `Reveal ${entries[selected].name}`);
+  }
   selected = index;
   const entry = entries[index];
   entry.row.className = "entry selected";
+  entry.button.setAttribute("aria-expanded", "true");
+  entry.button.setAttribute("aria-label", `Hide ${entry.name}`);
   $("selected-name").textContent = entry.name;
   $("remaining").hidden = true;
   try {
     if (entry.totp) {
       updateTotp(entry);
-      showTotp(entry);
+      showTotp(entry, manual);
     } else {
       const raw = rawValue(entry);
       $("value").className = "";
-      $("value").textContent = raw.text || "(empty)";
+      $("value").textContent = (manual ? raw.copy : raw.text) || "(empty)";
     }
     $("viewer").hidden = false;
   } catch (error) {
     entry.row.className = "entry";
+    entry.button.setAttribute("aria-expanded", "false");
+    entry.button.setAttribute("aria-label", `Reveal ${entry.name}`);
     selected = -1;
     msg(error, true);
   }
 }
 
 async function copy(entry) {
+  let value;
   try {
-    let value;
     if (entry.totp) {
       updateTotp(entry);
       value = entry.code;
     } else {
       value = rawValue(entry).copy;
     }
+  } catch (error) {
+    return msg(error, true);
+  }
+  try {
     await navigator.clipboard.writeText(value);
     msg(`copied ${entry.name}`);
   } catch (error) {
-    msg("Copy failed — reveal the secret and select it", true);
+    if (!unlocked || !entries.includes(entry)) return;
+    reveal(entry.index, true);
+    const range = document.createRange();
+    range.selectNodeContents($("value"));
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    msg("Clipboard blocked — selected for manual copy", true);
   }
 }
 
@@ -174,7 +197,10 @@ function render() {
     name.className = "name";
     name.textContent = entry.name;
     name.setAttribute("aria-label", `Reveal ${entry.name}`);
+    name.setAttribute("aria-expanded", "false");
+    name.setAttribute("aria-controls", "viewer");
     name.onclick = () => reveal(index);
+    entry.button = name;
 
     const preview = document.createElement("code");
     preview.className = "preview";
@@ -203,12 +229,16 @@ function lock() {
     bytes(passPtr, 128).fill(0);
     bytes(outPtr, 20).fill(0);
   }
+  window.getSelection()?.removeAllRanges();
   $("list").replaceChildren();
   $("list").hidden = true;
   $("viewer").hidden = true;
   $("value").textContent = "";
   $("lock").hidden = true;
   $("unlock-form").hidden = false;
+  $("selected-name").textContent = "";
+  $("remaining").textContent = "";
+  $("remaining").hidden = true;
 }
 
 function unlock(event) {
@@ -252,13 +282,20 @@ function unlock(event) {
 }
 
 async function start() {
+  $("retry").hidden = true;
+  $("retry").disabled = true;
+  $("pass").disabled = $("unlock").disabled = true;
+  msg("Loading store…");
   try {
     const [module, response] = await Promise.all([
       modulePromise ||= (async () => {
         const r = await fetch(WASM_URL, {cache: "force-cache"});
         if (!r.ok) throw new Error(`WASM HTTP ${r.status}`);
         return WebAssembly.compile(await r.arrayBuffer());
-      })(),
+      })().catch(error => {
+        modulePromise = null;
+        throw error;
+      }),
       fetch(STORE_URL, {cache: "no-store"}),
     ]);
     if (!response.ok) throw new Error(`Store HTTP ${response.status}`);
@@ -282,10 +319,13 @@ async function start() {
     $("pass").focus();
     msg("Store ready");
   } catch (error) {
-    msg(error, true);
+    msg("Unable to load the store or module", true);
+    $("retry").hidden = false;
+    $("retry").disabled = false;
   }
 }
 
+$("retry").onclick = start;
 $("unlock-form").onsubmit = unlock;
 $("lock").onclick = () => {
   lock();
