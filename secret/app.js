@@ -312,6 +312,7 @@ function render() {
 }
 
 function lock() {
+  document.body.classList.add("locked");
   unlocked = false;
   entries = [];
   wasm?.secret_lock();
@@ -357,6 +358,8 @@ function unlock(event) {
       return msg("No secrets for this passphrase", true);
     }
     unlocked = true;
+    document.body.classList.remove("locked");
+    window.scrollTo(0, 0);
     render();
     $("list").hidden = false;
     $("lock").hidden = false;
