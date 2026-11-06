@@ -90,12 +90,8 @@ function readEntry(off) {
   };
 }
 
-function period() {
-  return Math.floor(Date.now() / 30000);
-}
-
 function updateTotp(entry) {
-  const current = period();
+  const current = Math.floor(Date.now() / 30000);
   if (entry.period === current) return;
 
   const raw = readEntry(entry.off);
@@ -130,33 +126,14 @@ function tick() {
   }
 }
 
-function hex(data) {
-  const lines = [];
-  for (let off = 0; off < data.length; off += 16) {
-    const row = data.subarray(off, off + 16);
-    let left = "", right = "", ascii = "";
-    for (let i = 0; i < row.length; i++) {
-      const h = row[i].toString(16).padStart(2, "0");
-      if (i < 8) left += (i ? " " : "") + h;
-      else right += (i > 8 ? " " : "") + h;
-      ascii += row[i] >= 32 && row[i] <= 126 ? String.fromCharCode(row[i]) : ".";
-    }
-    lines.push(off.toString(16).padStart(8, "0") + "  " +
-      left.padEnd(23) + "  " + right.padEnd(23) + "  |" + ascii + "|");
-  }
-  return lines.join("\n");
-}
-
 function rawValue(entry) {
   const raw = readEntry(entry.off);
   if (!raw) throw new Error("Cannot decrypt entry");
   const data = bytes(raw.valuePtr, raw.len);
   try {
-    const text = utf8.decode(data);
-    return {text, copy: text, totp: false};
+    return utf8.decode(data);
   } catch {
-    return {text: hex(data) || "(empty)", copy: [...data]
-      .map(x => x.toString(16).padStart(2, "0")).join(""), totp: false};
+    return btoa(String.fromCharCode(...data));
   }
 }
 
@@ -208,9 +185,8 @@ function reveal(index) {
     if (entry.totp) {
       showTotp(entry);
     } else {
-      const raw = rawValue(entry);
       entry.value.className = "value";
-      entry.value.textContent = raw.text || "(empty)";
+      entry.value.textContent = rawValue(entry) || "(empty)";
     }
     entry.value.hidden = false;
     entry.revealed = true;
@@ -227,7 +203,7 @@ async function copy(entry) {
       updateTotp(entry);
       value = entry.code;
     } else {
-      value = rawValue(entry).copy;
+      value = rawValue(entry);
     }
   } catch (error) {
     return msg(error, true);
@@ -406,10 +382,7 @@ async function start() {
         const r = await fetch(WASM_URL, {cache: "no-cache"});
         if (!r.ok) throw new Error(`WASM HTTP ${r.status}`);
         return WebAssembly.compile(await r.arrayBuffer());
-      })().catch(error => {
-        modulePromise = null;
-        throw error;
-      }),
+      })(),
       fetch(STORE_URL, {cache: "no-store"}),
     ]);
     if (!response.ok) throw new Error(`Store HTTP ${response.status}`);
