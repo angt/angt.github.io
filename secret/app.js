@@ -291,6 +291,8 @@ function lock() {
   window.getSelection()?.removeAllRanges();
   $("list").replaceChildren();
   $("list").hidden = true;
+  $("brand-logo").hidden = true;
+  $("welcome-logo").hidden = false;
   $("lock").hidden = true;
   $("unlock-form").hidden = false;
 }
@@ -326,6 +328,8 @@ function unlock(event) {
     render();
     $("list").hidden = false;
     $("lock").hidden = false;
+    $("brand-logo").hidden = false;
+    $("welcome-logo").hidden = true;
     $("unlock-form").hidden = true;
     msg(`${entries.length} secrets · tap to copy · hold to reveal`);
   } catch (error) {
@@ -370,6 +374,7 @@ async function start() {
 
     $("pass").disabled = $("unlock").disabled = false;
     $("pass").focus();
+    $("pass").select();
     msg("Store ready");
   } catch (error) {
     modulePromise = null;
