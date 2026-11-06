@@ -118,6 +118,15 @@ function hide(entry) {
   entry.remaining.textContent = "";
 }
 
+function copied(entry) {
+  clearTimeout(entry.copyTimer);
+  entry.feedback.hidden = false;
+  entry.feedback.textContent = "copied";
+  entry.copyTimer = setTimeout(() => {
+    entry.feedback.hidden = true;
+  }, 1500);
+}
+
 function showTotp(entry) {
   updateTotp(entry);
   entry.value.className = "value totp";
@@ -139,7 +148,7 @@ function reveal(index) {
   }
   entry.row.className = "entry selected";
   entry.button.setAttribute("aria-expanded", "true");
-  entry.button.setAttribute("aria-label", `Copy ${entry.name}; hold to hide`);
+  entry.button.setAttribute("aria-label", `${entry.name} revealed; click to hide`);
   try {
     if (entry.totp) {
       showTotp(entry);
@@ -170,7 +179,7 @@ async function copy(entry) {
   }
   try {
     await navigator.clipboard.writeText(value);
-    msg(`copied ${entry.name}`);
+    copied(entry);
   } catch (error) {
     if (unlocked && entries.includes(entry))
       msg("Clipboard blocked — hold to reveal, then copy manually", true);
@@ -221,7 +230,8 @@ function bindPress(entry) {
       suppressClick = false;
       return;
     }
-    copy(entry);
+    if (entry.revealed) hide(entry);
+    else copy(entry);
   };
 }
 
@@ -254,8 +264,18 @@ function render() {
     remaining.hidden = true;
     entry.remaining = remaining;
 
+    const feedback = document.createElement("span");
+    feedback.className = "copy-status";
+    feedback.hidden = true;
+    feedback.setAttribute("role", "status");
+    entry.feedback = feedback;
+
+    const heading = document.createElement("div");
+    heading.className = "entry-heading";
+    heading.append(name, feedback);
+
     bindPress(entry);
-    row.append(name, value, remaining);
+    row.append(heading, value, remaining);
     return row;
   }));
 }
