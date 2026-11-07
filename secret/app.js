@@ -313,6 +313,7 @@ function render() {
 
 function lock() {
   document.body.classList.add("locked");
+  window.scrollTo(0, 0);
   unlocked = false;
   entries = [];
   wasm?.secret_lock();
