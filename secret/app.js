@@ -7,6 +7,7 @@ const utf8 = new TextDecoder("utf-8", {fatal: true});
 
 let wasm, store, storeLen, passPtr, outPtr, secretPtr;
 let entries = [], unlocked = false, modulePromise;
+let virtualKeyboard = false;
 
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 let glitchTimer;
@@ -67,6 +68,60 @@ function msg(text, error = false) {
   $("msg").textContent = text;
   $("msg").className = error ? "error" : "";
 }
+
+function syncKeyboardPage(page) {
+  [...$("keyboard-pages").children].forEach((panel, index) => {
+    panel.inert = panel.toggleAttribute("aria-hidden", index !== page);
+  });
+}
+
+function keyboardPress(code) {
+  const input = $("pass");
+  const start = input.selectionStart, end = input.selectionEnd;
+  const from = code === 127 && start === end && start > 0
+    ? start - [...input.value.slice(0, start)].pop().length : start;
+  input.setRangeText(code === 127 ? "" : String.fromCharCode(code), from, end, "end");
+}
+
+for (let start = 32; start < 128; start += 32) {
+  const panel = document.createElement("div");
+  panel.className = "keyboard-panel";
+  panel.setAttribute("role", "group");
+  panel.setAttribute("aria-label", `ASCII ${start}–${start + 31}`);
+  panel.innerHTML = Array.from({length: 32}, (_, i) => {
+    const code = start + i;
+    const label = code === 127 ? "delete" : code === 32 ? "space" : `&#${code};`;
+    const text = code === 127 ? "del" : code === 32 ? "" : `&#${code};`;
+    return `<button type="button" class="key" data-code="${code}" aria-label="${label}">${text}</button>`;
+  }).join("");
+  $("keyboard-pages").append(panel);
+}
+
+function setVirtualKeyboard(enabled) {
+  virtualKeyboard = enabled;
+  document.body.classList.toggle("using-keyboard", enabled);
+  $("keyboard").hidden = !enabled;
+  $("keyboard-toggle").setAttribute("aria-pressed", String(enabled));
+  const label = enabled ? "Use native keyboard" : "Use on-screen keyboard";
+  $("keyboard-toggle").setAttribute("aria-label", label);
+  $("keyboard-toggle").title = label;
+  $("pass").readOnly = enabled;
+  if (enabled) {
+    $("pass").blur();
+    $("keyboard-pages").scrollLeft = $("keyboard-pages").clientWidth;
+    syncKeyboardPage(1);
+  } else if (!$("pass").disabled) $("pass").focus();
+}
+
+$("keyboard-toggle").onclick = () => setVirtualKeyboard(!virtualKeyboard);
+$("keyboard").addEventListener("click", event => {
+  const button = event.target.closest("button");
+  if (button?.dataset.code !== undefined) keyboardPress(Number(button.dataset.code));
+});
+$("keyboard-pages").addEventListener("scroll", event => {
+  const pages = event.currentTarget;
+  if (pages.clientWidth) syncKeyboardPage(Math.round(pages.scrollLeft / pages.clientWidth));
+});
 
 function bytes(ptr, len) {
   return new Uint8Array(wasm.memory.buffer, ptr, len);
@@ -141,9 +196,8 @@ function hide(entry) {
   entry.revealed = false;
   entry.code = "";
   entry.period = -1;
-  entry.row.className = "entry";
   entry.button.setAttribute("aria-expanded", "false");
-  entry.button.setAttribute("aria-label", `Copy ${entry.name}; hold to reveal`);
+  entry.button.setAttribute("aria-label", entry.label);
   entry.value.hidden = true;
   entry.value.textContent = "";
   entry.remaining.hidden = true;
@@ -168,9 +222,8 @@ function showTotp(entry) {
   entry.remaining.textContent = `${30 - Math.floor(Date.now() / 1000) % 30} seconds`;
 }
 
-function reveal(index) {
+function reveal(entry) {
   if (!unlocked) return;
-  const entry = entries[index];
   if (entry.revealed) {
     hide(entry);
     return;
@@ -178,7 +231,6 @@ function reveal(index) {
   for (const other of entries) {
     if (other.revealed) hide(other);
   }
-  entry.row.className = "entry selected";
   entry.button.setAttribute("aria-expanded", "true");
   entry.button.setAttribute("aria-label", `${entry.name} revealed; click to hide`);
   try {
@@ -241,7 +293,7 @@ function bindPress(entry) {
     timer = setTimeout(() => {
       timer = null;
       held = true;
-      reveal(entry.index);
+      reveal(entry);
     }, 550);
   };
   button.onpointermove = event => {
@@ -268,17 +320,16 @@ function bindPress(entry) {
 
 function render() {
   $("list").replaceChildren(...entries.map((entry, index) => {
-    entry.index = index;
     entry.revealed = false;
     entry.period = -1;
+    entry.label = `Copy ${entry.name}; hold to reveal`;
     const row = document.createElement("div");
     row.className = "entry";
-    entry.row = row;
 
     const name = document.createElement("button");
     name.className = "name";
     name.textContent = entry.name;
-    name.setAttribute("aria-label", `Copy ${entry.name}; hold to reveal`);
+    name.setAttribute("aria-label", entry.label);
     name.setAttribute("aria-expanded", "false");
     const valueId = `secret-${index}`;
     name.setAttribute("aria-controls", valueId);
@@ -378,7 +429,7 @@ function unlock(event) {
 async function start() {
   $("retry").hidden = true;
   $("retry").disabled = true;
-  $("pass").disabled = $("unlock").disabled = true;
+  $("pass").disabled = $("unlock").disabled = $("keyboard-toggle").disabled = true;
   msg("Loading store…");
   try {
     const [module, response] = await Promise.all([
@@ -406,9 +457,11 @@ async function start() {
     bytes(store, storeLen).set(data);
     data.fill(0);
 
-    $("pass").disabled = $("unlock").disabled = false;
-    $("pass").focus();
-    $("pass").select();
+    $("pass").disabled = $("unlock").disabled = $("keyboard-toggle").disabled = false;
+    if ($("keyboard").hidden) {
+      $("pass").focus();
+      $("pass").select();
+    }
     msg("Store ready");
   } catch (error) {
     modulePromise = null;

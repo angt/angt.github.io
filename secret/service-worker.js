@@ -1,4 +1,4 @@
-const CACHE = "secret-shell-v4";
+const CACHE = "secret-shell-v8";
 const DATA_CACHE = "secret-data-v1";
 const DATA = [
   "https://raw.githubusercontent.com/angt/secret/master/secret.wasm",
@@ -6,7 +6,7 @@ const DATA = [
 ];
 const SHELL = [
   "./index.html",
-  "./app.js?v=7",
+  "./app.js?v=8",
   "./logo.png",
   "./icon-192.png",
   "./icon-512.png",
