@@ -6,15 +6,21 @@ const dec = new TextDecoder();
 const utf8 = new TextDecoder("utf-8", {fatal: true});
 
 let wasm, store, storeLen, passPtr, outPtr, secretPtr;
-let entries = [], unlocked = false, modulePromise;
-let virtualKeyboard = false;
-
-const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+let entries = [];
+let unlocked = false;
+let modulePromise;
+let keyboardOpen = false;
+let keyboardPage = 1;
 let glitchTimer;
 
-function randomBetween(min, max) {
-  return min + Math.random() * (max - min);
-}
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+const shuffleWord = new Uint32Array(1);
+
+const randomBetween = (min, max) => min + Math.random() * (max - min);
+const bytes = (ptr, len) => new Uint8Array(wasm.memory.buffer, ptr, len);
+const setEnabled = (disabled, ...ids) => ids.forEach(id => ($(id).disabled = disabled));
+
+/* ---------------------------------------------------------------- logo */
 
 function stopLogoGlitch() {
   clearTimeout(glitchTimer);
@@ -22,9 +28,13 @@ function stopLogoGlitch() {
   $("welcome-logo").classList.remove("glitching");
 }
 
+function glitchable() {
+  return !unlocked && !$("welcome-logo").hidden && !document.hidden && !reducedMotion.matches;
+}
+
 function glitchLogo() {
   const logo = $("welcome-logo");
-  if (unlocked || logo.hidden || document.hidden || reducedMotion.matches) return;
+  if (!glitchable()) return;
 
   const top = randomBetween(5, 80);
   const height = randomBetween(3, 13);
@@ -60,9 +70,10 @@ function glitchLogo() {
 
 function scheduleLogoGlitch() {
   stopLogoGlitch();
-  if (unlocked || $("welcome-logo").hidden || document.hidden || reducedMotion.matches) return;
-  glitchTimer = setTimeout(glitchLogo, randomBetween(8000, 22000));
+  if (glitchable()) glitchTimer = setTimeout(glitchLogo, randomBetween(8000, 22000));
 }
+
+/* ------------------------------------------------------------ keyboard */
 
 function msg(text, error = false) {
   $("msg").textContent = text;
@@ -70,6 +81,7 @@ function msg(text, error = false) {
 }
 
 function syncKeyboardPage(page) {
+  keyboardPage = page;
   [...$("keyboard-pages").children].forEach((panel, index) => {
     panel.inert = panel.toggleAttribute("aria-hidden", index !== page);
   });
@@ -77,7 +89,8 @@ function syncKeyboardPage(page) {
 
 function keyboardPress(code) {
   const input = $("pass");
-  const start = input.selectionStart, end = input.selectionEnd;
+  const start = input.selectionStart;
+  const end = input.selectionEnd;
   const from = code === 127 && start === end && start > 0
     ? start - [...input.value.slice(0, start)].pop().length : start;
   input.setRangeText(code === 127 ? "" : String.fromCharCode(code), from, end, "end");
@@ -87,7 +100,7 @@ for (let start = 32; start < 128; start += 32) {
   const panel = document.createElement("div");
   panel.className = "keyboard-panel";
   panel.setAttribute("role", "group");
-  panel.setAttribute("aria-label", `ASCII ${start}–${start + 31}`);
+  panel.setAttribute("aria-label", `Keyboard page ${start / 32}`);
   panel.innerHTML = Array.from({length: 32}, (_, i) => {
     const code = start + i;
     const label = code === 127 ? "delete" : code === 32 ? "space" : `&#${code};`;
@@ -97,10 +110,32 @@ for (let start = 32; start < 128; start += 32) {
   $("keyboard-pages").append(panel);
 }
 
-function setVirtualKeyboard(enabled) {
-  virtualKeyboard = enabled;
+function secureRandomInt(max) {
+  const limit = Math.floor(0x100000000 / max) * max;
+  let n;
+  do {
+    crypto.getRandomValues(shuffleWord);
+    n = shuffleWord[0];
+  } while (n >= limit);
+  return n % max;
+}
+
+function shuffleKeys() {
+  const panel = $("keyboard-pages").children[keyboardPage];
+  if (!panel) return;
+  const keys = [...panel.children];
+  for (let i = keys.length - 1; i > 0; i--) {
+    const j = secureRandomInt(i + 1);
+    [keys[i], keys[j]] = [keys[j], keys[i]];
+  }
+  panel.append(...keys);
+}
+
+function setKeyboard(enabled) {
+  keyboardOpen = enabled;
   document.body.classList.toggle("using-keyboard", enabled);
   $("keyboard").hidden = !enabled;
+  $("keyboard-bar").hidden = !enabled;
   $("keyboard-toggle").setAttribute("aria-pressed", String(enabled));
   const label = enabled ? "Use native keyboard" : "Use on-screen keyboard";
   $("keyboard-toggle").setAttribute("aria-label", label);
@@ -110,10 +145,13 @@ function setVirtualKeyboard(enabled) {
     $("pass").blur();
     $("keyboard-pages").scrollLeft = $("keyboard-pages").clientWidth;
     syncKeyboardPage(1);
-  } else if (!$("pass").disabled) $("pass").focus();
+  } else if (!$("pass").disabled) {
+    $("pass").focus();
+  }
 }
 
-$("keyboard-toggle").onclick = () => setVirtualKeyboard(!virtualKeyboard);
+$("keyboard-toggle").onclick = () => setKeyboard(!keyboardOpen);
+$("keyboard-shuffle").onclick = shuffleKeys;
 $("keyboard").addEventListener("click", event => {
   const button = event.target.closest("button");
   if (button?.dataset.code !== undefined) keyboardPress(Number(button.dataset.code));
@@ -123,9 +161,7 @@ $("keyboard-pages").addEventListener("scroll", event => {
   if (pages.clientWidth) syncKeyboardPage(Math.round(pages.scrollLeft / pages.clientWidth));
 });
 
-function bytes(ptr, len) {
-  return new Uint8Array(wasm.memory.buffer, ptr, len);
-}
+/* -------------------------------------------------------------- crypto */
 
 function readEntry(off) {
   const ptr = wasm.secret_decrypt(store + off);
@@ -134,8 +170,7 @@ function readEntry(off) {
   const len = new DataView(wasm.memory.buffer).getUint16(ptr, true);
   const data = bytes(ptr + 2, 474);
   const nlen = data.indexOf(0);
-  if (nlen <= 0 || len > 474 - nlen - 1)
-    throw new Error("Invalid entry");
+  if (nlen <= 0 || len > 474 - nlen - 1) throw new Error("Invalid entry");
 
   return {
     name: dec.decode(data.subarray(0, nlen)),
@@ -146,8 +181,8 @@ function readEntry(off) {
 }
 
 function updateTotp(entry) {
-  const current = Math.floor(Date.now() / 30000);
-  if (entry.period === current) return;
+  const slot = Math.floor(Date.now() / 30000);
+  if (entry.slot === slot) return;
 
   const raw = readEntry(entry.off);
   if (!raw) throw new Error("Cannot decrypt entry");
@@ -157,28 +192,12 @@ function updateTotp(entry) {
   view.setUint32(secretPtr + 8, raw.len, true);
   bytes(outPtr, 7).fill(0);
 
-  if (raw.name.includes("totp32"))
-    wasm.secret_totp32(outPtr, secretPtr, BigInt(current));
-  else
-    wasm.secret_totp(outPtr, secretPtr, BigInt(current));
+  if (raw.name.includes("totp32")) wasm.secret_totp32(outPtr, secretPtr, BigInt(slot));
+  else wasm.secret_totp(outPtr, secretPtr, BigInt(slot));
   if (!bytes(outPtr, 1)[0]) throw new Error("Invalid TOTP secret");
 
   entry.code = dec.decode(bytes(outPtr, 6));
-  entry.period = current;
-}
-
-function tick() {
-  if (!unlocked || document.hidden) return;
-  for (const entry of entries) {
-    if (!entry.revealed || !entry.totp) continue;
-    try {
-      showTotp(entry);
-    } catch (error) {
-      lock();
-      msg(error, true);
-      return;
-    }
-  }
+  entry.slot = slot;
 }
 
 function rawValue(entry) {
@@ -192,10 +211,12 @@ function rawValue(entry) {
   }
 }
 
+/* --------------------------------------------------------------- rows */
+
 function hide(entry) {
   entry.revealed = false;
   entry.code = "";
-  entry.period = -1;
+  entry.slot = -1;
   entry.button.setAttribute("aria-expanded", "false");
   entry.button.setAttribute("aria-label", entry.label);
   entry.value.hidden = true;
@@ -208,9 +229,7 @@ function copied(entry) {
   clearTimeout(entry.copyTimer);
   entry.feedback.hidden = false;
   entry.feedback.textContent = "copied";
-  entry.copyTimer = setTimeout(() => {
-    entry.feedback.hidden = true;
-  }, 1500);
+  entry.copyTimer = setTimeout(() => (entry.feedback.hidden = true), 1500);
 }
 
 function showTotp(entry) {
@@ -228,9 +247,7 @@ function reveal(entry) {
     hide(entry);
     return;
   }
-  for (const other of entries) {
-    if (other.revealed) hide(other);
-  }
+  for (const other of entries) if (other.revealed) hide(other);
   entry.button.setAttribute("aria-expanded", "true");
   entry.button.setAttribute("aria-label", `${entry.name} revealed; click to hide`);
   try {
@@ -262,17 +279,30 @@ async function copy(entry) {
   }
   try {
     await navigator.clipboard.writeText(value);
-    copied(entry);
-  } catch (error) {
+    if (unlocked && entries.includes(entry)) copied(entry);
+  } catch {
     if (unlocked && entries.includes(entry))
       msg("Clipboard blocked — hold to reveal, then copy manually", true);
   }
 }
 
+function tick() {
+  if (!unlocked || document.hidden) return;
+  for (const entry of entries) {
+    if (!entry.revealed || !entry.totp) continue;
+    try {
+      showTotp(entry);
+    } catch (error) {
+      lock();
+      msg(error, true);
+      return;
+    }
+  }
+}
+
 function bindPress(entry) {
   const button = entry.button;
-  let timer, pointer = null, startX = 0, startY = 0;
-  let held = false, suppressClick = false;
+  let timer, pointer = null, startX = 0, startY = 0, held = false, suppressClick = false;
 
   function cancel() {
     clearTimeout(timer);
@@ -297,8 +327,8 @@ function bindPress(entry) {
     }, 550);
   };
   button.onpointermove = event => {
-    if (event.pointerId !== pointer) return;
-    if (Math.hypot(event.clientX - startX, event.clientY - startY) > 10) cancel();
+    if (event.pointerId === pointer && Math.hypot(event.clientX - startX, event.clientY - startY) > 10)
+      cancel();
   };
   button.onpointerup = event => {
     if (event.pointerId === pointer) cancel();
@@ -321,22 +351,19 @@ function bindPress(entry) {
 function render() {
   $("list").replaceChildren(...entries.map((entry, index) => {
     entry.revealed = false;
-    entry.period = -1;
+    entry.slot = -1;
     entry.label = `Copy ${entry.name}; hold to reveal`;
-    const row = document.createElement("div");
-    row.className = "entry";
 
-    const name = document.createElement("button");
-    name.className = "name";
-    name.textContent = entry.name;
-    name.setAttribute("aria-label", entry.label);
-    name.setAttribute("aria-expanded", "false");
-    const valueId = `secret-${index}`;
-    name.setAttribute("aria-controls", valueId);
-    entry.button = name;
+    const button = document.createElement("button");
+    button.className = "name";
+    button.textContent = entry.name;
+    button.setAttribute("aria-label", entry.label);
+    button.setAttribute("aria-expanded", "false");
+    button.setAttribute("aria-controls", `secret-${index}`);
+    entry.button = button;
 
     const value = document.createElement("pre");
-    value.id = valueId;
+    value.id = `secret-${index}`;
     value.className = "value";
     value.hidden = true;
     entry.value = value;
@@ -354,13 +381,17 @@ function render() {
 
     const heading = document.createElement("div");
     heading.className = "entry-heading";
-    heading.append(name, feedback);
+    heading.append(button, feedback);
 
     bindPress(entry);
+    const row = document.createElement("div");
+    row.className = "entry";
     row.append(heading, value, remaining);
     return row;
   }));
 }
+
+/* ------------------------------------------------------- lock / unlock */
 
 function lock() {
   document.body.classList.add("locked");
@@ -379,6 +410,7 @@ function lock() {
   $("welcome-logo").hidden = false;
   $("lock").hidden = true;
   $("unlock-form").hidden = false;
+  msg("");
   scheduleLogoGlitch();
 }
 
@@ -394,8 +426,7 @@ function unlock(event) {
   }
 
   bytes(passPtr, pass.length).set(pass);
-  let error = wasm.secret_header(store);
-  if (!error) error = wasm.secret_unlock(passPtr, pass.length);
+  const error = wasm.secret_header(store) || wasm.secret_unlock(passPtr, pass.length);
   pass.fill(0);
   bytes(passPtr, 128).fill(0);
   if (error) return msg("Invalid store", true);
@@ -409,27 +440,27 @@ function unlock(event) {
       wasm.secret_lock();
       return msg("No secrets for this passphrase", true);
     }
-    unlocked = true;
-    document.body.classList.remove("locked");
-    window.scrollTo(0, 0);
-    render();
-    $("list").hidden = false;
-    $("lock").hidden = false;
-    $("brand-logo").hidden = false;
-    stopLogoGlitch();
-    $("welcome-logo").hidden = true;
-    $("unlock-form").hidden = true;
-    msg(`${entries.length} secrets · tap to copy · hold to reveal`);
   } catch (error) {
-    lock();
-    msg(error, true);
+    wasm.secret_lock();
+    return msg(error, true);
   }
+
+  unlocked = true;
+  document.body.classList.remove("locked");
+  window.scrollTo(0, 0);
+  render();
+  $("list").hidden = false;
+  $("lock").hidden = false;
+  $("brand-logo").hidden = false;
+  stopLogoGlitch();
+  $("welcome-logo").hidden = true;
+  $("unlock-form").hidden = true;
+  msg(`${entries.length} secrets · tap to copy · hold to reveal`);
 }
 
 async function start() {
   $("retry").hidden = true;
-  $("retry").disabled = true;
-  $("pass").disabled = $("unlock").disabled = $("keyboard-toggle").disabled = true;
+  setEnabled(true, "retry", "pass", "unlock", "keyboard-toggle");
   msg("Loading store…");
   try {
     const [module, response] = await Promise.all([
@@ -442,11 +473,9 @@ async function start() {
     ]);
     if (!response.ok) throw new Error(`Store HTTP ${response.status}`);
     const data = new Uint8Array(await response.arrayBuffer());
-    if (data.length < 512 || data.length % 512)
-      throw new Error("Invalid store size");
+    if (data.length < 512 || data.length % 512) throw new Error("Invalid store size");
 
-    const instance = await WebAssembly.instantiate(module);
-    wasm = instance.exports;
+    wasm = (await WebAssembly.instantiate(module)).exports;
     wasm._initialize?.();
     store = wasm.memory.buffer.byteLength;
     storeLen = data.length;
@@ -457,12 +486,12 @@ async function start() {
     bytes(store, storeLen).set(data);
     data.fill(0);
 
-    $("pass").disabled = $("unlock").disabled = $("keyboard-toggle").disabled = false;
-    if ($("keyboard").hidden) {
+    setEnabled(false, "pass", "unlock", "keyboard-toggle");
+    if (!keyboardOpen) {
       $("pass").focus();
       $("pass").select();
     }
-    msg("Store ready");
+    msg("");
   } catch (error) {
     modulePromise = null;
     msg(`Unable to load: ${error?.message || error}`, true);
@@ -473,10 +502,7 @@ async function start() {
 
 $("retry").onclick = start;
 $("unlock-form").onsubmit = unlock;
-$("lock").onclick = () => {
-  lock();
-  msg("Locked");
-};
+$("lock").onclick = lock;
 document.addEventListener("visibilitychange", () => {
   tick();
   scheduleLogoGlitch();
