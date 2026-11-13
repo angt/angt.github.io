@@ -348,6 +348,21 @@ function bindPress(entry) {
   };
 }
 
+function filterEntries() {
+  const query = $("search").value.trim().toLowerCase();
+  let matches = 0;
+  for (const entry of entries) {
+    const match = !query || entry.name.toLowerCase().includes(query);
+    entry.row.hidden = !match;
+    if (match) matches++;
+    else if (entry.revealed) hide(entry);
+  }
+  $("secret-count").textContent = query
+    ? `${matches} / ${entries.length} secrets`
+    : `${entries.length} secrets`;
+  msg("");
+}
+
 function render() {
   $("list").replaceChildren(...entries.map((entry, index) => {
     entry.revealed = false;
@@ -387,6 +402,7 @@ function render() {
     const row = document.createElement("div");
     row.className = "entry";
     row.append(heading, value, remaining);
+    entry.row = row;
     return row;
   }));
 }
@@ -395,7 +411,7 @@ function render() {
 
 function lock() {
   document.body.classList.add("locked");
-  window.scrollTo(0, 0);
+  $("gate").scrollTop = 0;
   unlocked = false;
   entries = [];
   wasm?.secret_lock();
@@ -406,7 +422,10 @@ function lock() {
   window.getSelection()?.removeAllRanges();
   $("list").replaceChildren();
   $("list").hidden = true;
-  $("brand-logo").hidden = true;
+  $("search").value = "";
+  $("search-bar").hidden = true;
+  $("brand").hidden = true;
+  $("secret-count").textContent = "";
   $("welcome-logo").hidden = false;
   $("lock").hidden = true;
   $("unlock-form").hidden = false;
@@ -447,15 +466,16 @@ function unlock(event) {
 
   unlocked = true;
   document.body.classList.remove("locked");
-  window.scrollTo(0, 0);
+  $("gate").scrollTop = 0;
   render();
   $("list").hidden = false;
+  $("search-bar").hidden = false;
   $("lock").hidden = false;
-  $("brand-logo").hidden = false;
+  $("brand").hidden = false;
   stopLogoGlitch();
   $("welcome-logo").hidden = true;
   $("unlock-form").hidden = true;
-  msg(`${entries.length} secrets · tap to copy · hold to reveal`);
+  filterEntries();
 }
 
 async function start() {
@@ -503,6 +523,7 @@ async function start() {
 $("retry").onclick = start;
 $("unlock-form").onsubmit = unlock;
 $("lock").onclick = lock;
+$("search").addEventListener("input", filterEntries);
 document.addEventListener("visibilitychange", () => {
   tick();
   scheduleLogoGlitch();
