@@ -42,8 +42,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
-             max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+    --page-padding: 12px;
+    padding: max(var(--page-padding), env(safe-area-inset-top)) max(var(--page-padding), env(safe-area-inset-right))
+             max(var(--page-padding), env(safe-area-inset-bottom)) max(var(--page-padding), env(safe-area-inset-left));
   }
 
   .conteneur {
@@ -120,12 +121,6 @@
     from { opacity: 0; transform: translateY(16px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-  @media (prefers-reduced-motion: reduce) {
-    .carte { animation: none; }
-    .rempli, .option, .bouton { transition: none; }
-    .option:hover:not(.verrouillee), .bouton:hover { transform: none; }
-  }
-
   .badge-etape {
     align-self: flex-start;
     background: #eee9ff;
@@ -176,6 +171,14 @@
     border-color: var(--violet);
     background: #f0edff;
   }
+  .option:focus-within {
+    outline: 3px solid var(--encre);
+    outline-offset: 3px;
+  }
+  .option.choisie {
+    border-color: var(--violet);
+    background: #ede9ff;
+  }
   .option .lettre {
     flex-shrink: 0;
     width: 38px;
@@ -189,9 +192,10 @@
     align-items: center;
     justify-content: center;
   }
-  .option.choisie {
-    border-color: var(--violet);
-    background: #ede9ff;
+  .option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
   }
   .option.bonne {
     border-color: var(--vert-fonce);
@@ -339,7 +343,7 @@
 
   /* Téléphones courts : on comprime plutôt que de faire défiler la page */
   @media (max-width: 560px) {
-    body { padding: 10px; }
+    body { --page-padding: 10px; }
     .conteneur { gap: 10px; }
     header h1 { font-size: 1rem; }
     .question-texte { font-size: 1.2rem; }
@@ -353,7 +357,7 @@
     .bouton.primaire { max-width: 58%; }
   }
   @media (max-height: 560px) {
-    body { padding: 8px; }
+    body { --page-padding: 8px; }
     .conteneur { gap: 8px; }
     header h1 { font-size: .95rem; }
     .carte { padding: 14px 16px; gap: 12px; border-radius: 16px; }
@@ -366,6 +370,11 @@
     .bouton { padding: 11px 16px; font-size: .98rem; }
     .navigation { padding-bottom: 0; }
     .astuce-clavier { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .carte { animation: none; }
+    .rempli, .option, .bouton { transition: none; }
+    .option:hover:not(.verrouillee), .bouton:hover { transform: none; }
   }
 </style>
 </head>
@@ -436,7 +445,7 @@ const QUESTIONS = [
       { texte: "Oui, mais seulement en le brûlant", correct: false, pourquoi: "Brûler, c'est réorganiser les atomes entre eux : ils ressortent intacts, sous forme de gaz et de cendres." },
       { texte: "Oui, en le coupant en deux avec un laser", correct: false, pourquoi: "Un laser peut arracher des électrons, mais il ne coupe pas le noyau en deux." }
     ],
-    explication: "On peut casser un noyau : c'est ce qui se passe dans une centrale nucléaire ou dans le cœur d'une étoile. En libérant les morceaux, on récupère une énergie fantastique — mais attention, le mot « atome » veut dire « insécable » en grec, parce que les savants de l'Antiquité croyaient qu'on ne pouvait pas le diviser !"
+    explication: "On peut casser un noyau lourd : c'est la fission, utilisée dans une centrale nucléaire. Les étoiles font au contraire surtout l'inverse : elles assemblent de petits noyaux par fusion. Ces transformations du noyau libèrent une énergie fantastique — mais attention, le mot « atome » veut dire « insécable » en grec, parce que les savants de l'Antiquité croyaient qu'on ne pouvait pas le diviser !"
   },
   {
     question: "Quel atome ne contient qu'un seul proton dans son noyau, et le plus souvent aucun neutron ?",
@@ -459,12 +468,12 @@ const QUESTIONS = [
     explication: "Un litre d'air pèse environ 1,2 gramme, un litre d'hélium seulement 0,18 gramme : le ballon est donc plus léger que le volume d'air qu'il déplace, et cet air le pousse vers le haut, comme l'eau repousse un bouchon. L'hélium a été repéré d'abord dans la lumière du Soleil, en 1868, avant d'être trouvé sur Terre : c'est de là que vient son nom (« hélios », le Soleil)."
   },
   {
-    question: "Combien d'atomes un atome de carbone peut-il lier à lui en même temps ?",
+    question: "Dans les molécules courantes, combien de liaisons un atome de carbone forme-t-il avec ses voisins ?",
     options: [
       { texte: "Quatre", correct: true },
       { texte: "Deux, comme l'oxygène", correct: false, pourquoi: "L'oxygène en lie deux (dans H₂O), mais le carbone peut en lier deux fois plus." },
       { texte: "Un seul, comme l'hydrogène", correct: false, pourquoi: "L'hydrogène n'en lie qu'un : c'est justement parce que le carbone en lie quatre qu'il bâtit de si grosses molécules." },
-      { texte: "Autant qu'il en trouve", correct: false, pourquoi: "Non, c'est exactement quatre, jamais plus : c'est cette limite qui donne au carbone ses formes si variées." }
+      { texte: "Autant qu'il en trouve", correct: false, pourquoi: "Dans les molécules courantes, le carbone forme quatre liaisons, pas un nombre illimité : cette règle explique la variété de ses assemblages." }
     ],
     explication: "Avec quatre bras, le carbone peut s'unir à quatre atomes à la fois, et surtout à d'autres carbones : il forme ainsi de longues chaînes, des anneaux, des cages. C'est pour cela que la vie est bâtie sur le carbone : protéines, sucres, graisses et ADN sont tous des assemblages de carbones. Le diamant (un réseau bien serré) et le graphite (des feuillets) sont deux façons de ranger ces mêmes atomes."
   },
@@ -511,10 +520,10 @@ const QUESTIONS = [
   {
     question: "Après la mort d'une étoile très massive, son cœur peut laisser une étoile à neutrons. Dans quel cas laisse-t-il plutôt un trou noir ?",
     options: [
-      { texte: "Quand l'étoile de départ était encore plus lourde", correct: true },
-      { texte: "Quand elle était plus légère et plus froide", correct: false, pourquoi: "C'est l'inverse : une étoile trop légère finit en naine blanche, une simple braise de la taille de la Terre." },
-      { texte: "Quand elle tournait très vite sur elle-même", correct: false, pourquoi: "La rotation change la forme de l'effondrement, mais c'est bien la masse qui décide s'il reste une étoile à neutrons ou un trou noir." },
-      { texte: "Quand elle se trouvait près d'une autre étoile", correct: false, pourquoi: "Le voisinage peut perturber une étoile, mais pas décider de ce qui reste après sa mort." }
+      { texte: "Quand le cœur restant est trop massif pour former une étoile à neutrons", correct: true },
+      { texte: "Quand le cœur restant est trop léger pour devenir une étoile à neutrons", correct: false, pourquoi: "Un cœur moins massif peut au contraire rester une étoile à neutrons ; une étoile initialement trop légère finit plutôt en naine blanche." },
+      { texte: "Quand elle tournait très vite sur elle-même", correct: false, pourquoi: "La rotation et la masse perdue par l'étoile peuvent influencer le résultat, mais c'est surtout la masse du cœur restant qui détermine si la gravité l'emporte." },
+      { texte: "Quand elle se trouvait près d'une autre étoile", correct: false, pourquoi: "Une compagne peut modifier la masse perdue ou gagnée, mais la proximité seule ne décide pas du destin du cœur." }
     ],
     explication: "Tout dépend du poids du cœur qui s'effondre. Jusqu'à environ deux fois la masse du Soleil, les neutrons parviennent à le retenir : il reste une étoile à neutrons, une boule d'une vingtaine de kilomètres à peine. Au-delà d'environ trois masses solaires, rien ne peut plus arrêter l'effondrement : la matière se tasse sans limite et forme un trou noir, dont même la lumière ne peut pas ressortir."
   },
@@ -532,11 +541,11 @@ const QUESTIONS = [
     question: "La Lune se lève, énorme, juste au-dessus des toits. Une heure plus tard, en haut du ciel, elle paraît plus petite. A-t-elle changé de taille ?",
     options: [
       { texte: "Non : elle paraît grosse parce qu'on la compare aux toits", correct: true },
-      { texte: "Oui : elle est vraiment plus près de nous quand elle est basse", correct: false, pourquoi: "La Lune reste à la même distance, environ 384 000 km, qu'elle soit près de l'horizon ou au sommet du ciel. La différence ne se passe pas dans le ciel, mais dans notre tête." },
-      { texte: "Oui : l'air de l'horizon l'agrandit comme une loupe", correct: false, pourquoi: "L'air déforme un peu la forme de la Lune, il l'aplatit légèrement, mais il ne la grossit pas : sur une photo prise le même soir, elle a exactement la même taille." },
+      { texte: "Oui : elle est vraiment plus près de nous quand elle est basse", correct: false, pourquoi: "C'est même légèrement l'inverse : vue depuis la surface de la Terre, la Lune est un peu plus proche lorsqu'elle est haute dans le ciel. Sa distance moyenne reste environ 384 000 km, et l'énorme grossissement perçu près de l'horizon vient surtout de notre cerveau." },
+      { texte: "Oui : l'air de l'horizon l'agrandit comme une loupe", correct: false, pourquoi: "L'air déforme un peu la forme de la Lune, il l'aplatit légèrement, mais il ne produit pas son énorme grossissement apparent : sur une photo prise le même soir avec le même zoom, sa taille change à peine." },
       { texte: "Oui, mais seulement les soirs de pleine Lune", correct: false, pourquoi: "L'effet se produit à toutes les phases, même avec un mince croissant tout fin." }
     ],
-    explication: "La Lune garde la même taille apparente d'un bout à l'autre du ciel : tends le bras et vise-la avec le bout de ton pouce, il la cache aussi bien quand elle est basse et « énorme » que lorsqu'elle est toute petite, en haut. C'est notre cerveau qui se trompe : il la compare aux maisons et aux arbres et la juge immense ; seul dans le ciel, sans repère, il la voit à sa vraie taille. Photographie-la deux fois le même soir, avec le même zoom : elle fait exactement la même taille sur les deux images. Ce mystère s'appelle l'illusion lunaire, et les scientifiques en discutent encore."
+    explication: "La Lune garde presque la même taille apparente d'un bout à l'autre du ciel : tends le bras et vise-la avec le bout de ton pouce, il la cache aussi bien quand elle est basse et « énorme » que lorsqu'elle est toute petite, en haut. C'est notre cerveau qui se trompe : il la compare aux maisons et aux arbres et la juge immense ; seule dans le ciel, sans repère, il la voit plus petite. Photographie-la deux fois le même soir, avec le même zoom : la différence est minuscule comparée à l'effet spectaculaire que tu perçois. Ce mystère s'appelle l'illusion lunaire, et les scientifiques en discutent encore."
   },
   {
     question: "Quel objet est si dense qu'une cuillère à café de sa matière pèserait des milliards de tonnes ?",
@@ -753,10 +762,10 @@ const QUESTIONS = [
     options: [
       { texte: "Dans le noyau", correct: true },
       { texte: "Dans la membrane", correct: false, pourquoi: "La membrane entoure la cellule : elle ne contient pas l'ADN." },
-      { texte: "Dans le cytoplasme uniquement", correct: false, pourquoi: "Le cytoplasme est le liquide de la cellule ; l'ADN est rangé dans le noyau." },
+      { texte: "Dans le cytoplasme uniquement", correct: false, pourquoi: "Le cytoplasme contient les mitochondries, qui ont bien un petit ADN, mais ce n'est pas « uniquement » là : l'essentiel de l'ADN est dans le noyau." },
       { texte: "Dans les mitochondries uniquement", correct: false, pourquoi: "Les mitochondries ont un tout petit peu d'ADN, mais l'essentiel se trouve dans le noyau." }
     ],
-    explication: "Dans le noyau de la cellule, sous forme de chromosomes."
+    explication: "Dans une cellule humaine, l'essentiel de l'ADN se trouve dans le noyau, sous forme de chromosomes. Les mitochondries possèdent aussi un tout petit ADN, hérité de la mère."
   },
   {
     question: "Quel est le plus grand organe du corps humain ?",
@@ -812,11 +821,11 @@ const QUESTIONS = [
     question: "On te fait une prise de sang dans une veine du bras. De quelle couleur est le sang dans la seringue ?",
     options: [
       { texte: "Rouge foncé, presque grenat", correct: true },
-      { texte: "Rouge vif, comme celui des artères", correct: false, pourquoi: "Le sang des veines a déjà cédé son oxygène aux organes : il est plus sombre que celui des artères, qui partent des poumons bien chargées en oxygène." },
+      { texte: "Rouge vif, comme celui des artères", correct: false, pourquoi: "Le sang des veines du bras a déjà cédé une partie de son oxygène aux organes : il est plus sombre que le sang riche en oxygène qui circule dans la plupart des artères." },
       { texte: "Bleu, puisque l'oxygène lui manque", correct: false, pourquoi: "Le sang n'est jamais bleu : sans oxygène il est rouge foncé, avec oxygène il est rouge vif. Les veines paraissent bleues à travers la peau, mais ce n'est pas la couleur du sang." },
       { texte: "Incolore : c'est l'air qui le rougit à la sortie", correct: false, pourquoi: "Le sang est rouge dès qu'il quitte la veine. Au contact de l'air il peut devenir un peu plus vif, mais il n'était pas transparent avant." }
     ],
-    explication: "Le sang des veines est rouge foncé, presque grenat : il a livré son oxygène aux organes. Celui des artères, qui sort des poumons, est rouge vif. Si les veines semblent bleues sous la peau, c'est la peau qui trompe l'œil : elle laisse mieux passer la lumière bleue et absorbe le rouge. C'est donc la peau qui est bleutée, pas le sang."
+    explication: "Dans une veine du bras, le sang est rouge foncé, presque grenat, car il a livré une partie de son oxygène aux organes. Il retourne au cœur, puis aux poumons. Le sang rechargé en oxygène revient des poumons vers le cœur par les veines pulmonaires, puis repart dans les artères du corps : il est rouge vif. Les veines visibles sous la peau paraissent bleues à cause du trajet de la lumière dans la peau, pas parce que le sang serait bleu."
   },
   {
     question: "Combien de chambres possède le cœur humain ?",
@@ -1046,7 +1055,7 @@ const QUESTIONS = [
       { texte: "Aucun des deux n'est attiré", correct: false, pourquoi: "Le fer, lui, est bien attiré : une cuillère en fer se colle au pôle d'un aimant." },
       { texte: "L'aluminium est attiré, mais pas le fer", correct: false, pourquoi: "C'est l'exact contraire : l'aluminium fait pourtant partie des métaux, mais l'aimant l'ignore." }
     ],
-    explication: "Seuls trois métaux sont magnétiques : le fer, le nickel et le cobalt. Tous les autres métaux, comme l'aluminium, le cuivre ou l'or, ne sont pas attirés. C'est pour ça qu'un aimant tient sur une porte de frigo en acier mais glisse sur une canette de soda : elle est en aluminium."
+    explication: "À température ambiante, les principaux éléments métalliques fortement attirés par un aimant sont le fer, le nickel et le cobalt ; certains alliages le sont aussi. L'aluminium, le cuivre et l'or ne sont pratiquement pas attirés dans cette expérience. Un aimant tient donc sur beaucoup de portes de frigo en acier, mais pas sur une canette en aluminium."
   },
   {
     question: "Une flaque laissée au soleil disparaît en quelques heures. Où est passée l'eau ?",
@@ -1179,14 +1188,14 @@ const QUESTIONS = [
     explication: "La lumière ralentit un peu en entrant dans l'eau et change de direction : c'est la réfraction. Ton œil reçoit des rayons décalés, et l'image de la paille semble brisée à la surface de l'eau."
   },
   {
-    question: "Sur une balance de précision, un sac de 1 kg de plumes et un sac de 1 kg de plomb n'affichent pas tout à fait 1 000 g. Lequel affiche le moins ?",
+    question: "Dans l'air, on pèse deux sacs de même masse avec une balance de précision : un très grand sac de plumes et un petit sac de plomb. Lequel affiche le moins ?",
     options: [
-      { texte: "Les plumes : elles déplacent plus d'air, qui les soutient", correct: true },
-      { texte: "Le plomb, parce qu'il est plus dense", correct: false, pourquoi: "La densité dit seulement que le plomb prend moins de place. Comme il est compact, il déplace très peu d'air, et l'air le soutient donc très peu : c'est lui qui affiche le plus." },
-      { texte: "Aucun : les deux affichent exactement 1 000 g", correct: false, pourquoi: "C'est presque vrai, et c'est le piège : les deux ont bien la même masse, mais la balance mesure un poids, et l'air qui entoure les plumes les soulève légèrement. L'écart est petit, mais réel." },
-      { texte: "Impossible à prévoir : cela dépend de la forme des sacs", correct: false, pourquoi: "On peut le prévoir sans connaître leur forme : ce qui compte, c'est le volume d'air déplacé. Les plumes, bien plus volumineuses à masse égale, en déplacent toujours plus." }
+      { texte: "Le grand sac de plumes, car il déplace plus d'air", correct: true },
+      { texte: "Le petit sac de plomb, car il est plus dense", correct: false, pourquoi: "La densité explique pourquoi le plomb est compact, mais ce n'est pas elle qui fait baisser l'affichage. Son petit volume déplace moins d'air : la poussée de l'air vers le haut y est donc plus faible." },
+      { texte: "Aucun : ils affichent forcément le même poids", correct: false, pourquoi: "Leurs masses sont identiques, mais la balance mesure aussi l'effet de l'air. Le grand sac déplace davantage d'air et reçoit une poussée vers le haut un peu plus forte." },
+      { texte: "Le plus lourd des deux sacs, mais on ne peut pas savoir lequel", correct: false, pourquoi: "L'énoncé précise que les deux masses sont égales. C'est le volume total déplacé par chaque sac qui fait ici la petite différence." }
     ],
-    explication: "La masse, c'est la quantité de matière : 1 kg reste 1 kg dans les deux sacs. Mais une balance ne mesure pas la masse, elle mesure le poids, c'est-à-dire la force avec laquelle l'objet appuie sur le plateau. Or tout objet plongé dans l'air reçoit une poussée vers le haut, comme un bouchon dans l'eau : c'est la poussée d'Archimède. Les plumes occupent un volume bien plus grand, elles déplacent donc plus d'air, et l'air les soutient un peu plus. Résultat : la balance affiche quelques dizaines de grammes de moins pour les plumes — de quoi le voir sur une balance de cuisine. C'est exactement le même effet qui fait qu'un ballon d'hélium s'envole."
+    explication: "La masse est la même dans les deux sacs, mais tout objet dans l'air reçoit une petite poussée vers le haut : la poussée d'Archimède. Elle dépend du volume extérieur total, sac compris. Le grand sac de plumes déplace davantage d'air que le petit sac de plomb : la balance affiche donc un peu moins pour lui. L'écart dépend du volume réel des sacs ; on ne peut pas lui donner une valeur universelle. C'est le même principe qui permet à un ballon d'hélium de s'envoler."
   },
   {
     question: "Pourquoi a-t-on chaud en frottant ses mains l'une contre l'autre ?",
@@ -1439,7 +1448,7 @@ const QUESTIONS = [
     explication: "La Lune attire l'eau des océans : du côté qui lui fait face, l'eau se soulève (marée haute), et de l'autre côté aussi. Le Soleil joue un rôle plus faible. Avec la rotation de la Terre, il y a environ deux marées hautes par jour."
   },
   {
-    question: "De quoi sont faits tous les objets autour de toi, à l'échelle la plus petite ?",
+    question: "De quoi sont faits les objets matériels autour de toi, comme une roche, de l'eau ou ton corps ?",
     options: [
       { texte: "D'atomes : de minuscules particules de matière", correct: true },
       { texte: "De cellules vivantes", correct: false, pourquoi: "Les cellules, c'est du vivant : une roche ou un métal, eux, sont faits d'atomes." },
@@ -1529,20 +1538,20 @@ const QUESTIONS = [
     explication: "Dans un composteur, les vers, champignons et bactéries transforment les restes de nourriture et les feuilles mortes en un sol riche, un engrais naturel parfait pour les plantes. En plus, cela allège les poubelles !"
   },
   {
-    question: "D'où vient la plus grande partie de l'oxygène que nous respirons ?",
+    question: "Quels organismes produisent environ la moitié de l'oxygène par photosynthèse sur Terre ?",
     options: [
-      { texte: "Des algues microscopiques des océans", correct: true },
-      { texte: "Des forêts, comme l'Amazonie", correct: false, pourquoi: "Les forêts en produisent beaucoup, mais plus de la moitié de l'oxygène de la planète sort de l'océan." },
+      { texte: "Le phytoplancton des océans", correct: true },
+      { texte: "Des forêts, comme l'Amazonie", correct: false, pourquoi: "Les forêts en produisent beaucoup, mais le phytoplancton réalise environ la moitié de la photosynthèse mondiale. Presque tout cet oxygène est ensuite consommé par la respiration et la décomposition." },
       { texte: "De la couche d'ozone", correct: false, pourquoi: "La couche d'ozone nous protège des rayons ultraviolets ; elle ne fabrique pas d'oxygène." },
       { texte: "Des gaz relâchés par les volcans", correct: false, pourquoi: "Les volcans rejettent surtout du CO₂ et de la vapeur d'eau, pas d'oxygène." }
     ],
-    explication: "On imagine souvent que l'oxygène vient surtout des arbres, mais c'est le phytoplancton — des algues microscopiques à la surface des océans — qui en produit plus de la moitié. Sans ces invisibles, on ne pourrait presque pas respirer !"
+    explication: "Le phytoplancton — algues microscopiques et bactéries photosynthétiques comme Prochlorococcus — produit environ la moitié de l'oxygène issu de la photosynthèse sur Terre. Mais attention : la respiration et la décomposition marines consomment presque autant d'oxygène. Celui de l'atmosphère s'est accumulé très lentement sur des millions d'années ; notre survie dépend donc de tout cet équilibre, pas d'un robinet d'oxygène inépuisable."
   },
   {
     question: "Pourquoi le verre peut-il être recyclé à l'infini, alors que le papier perd en qualité ?",
     options: [
       { texte: "Parce que le verre refond à neuf, alors que les fibres du papier s'usent", correct: true },
-      { texte: "Parce que le verre est un matériau naturel et le papier un produit chimique", correct: false, pourquoi: "Les deux sont naturels : le papier vient du bois, le verre du sable. La différence est dans la façon dont ils se recyclent." },
+      { texte: "Parce que le verre est un matériau naturel et le papier un produit chimique", correct: false, pourquoi: "Le verre et le papier sont tous deux fabriqués à partir de matières premières transformées. Leur origine ne suffit pas à expliquer le recyclage : c'est la façon dont leur matière supporte les cycles de fabrication qui compte." },
       { texte: "Parce que le papier ne se recycle pas vraiment, il est seulement brûlé", correct: false, pourquoi: "Le papier se recycle bel et bien, mais ses fibres s'usent : on ne peut le faire qu'un nombre limité de fois." },
       { texte: "Parce qu'il faut plus d'énergie pour recycler le papier que pour le fabriquer", correct: false, pourquoi: "Recycler du papier demande au contraire moins d'énergie que de produire de la pâte à partir d'arbres." }
     ],
@@ -1744,7 +1753,7 @@ const QUESTIONS = [
       { texte: "Le merle", correct: true },
       { texte: "Le lézard", correct: false, pourquoi: "Le lézard est un reptile apparu à côté des dinosaures, pas dans leur famille. Il a survécu à la catastrophe, mais sa lignée n'est pas celle des dinosaures." },
       { texte: "Le crocodile", correct: false, pourquoi: "Le crocodile est un cousin proche, mais pas un descendant : sa lignée s'est séparée bien avant la disparition des dinosaures. Il a traversé la même catastrophe, sans être l'un d'eux." },
-      { texte: "La tortue", correct: false, pourquoi: "La tortue est un autre reptile très ancien, plus proche des lézards que des dinosaures. Sa carapace ne fait pas d'elle une descendante du T. rex." }
+      { texte: "La tortue", correct: false, pourquoi: "La tortue appartient à une autre lignée de reptiles : les études d'ADN la rapprochent du groupe des crocodiles et des oiseaux plutôt que des lézards, mais elle n'est pas une descendante des dinosaures." }
     ],
     explication: "Les oiseaux sont des dinosaures : leur lignée a survécu à la chute de l'astéroïde, il y a 66 millions d'années. Le merle, le pigeon et le poulet descendent d'un petit dinosaure à plumes, et portent encore des écailles sur les pattes et des os creux comme lui. Certains cousins du T. rex, comme le Yutyrannus, étaient même couverts d'un duvet de plumes, et des protéines du collagène du T. rex ressemblent à celles d'un poulet. Autrement dit, un moineau descend du même groupe que le T. rex, tandis que le crocodile n'en est qu'un cousin éloigné."
   },
@@ -1769,14 +1778,14 @@ const QUESTIONS = [
     explication: "Environ 68 % de l'eau douce de la planète est prisonnière des glaces : l'Antarctique, le Groenland et les glaciers de montagne. Les nappes souterraines en gardent près de 30 %, et tout le reste — lacs, rivières, humidité des sols — moins de 2 %. Or l'eau douce elle-même ne représente que 2,5 % de toute l'eau de la Terre : le reste est salé, dans les océans. Autrement dit, l'eau que nous buvons sort presque toujours d'un puits, pas d'une rivière, et les glaciers sont le vrai château d'eau de la planète."
   },
   {
-    question: "Des astronomes pensent avoir trouvé une planète entièrement en diamant. Comment une telle planète peut-elle exister ?",
+    question: "Des astronomes ont découvert autour d'un pulsar un corps très dense, peut-être riche en carbone cristallin. Quelle origine est envisagée ?",
     options: [
-      { texte: "C'est un cœur de carbone d'étoile morte, tassé par la gravité", correct: true },
+      { texte: "Le cœur résiduel d'une étoile, dépouillé de ses couches externes", correct: true },
       { texte: "Les diamants y ont poussé lentement, comme les cristaux d'une grotte", correct: false, pourquoi: "Les cristaux d'une grotte grandissent dans l'eau, sur des milliers d'années. Un diamant, lui, se forme quand du carbone est écrasé : il n'y a pas d'eau pour le faire pousser à cette échelle." },
       { texte: "Le froid de l'espace a gelé son carbone en cristaux", correct: false, pourquoi: "Le froid ne fabrique pas de diamant : c'est la très forte pression qui serre les atomes de carbone en cristal. Dans l'espace, le froid aurait plutôt tendance à figer la matière telle quelle." },
-      { texte: "C'est une légende : aucun indice ne permet de le penser", correct: false, pourquoi: "Il y a bien un indice : la masse et la taille de cette planète n'ont pu être mesurées qu'en supposant une matière très dense et cristalline, comme le diamant." }
+      { texte: "C'est une légende : aucun indice ne permet de l'envisager", correct: false, pourquoi: "Les mesures indiquent un objet très dense et l'orbite impose une taille maximale. Une ancienne étoile dépouillée, riche en carbone et en oxygène, est donc une explication envisagée, même si sa composition exacte n'est pas prouvée." }
     ],
-    explication: "En 2011, des astronomes ont repéré autour d'un pulsar — une étoile à neutrons qui tourne très vite — une petite planète dont la masse et le diamètre ne collaient qu'avec une matière très dense et cristalline : du carbone compressé, autrement dit du diamant. Elle serait le reste du cœur d'une étoile géante, dont l'immense gravité a tassé le carbone, tandis que ses couches externes ont été arrachées. Ce n'est pas une photo : c'est la seule matière connue qui explique sa densité. Et le phénomène pourrait être courant : dans Uranus et Neptune, le méthane enfoui en profondeur se transformerait en pluie de diamants."
+    explication: "En 2011, des astronomes ont découvert autour du pulsar PSR J1719-1438 un compagnon très dense. Il s'agirait du cœur résiduel d'une étoile dont le pulsar a arraché presque toutes les couches externes. Pour tenir sur son orbite très serrée, ce résidu doit être compact et probablement riche en carbone et en oxygène ; une partie de son carbone pourrait être cristallisée, un peu comme du diamant. C'est un modèle fondé sur les mesures, pas une photo ni la preuve d'une planète entièrement en diamant."
   },
   {
     question: "Quelle est la capitale de l'Australie ?",
@@ -1892,38 +1901,30 @@ function rendreQuestion(i) {
   const q = selection[i];
   // Le numéro de question est déjà affiché par le compteur de l'en-tête.
   let html = `
-    <h2 class="question-texte">${q.question}</h2>
-    <div class="options">`;
+    <h2 class="question-texte" id="titre-question">${q.question}</h2>
+    <div class="options" role="radiogroup" aria-labelledby="titre-question">`;
 
   q.optionsAffichees.forEach(function (opt, j) {
-    let classe = "option";
-    if (q.revelee) {
-      // La réponse a déjà été montrée : le choix est verrouillé
-      classe += " verrouillee";
-      if (opt.correct) {
-        classe += " bonne";
-      } else if (q.choix === j) {
-        classe += " fausse";
-      }
-    } else if (q.choix === j) {
-      classe += " choisie";
-    }
-    const balise = q.revelee ? "div" : "button";
-    // Sur l'écran de réponse, l'état n'est porté que par la couleur : on ajoute
-    // une mention lisible par les lecteurs d'écran (et masquée à l'œil).
     let mention = "";
     if (q.revelee) {
       const estChoisi = q.choix === j;
       if (opt.correct) mention = `<span class="sr-only">(${estChoisi ? "ta réponse, juste" : "bonne réponse"})</span>`;
       else if (estChoisi) mention = '<span class="sr-only">(ta réponse, incorrecte)</span>';
+      const classe = "option verrouillee" + (opt.correct ? " bonne" : estChoisi ? " fausse" : "");
+      html += `
+        <div class="${classe}">
+          <span class="lettre" aria-hidden="true">${LETTRES[j]}</span>
+          <span>${opt.texte}${mention}</span>
+        </div>`;
+    } else {
+      // Un vrai groupe radio garantit un seul choix, sans recharger la question.
+      html += `
+        <label class="option${q.choix === j ? " choisie" : ""}" data-option="${j}">
+          <input type="radio" name="question-${i}" value="${j}"${q.choix === j ? " checked" : ""}>
+          <span class="lettre" aria-hidden="true">${LETTRES[j]}</span>
+          <span>${opt.texte}</span>
+        </label>`;
     }
-    html += `
-      <${balise} class="${classe}" data-option="${j}"${q.revelee
-        ? ""
-        : ' aria-pressed="' + (q.choix === j) + '"'}>
-        <span class="lettre" aria-hidden="true">${LETTRES[j]}</span>
-        <span>${opt.texte}${mention}</span>
-      </${balise}>`;
   });
 
   html += `
@@ -2018,15 +2019,12 @@ function rendre() {
     carte.innerHTML = rendreQuestion(dia.index);
     compteur.textContent = "Question " + (dia.index + 1) + " / " + selection.length;
     if (!selection[dia.index].revelee) {
-      carte.querySelectorAll(".option").forEach(function (bouton) {
-        bouton.addEventListener("click", function () {
-          const rang = parseInt(bouton.getAttribute("data-option"), 10);
-          selection[dia.index].choix = rang;
-          rendre();
-          // Le rendu recrée les boutons : on remet le focus sur l'option choisie
-          // pour que la navigation au clavier ne reparte pas de zéro.
-          const meme = carte.querySelector('.option[data-option="' + rang + '"]');
-          if (meme) meme.focus({ preventScroll: true });
+      carte.querySelectorAll('input[type="radio"]').forEach(function (radio) {
+        radio.addEventListener("change", function () {
+          selection[dia.index].choix = Number(radio.value);
+          carte.querySelectorAll(".option").forEach(function (option) {
+            option.classList.toggle("choisie", option.contains(radio));
+          });
         });
       });
     }
@@ -2063,6 +2061,16 @@ function rendre() {
   }
 
   carte.scrollTop = 0;
+
+  if (dia.type === "question" && !selection[dia.index].revelee) {
+    const choix = carte.querySelector('input[type="radio"]:checked')
+      || carte.querySelector('input[type="radio"]');
+    choix?.focus({ preventScroll: true });
+  } else if (dia.type === "final") {
+    document.getElementById("btnRecommencer").focus({ preventScroll: true });
+  } else {
+    btnSuivant.focus({ preventScroll: true });
+  }
 }
 
 function avancer() {
@@ -2092,8 +2100,9 @@ btnSuivant.addEventListener("click", avancer);
 btnPrecedent.addEventListener("click", reculer);
 
 document.addEventListener("keydown", function (e) {
-  // La barre d'espace et Entrée restent réservées au bouton qui a le focus
-  // (choisir une option, valider, avancer) : on ne les intercepte jamais.
+  // Les flèches d'un groupe radio changent nativement la réponse ; elles ne
+  // doivent pas naviguer entre les diapositives ni révéler la solution.
+  if (e.target.closest('input[type="radio"]')) return;
   if (e.key === "ArrowRight") {
     if (DIAPOS[position].type !== "final") {
       e.preventDefault();
