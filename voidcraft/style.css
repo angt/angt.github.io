@@ -25,6 +25,18 @@ html, body {
 }
 canvas { display: block; touch-action: none; }
 
+#fatal {
+    position: fixed;
+    inset: 20% 10%;
+    z-index: 200;
+    padding: 24px;
+    background: #101522;
+    border: 1px solid #8af;
+    color: #fff;
+    font-size: 18px;
+    line-height: 1.5;
+}
+
 @media (orientation: landscape) {
     #main-panel {
         position: fixed;
@@ -354,6 +366,8 @@ canvas { display: block; touch-action: none; }
     font-size: 7px;
 }
 
+.name-short { display: none; }
+
 @media (orientation: landscape) {
     .module-preview { width: 28px; height: 28px; }
     .module-name { font-size: 9px; }
@@ -367,6 +381,8 @@ canvas { display: block; touch-action: none; }
         .atom-symbol { font-size: 9px; }
         .atom-count { font-size: 6px; }
         .module-name { font-size: 7px; }
+        .name-full { display: none; }
+        .name-short { display: inline; }
         .module-item { padding: 1px 3px; gap: 2px; }
         .module-preview { width: 16px; height: 16px; }
     }

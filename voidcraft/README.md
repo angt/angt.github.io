@@ -46,8 +46,8 @@ unique color.
 * Floating atoms are unstable and gradually dissipate.
 * Decay follows an exponential model with a base half-life of
   approximately 60 seconds.
-* Every floating atom evaluates a probability of disappearing each
-  second.
+* Every floating atom evaluates a probability of disappearing every
+  300 milliseconds.
 * This enforces strategic Drone Bay placement to minimize resource loss.
 
 ## 3. Storage System
@@ -62,8 +62,9 @@ pool.
   initial expansion. The capacity is full at the beginning.
 * **Cargo Bays:** Expand global storage limits. Capacities vary per atom
   type.
-* **Full Capacity:** If the global pool is full, Drones cannot collect
-  or deposit additional atoms.
+* **Full Capacity:** Capacity is tracked independently for each atom
+  type. Drones cannot collect an atom whose storage is full, but can
+  still collect another type with available space.
 * **Destruction Penalty:** If a Cargo Bay is destroyed, all atoms stored
   within it are ejected into space and become subject to standard atom
   decay.
@@ -90,8 +91,8 @@ ship's network. Energy is measured in Joules (J).
 * **Energy Providers:** Modules generating power must attach directly to
   an energy consumer.
 * **Hull Sections (Proxies):** Passively bridge power over distances.
-  They can only attach to other Hull Sections or energy-providing
-  modules.
+  Their production and consumption balance to zero net power. They can
+  attach to other Hull Sections or energy-providing modules.
 * **Sensor Arrays:** Require no power. Must attach exclusively to Weapon
   modules.
 
@@ -128,7 +129,7 @@ ship's network. Energy is measured in Joules (J).
 **Hull Section**
 
 * **Role:** Structural Proxy.
-* **Features:** Zero power requirement. Cost-effective method for
+* **Features:** Zero net power requirement. Cost-effective method for
   bridging power to distant consumer modules.
 
 **Drone Bay**
@@ -140,22 +141,25 @@ ship's network. Energy is measured in Joules (J).
 
 **Drone Logic Loop**
 
-1. **If cargo is not empty:** Find the nearest valid storage module.
-2. **If cargo is not full:** Find the nearest atom within the Drone Bay's radius.
+1. **If cargo is not empty:** Find the nearest storage module able to
+   accept at least one carried atom type. Deposit there before collecting
+   anything else.
+2. **Otherwise:** Find the atom closest to the drone within the Drone
+   Bay's radius for which the drone still has cargo space.
 3. Move toward the nearest target found above.
 4. **If no target was found:** Orbit any ship module.
 
 **Plasma Cannon**
 
 * **Role:** Heavy Defense.
-* **Features:** Requires power. Fires heavy projectiles. High damage,
-  high cooldown. Optimal against massive, slow aliens.
+* **Features:** Requires power. Fires heavy projectiles. High damage
+  and a longer cooldown than the Laser Array.
 
 **Laser Array**
 
 * **Role:** Light Defense.
-* **Features:** Requires power. Continuous beam. Low damage, low
-  cooldown. Optimal against small, fast aliens.
+* **Features:** Requires power. Fires a brief beam at a rapid rate,
+  with low damage per shot.
 
 **Sensor Array**
 
@@ -172,8 +176,8 @@ ship's network. Energy is measured in Joules (J).
 
 ## 7. Alien Behavior
 
-* **Spawning:** Aliens spawn off-screen in waves. Smaller variants are
-  statistically more common than large ones.
+* **Spawning:** Aliens spawn in a distant band around the ship. Smaller
+  variants are statistically more common than large ones.
 * **Combat:** Aliens deal damage by physically crashing into ship
   modules.
 * **Targeting Priority:** Aliens strictly path toward *operational*

@@ -45,7 +45,7 @@ function Cargo(capacity = {}) {
 
         scale(factor) {
             for (const type in this._capacity) {
-                this._capacity[type] = Math.floor(this._capacity[type] * factor);
+                this._capacity[type] = Math.max(0, Math.floor(this._capacity[type] * factor));
             }
             for (const type in this._contents) {
                 if (this._capacity[type] !== undefined && this._contents[type] > this._capacity[type]) {
@@ -107,14 +107,6 @@ function Cargo(capacity = {}) {
                 this._capacity[t] = (this._capacity[t] || 0) + obj[t];
             }
             return this;
-        },
-
-        canAfford(costObj) {
-            const cost = costObj._capacity || costObj;
-            for (const type in cost) {
-                if (this.get(type) < cost[type]) return false;
-            }
-            return true;
         },
 
         canStore(target) {

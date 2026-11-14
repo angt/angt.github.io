@@ -78,12 +78,10 @@ function createInputHandler(camera, canvas) {
         isPanning: false,
         panStartX: 0,
         panStartY: 0,
-        lastCentroid: null,
-        lastTouchCount: 0
+        lastCentroid: null
     };
 
     function getCentroid(touchList) {
-        if (touchList.length === 0) return null;
         let x = 0, y = 0;
         for (const t of touchList) {
             x += t.clientX;
@@ -102,7 +100,7 @@ function createInputHandler(camera, canvas) {
 
     canvas.addEventListener('mousemove', (e) => {
         if (!state.isPanning) return;
-        camera.pan(e.clientX - state.panStartX, e.clientY - state.panStartY);
+        camera.pan(state.panStartX - e.clientX, state.panStartY - e.clientY);
         state.panStartX = e.clientX;
         state.panStartY = e.clientY;
     });
@@ -117,31 +115,24 @@ function createInputHandler(camera, canvas) {
         camera.pan(e.deltaX, e.deltaY);
     }, { passive: false });
 
-    const resetTouch = () => { state.lastCentroid = null; state.lastTouchCount = 0; };
+    const resetTouch = () => { state.lastCentroid = null; };
 
     canvas.addEventListener('touchstart', (e) => {
         if (e.touches.length >= 2) {
             state.lastCentroid = getCentroid(e.touches);
-            state.lastTouchCount = e.touches.length;
         }
     });
 
     canvas.addEventListener('touchmove', (e) => {
-        if (e.touches.length < 2 || !state.lastCentroid || state.lastTouchCount < 2) {
-            state.lastTouchCount = e.touches.length;
-            return;
-        }
+        if (e.touches.length < 2 || !state.lastCentroid) return;
         const curr = getCentroid(e.touches);
-        if (curr) {
-            camera.pan(state.lastCentroid.x - curr.x, state.lastCentroid.y - curr.y);
-            state.lastCentroid = curr;
-        }
+        camera.pan(state.lastCentroid.x - curr.x, state.lastCentroid.y - curr.y);
+        state.lastCentroid = curr;
         e.preventDefault();
-        state.lastTouchCount = e.touches.length;
     }, { passive: false });
 
     canvas.addEventListener('touchend', (e) => {
-        e.touches.length < 2 ? resetTouch() : state.lastTouchCount = e.touches.length;
+        if (e.touches.length < 2) resetTouch();
     });
 
     canvas.addEventListener('touchcancel', resetTouch);
@@ -153,6 +144,4 @@ function createInputHandler(camera, canvas) {
             e.preventDefault();
         }
     });
-
-    return state;
 }

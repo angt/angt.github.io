@@ -6,7 +6,13 @@
 
 const canvas = document.getElementById('glCanvas');
 const gl = canvas.getContext('webgl2', { antialias: false, alpha: false, preserveDrawingBuffer: false });
-if (!gl) throw new Error('WebGL2 not supported');
+if (!gl) {
+    const fatal = document.createElement('div');
+    fatal.id = 'fatal';
+    fatal.textContent = 'VoidCraft requires WebGL2. Please use a current browser with hardware acceleration enabled.';
+    document.body.appendChild(fatal);
+    throw new Error('WebGL2 not supported');
+}
 
 const vsSource = `#version 300 es
 in vec2 aCenter;
@@ -41,20 +47,33 @@ function createProgram(vs, fs) {
     gl.shaderSource(vsShader, vs);
     gl.compileShader(vsShader);
     if (!gl.getShaderParameter(vsShader, gl.COMPILE_STATUS)) {
-        console.error('VS Error:', gl.getShaderInfoLog(vsShader));
+        const error = gl.getShaderInfoLog(vsShader);
+        gl.deleteShader(vsShader);
+        gl.deleteProgram(p);
+        throw new Error(`Vertex shader compilation failed: ${error}`);
     }
     const fsShader = gl.createShader(gl.FRAGMENT_SHADER);
     gl.shaderSource(fsShader, fs);
     gl.compileShader(fsShader);
     if (!gl.getShaderParameter(fsShader, gl.COMPILE_STATUS)) {
-        console.error('FS Error:', gl.getShaderInfoLog(fsShader));
+        const error = gl.getShaderInfoLog(fsShader);
+        gl.deleteShader(vsShader);
+        gl.deleteShader(fsShader);
+        gl.deleteProgram(p);
+        throw new Error(`Fragment shader compilation failed: ${error}`);
     }
     gl.attachShader(p, vsShader);
     gl.attachShader(p, fsShader);
     gl.linkProgram(p);
     if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
-        console.error('Link Error:', gl.getProgramInfoLog(p));
+        const error = gl.getProgramInfoLog(p);
+        gl.deleteShader(vsShader);
+        gl.deleteShader(fsShader);
+        gl.deleteProgram(p);
+        throw new Error(`Shader program link failed: ${error}`);
     }
+    gl.deleteShader(vsShader);
+    gl.deleteShader(fsShader);
     return p;
 }
 
@@ -111,7 +130,6 @@ gl.vertexAttribDivisor(aColor, 1);
 
 gl.bindVertexArray(null);
 
-const MAX_QUADS = Math.floor(MAX_VERTICES / 6);
 const instanceData = new Float32Array(MAX_QUADS * 6);
 let quadCount = 0;
 
@@ -202,6 +220,7 @@ const shockwaves = [];
 const singularityParticles = [];
 const voidRifts = [];
 let gameTime = 0, gameOver = false, totalKills = 0, isPaused = false;
+let renderCapacityWarned = false;
 
 // ============================================================================
 // STORAGE SYSTEM
@@ -250,10 +269,11 @@ function updateShip() {
         }
     }
 
-    // Auto-reconnect
-    for (const b of blocks) {
-        if (linked.has(b)) continue;
-        const nearest = findValidLinkTarget(b);
+    // Auto-reconnect only to the existing ship; disconnected modules must not
+    // form a new network among themselves.
+    const unlinked = [...blocks].filter(b => !linked.has(b));
+    for (const b of unlinked) {
+        const nearest = findValidLinkTarget(b, linked);
         if (nearest) {
             bridges.add({
                 from: nearest,
@@ -261,22 +281,41 @@ function updateShip() {
                 reverse: b.energyProduce > nearest.energyProduce
             });
             linked.add(b);
+            children.get(nearest).push(b);
+            queue.push(b);
+            while (queue.length > 0) {
+                const current = queue.shift();
+                for (const child of children.get(current)) {
+                    if (!linked.has(child)) {
+                        linked.add(child);
+                        queue.push(child);
+                    }
+                }
+            }
         }
     }
 
     let totalPower = 0;
+    const consumers = [];
 
     for (const b of linked) {
         const power = b.energyProduce - b.energyCost;
         if (power >= 0) {
             totalPower += power;
             b.operational = true;
+        } else {
+            consumers.push(b);
         }
     }
-    for (const b of linked) {
-        if (b.operational) continue;
-        totalPower += b.energyProduce - b.energyCost;
-        if (totalPower >= 0) b.operational = true;
+    // A module that cannot be powered must not consume part of the budget.
+    // Cheapest-first also makes the result independent of construction order.
+    consumers.sort((a, b) => a.energyCost - a.energyProduce - (b.energyCost - b.energyProduce));
+    for (const b of consumers) {
+        const demand = b.energyCost - b.energyProduce;
+        if (totalPower >= demand) {
+            totalPower -= demand;
+            b.operational = true;
+        }
     }
     storages.length = 0;
 
@@ -286,14 +325,13 @@ function updateShip() {
         }
     }
     for (const b of blocks) {
-        if (b.range > 0) {
-            let range = b.range;
+        b.rangeBoosted = b.range;
+        if (b.range > 0 && b.operational) {
             for (const bridge of bridges) {
-                if (bridge.from === b && bridge.to.rangeBoost) {
-                    range *= bridge.to.rangeBoost;
+                if (bridge.from === b && bridge.to.operational && bridge.to.rangeBoost) {
+                    b.rangeBoosted *= bridge.to.rangeBoost;
                 }
             }
-            b.rangeBoosted = range;
         }
     }
 }
@@ -372,10 +410,11 @@ function updateUI() {
 
 function updatePanelAffordability() {
     const items = moduleList.querySelectorAll('.module-item');
+    const total = totalStorage();
     items.forEach(item => {
         const def = BLOCKS[item._blockType];
         if (!def) return;
-        item.classList.toggle('unaffordable', !totalStorage().canFill(def.cost));
+        item.classList.toggle('unaffordable', !total.canFill(def.cost));
     });
 }
 
@@ -434,7 +473,7 @@ function initMainPanel() {
         item.innerHTML = `
             <div class="module-preview"></div>
             <div class="module-details">
-                <div class="module-name"><span class="module-key">[${keyNum}]</span> ${def.name}</div>
+                <div class="module-name"><span class="module-key">[${keyNum}]</span> <span class="name-full">${def.name}</span><span class="name-short">${def.shortName || def.name}</span></div>
             </div>
         `;
 
@@ -461,6 +500,48 @@ function createBlock(type, x, y) {
         animPulse: 0,
         lastTime: 0,
     };
+}
+
+function rotateCoord(x, y, rotation) {
+    for (let i = 0; i < rotation; i++) [x, y] = [y, -x];
+    return [x, y];
+}
+
+function getBlockSquares(block) {
+    const squares = BLOCKS[block.type].squares.map(sq => rotateCoord(sq.x, sq.y, block.rotation || 0));
+    const xs = squares.map(([x]) => x);
+    const ys = squares.map(([, y]) => y);
+    const baseX = block.x - (Math.min(...xs) + Math.max(...xs)) * B * 0.5;
+    const baseY = block.y - (Math.min(...ys) + Math.max(...ys)) * B * 0.5;
+    return squares.map(([x, y]) => ({ x: baseX + x * B, y: baseY + y * B }));
+}
+
+function overlapsBlock(point, block) {
+    return getBlockSquares(block).some(square =>
+        Math.abs(point.x - square.x) < B / 2 && Math.abs(point.y - square.y) < B / 2
+    );
+}
+
+function blocksOverlap(a, b) {
+    const aSquares = getBlockSquares(a);
+    const bSquares = getBlockSquares(b);
+    return aSquares.some(square =>
+        bSquares.some(other =>
+            Math.abs(square.x - other.x) < B && Math.abs(square.y - other.y) < B
+        )
+    );
+}
+
+function circleTouchesBlock(circle, radius, block) {
+    return getBlockSquares(block).some(square => {
+        const dx = Math.max(Math.abs(circle.x - square.x) - B / 2, 0);
+        const dy = Math.max(Math.abs(circle.y - square.y) - B / 2, 0);
+        return dx * dx + dy * dy <= radius * radius;
+    });
+}
+
+function alienRadius(alien) {
+    return (1 + alien.size * 0.7) * B * 1.15 + B * Math.SQRT1_2 * 1.15;
 }
 
 function spawnAtomsFromCargo(cargo, x, y, spread = 30) {
@@ -492,6 +573,16 @@ function dist2(x1, y1, x2, y2) {
     return dx * dx + dy * dy;
 }
 
+function pointSegmentDistance2(point, x1, y1, x2, y2) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const length2 = dx * dx + dy * dy;
+    const t = length2 === 0 ? 0 : Math.max(0, Math.min(1,
+        ((point.x - x1) * dx + (point.y - y1) * dy) / length2
+    ));
+    return dist2(point.x, point.y, x1 + t * dx, y1 + t * dy);
+}
+
 // ============================================================================
 // DRAG & DROP
 // ============================================================================
@@ -506,14 +597,15 @@ function getEventCoords(e) {
 function canConnect(from, to) {
     return (from.energyProduce > 0 && to.energyCost > 0)
         || (from.energyCost > 0 && to.energyProduce > to.energyCost)
-        || (from.range && to.rangeBoost > 0)
+        || ((from.projectile || from.laser) && to.rangeBoost > 0)
 }
 
-function findValidLinkTarget(block) {
+function findValidLinkTarget(block, candidates = blocks) {
     let nearest = null;
     let nearestDist = Infinity;
     const maxDist = 350 * 350;
-    for (const b of blocks) {
+    for (const b of candidates) {
+        if (b === block) continue;
         const d = dist2(b.x, b.y, block.x, block.y);
         if (d > maxDist) continue;
         if (canConnect(b, block) && d < nearestDist) {
@@ -565,16 +657,27 @@ function moveEnd(shouldCancel = false) {
     draggingBlock = null;
     hideModuleInfo();
 
-    if (shouldCancel || !block.nearestBlock) return;
+    if (shouldCancel) return;
+    const nearestBlock = findValidLinkTarget(block);
+    if (!nearestBlock) {
+        logStatus('No valid ship connection nearby', 'warning');
+        return;
+    }
+    for (const other of blocks) {
+        if (blocksOverlap(block, other)) {
+            logStatus('Modules cannot overlap', 'warning');
+            return;
+        }
+    }
     if (!totalStorage().canFill(block.cost)) {
         logStatus(`Not enough resources for ${block.name}`, 'warning');
         return;
     }
     buyBlock(block.cost);
     bridges.add({
-        from: block.nearestBlock,
+        from: nearestBlock,
         to: block,
-        reverse: block.energyProduce > block.nearestBlock.energyProduce
+        reverse: block.energyProduce > nearestBlock.energyProduce
     });
     delete block.dragStartTime;
     delete block.initialRotation;
@@ -653,7 +756,6 @@ function spawnAlien() {
         speed: 0.01 + Math.random() * 0.05,
         phase: Math.random() * Math.PI * 2,
         seed: Math.random(),
-        attackCooldown: 0,
         target: null
     });
 }
@@ -689,6 +791,7 @@ function fireSingularity(block) {
         const d = dist2(a.x, a.y, block.x, block.y);
         if (d < range) {
             for (let j = 0; j < Math.floor(a.size * 12); j++) {
+                const life = 500 + Math.random() * 500;
                 singularityParticles.push({
                     x: a.x, y: a.y,
                     angle: Math.random() * Math.PI * 2,
@@ -696,7 +799,7 @@ function fireSingularity(block) {
                     speed: 0.005 + Math.random() * 0.00375,
                     brightness: 0.8 + Math.random() * 0.2,
                     size: 1.5 + Math.random() * 2,
-                    life: 500 + Math.random() * 500, maxLife: 500 + Math.random() * 500,
+                    life, maxLife: life,
                     ownerX: block.x, ownerY: block.y
                 });
             }
@@ -718,6 +821,20 @@ function fireSingularity(block) {
     logStatus(`Singularity destroyed ${killedCount} enemies, ${atomsDestroyed} atoms lost`, 'warning');
     block.triggerCooldown = gameTime + block.cooldown;
     block.chargeLevel = 0;
+}
+
+function pickAlienTarget(alien) {
+    let target = coreBlock;
+    let nearestDist = dist2(alien.x, alien.y, coreBlock.x, coreBlock.y);
+    for (const b of blocks) {
+        if (!b.operational) continue;
+        const d = dist2(alien.x, alien.y, b.x, b.y);
+        if (d < nearestDist) {
+            target = b;
+            nearestDist = d;
+        }
+    }
+    return target;
 }
 
 function moveToward(obj, targetX, targetY) {
@@ -757,7 +874,7 @@ function updateDrone(drone) {
         }
     }
 
-    if (drone.owner && drone.owner.operational) {
+    if (!action && drone.owner && drone.owner.operational) {
         for (const type of drone.cargo.typesWithSpace()) {
             for (const a of drone.owner.nearbyAtoms?.[type] || []) {
                 const dist = dist2(a.x, a.y, drone.x, drone.y);
@@ -778,7 +895,7 @@ function updateDrone(drone) {
                 bestTarget = b;
             }
         }
-        orbitAround(drone, bestTarget.x, bestTarget.y);
+        if (bestTarget) orbitAround(drone, bestTarget.x, bestTarget.y);
         return;
     }
 
@@ -850,7 +967,7 @@ function update() {
         p.x = p.ownerX + Math.cos(p.angle) * Math.max(0, p.radius);
         p.y = p.ownerY + Math.sin(p.angle) * Math.max(0, p.radius);
         p.life -= elapsedTime;
-        p.brightness *= Math.pow(0.98, elapsedTime / 16);
+        p.brightness *= Math.pow(0.98, elapsedTime / 16.6667);
         if (p.life <= 0 || p.radius <= 0) {
             singularityParticles.splice(i, 1);
         }
@@ -891,7 +1008,7 @@ function update() {
                             vy: Math.sin(angle) * b.projectile.speed,
                             damage: b.projectile.damage,
                             color: b.projectile.color,
-                            life: 10000,
+                            life: getWeaponRange(b) / b.projectile.speed,
                         });
                         b.lastTime = gameTime + b.cooldown;
                         b.animPulse = 1;
@@ -921,9 +1038,10 @@ function update() {
             b.isCharging = b.isCharging ?? false;
             b.chargeLevel = b.chargeLevel ?? 0;
 
-            if (Math.random() < 0.01875 * elapsedTime && !b.isCharging) {
+            if (Math.random() < 1 - Math.exp(-0.01875 * elapsedTime) && !b.isCharging) {
                 const angle = Math.random() * Math.PI * 2;
                 const r = 25 + Math.random() * 15;
+                const life = 600 + Math.random() * 600;
                 singularityParticles.push({
                     x: b.x + Math.cos(angle) * r,
                     y: b.y + Math.sin(angle) * r,
@@ -931,7 +1049,7 @@ function update() {
                     speed: 0.00125 + Math.random() * 0.001875,
                     brightness: 0.4 + Math.random() * 0.3,
                     size: 0.8 + Math.random() * 1.2,
-                    life: 600 + Math.random() * 600, maxLife: 600 + Math.random() * 600,
+                    life, maxLife: life,
                     ownerX: b.x, ownerY: b.y
                 });
             }
@@ -1013,7 +1131,7 @@ function update() {
     // Shockwaves
     for (let i = shockwaves.length - 1; i >= 0; i--) {
         const sw = shockwaves[i];
-        sw.radius += (sw.maxRadius - sw.radius) * 0.0075 * elapsedTime;
+        sw.radius += (sw.maxRadius - sw.radius) * (1 - Math.exp(-0.0075 * elapsedTime));
         sw.life -= elapsedTime;
         sw.alpha = sw.life / (sw.type === 'singularity' ? 1500 : 1000);
         if (sw.life <= 0) {
@@ -1029,33 +1147,37 @@ function update() {
     // Aliens
     for (const a of aliens) {
         const dt = elapsedTime;
-        const range = 16 * B2;
+        const radius = alienRadius(a);
 
         for (const b of blocks) {
-            if (b.hp > 0 && dist2(a.x, a.y, b.x, b.y) < range) {
+            if (b.hp > 0 && circleTouchesBlock(a, radius, b)) {
                 b.hp -= a.damage * dt / 1000;
                 break;
             }
         }
         for (const d of drones) {
-            if (dist2(a.x, a.y, d.x, d.y) < range) {
+            if (dist2(a.x, a.y, d.x, d.y) < (radius + B / 4) ** 2) {
                 destroyDrone(d);
                 break;
             }
         }
-        moveToward(a, 0,0);
+        if (!a.target || !blocks.has(a.target) || a.target.hp <= 0 || !a.target.operational) {
+            a.target = pickAlienTarget(a);
+        }
+        moveToward(a, a.target.x, a.target.y);
     }
 
     // Projectiles
     for (let i = projectiles.length - 1; i >= 0; i--) {
-        const range = 16 * B2;
         const p = projectiles[i];
+        const oldX = p.x, oldY = p.y;
         p.x += p.vx * elapsedTime;
         p.y += p.vy * elapsedTime;
         p.life -= elapsedTime;
         for (const a of aliens) {
             if (p.damage <= 0) break;
-            if (a.hp > 0 && dist2(a.x, a.y, p.x, p.y) < range) {
+            const hitRadius = alienRadius(a) + B * 0.4;
+            if (a.hp > 0 && pointSegmentDistance2(a, oldX, oldY, p.x, p.y) < hitRadius ** 2) {
                 const damageDealt = Math.min(p.damage, a.hp);
                 a.hp -= damageDealt;
                 p.damage -= damageDealt;
@@ -1080,6 +1202,10 @@ function update() {
 
     if (coreBlock.hp <= 0) {
         gameOver = true;
+        if (draggingBlock) {
+            draggingBlock = null;
+            hideModuleInfo();
+        }
         logStatus('GAME OVER!', 'danger');
         return;
     }
@@ -1127,35 +1253,19 @@ function addQuad(px, py, size, c) {
     quadCount++;
 }
 
-function rotateCoord(x, y, rotation) {
-    for (let i = 0; i < rotation; i++) [x, y] = [y, -x];
-    return [x, y];
-}
-
 function renderBlock(block) {
     const def = BLOCKS[block.type];
     if (!def) return;
 
     const brightness = 1;
-    const rotation = block.rotation || 0;
     const pulse = block.animPulse || 0;
     const animOffset = block.animOffset || 0;
     const chargeLevel = block.chargeLevel || 0;
+    const squares = getBlockSquares(block);
 
-    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-    for (const sq of def.squares) {
-        const [rx, ry] = rotateCoord(sq.x, sq.y, rotation);
-        minX = Math.min(minX, rx);
-        maxX = Math.max(maxX, rx);
-        minY = Math.min(minY, ry);
-        maxY = Math.max(maxY, ry);
-    }
-
-    const baseX = block.x - (minX + maxX) * B * 0.5;
-    const baseY = block.y - (minY + maxY) * B * 0.5;
-
-    for (const sq of def.squares) {
-        const [rx, ry] = rotateCoord(sq.x, sq.y, rotation);
+    for (let i = 0; i < def.squares.length; i++) {
+        const sq = def.squares[i];
+        const center = squares[i];
         const breathe = block.operational ? Math.sin(gameTime * 0.00003 + (sq.x * 127 + sq.y * 311 + animOffset) * 0.01) * 0.15 : 0;
         let c = bright(sq.color, 1.0 + pulse * 0.3);
         if (block.type == 'singularity' && block.operational) {
@@ -1166,7 +1276,7 @@ function renderBlock(block) {
             }
         }
         if (!block.operational && !block.dragStartTime) c = [c[0] * 0.5 + 0.25, c[1] * 0.25, c[2] * 0.25];
-        addQuad(baseX + rx * B + breathe, baseY + ry * B + breathe, B, c);
+        addQuad(center.x + breathe, center.y + breathe, B, c);
     }
 }
 
@@ -1223,10 +1333,10 @@ function render() {
 
     // Preview bridges
     if (draggingBlock) {
-        draggingBlock.nearestBlock = findValidLinkTarget(draggingBlock);
-        if (draggingBlock.nearestBlock) {
+        const nearestBlock = findValidLinkTarget(draggingBlock);
+        if (nearestBlock) {
             const b = draggingBlock;
-            const nb = draggingBlock.nearestBlock;
+            const nb = nearestBlock;
             const size = B * 0.7;
             const c = bright(Colors.lightGray, 0.3);
             const dx = nb.x - b.x;
@@ -1365,12 +1475,11 @@ function render() {
         }
     }
 
-    // Kill aliens if we hit the buffer limit
-    if (quadCount >= MAX_QUADS) {
-        for (const a of aliens) {
-            aliens.delete(a);
-            break;
-        }
+    if (quadCount >= MAX_QUADS && !renderCapacityWarned) {
+        renderCapacityWarned = true;
+        logStatus('Render capacity reached; some objects are not displayed', 'warning');
+    } else if (quadCount < MAX_QUADS) {
+        renderCapacityWarned = false;
     }
 
     if (quadCount > 0) {
@@ -1390,7 +1499,10 @@ function render() {
 
 window.addEventListener('resize', handleResize);
 window.addEventListener('orientationchange', () => setTimeout(handleResize, 100));
-document.addEventListener('visibilitychange', () => isPaused = document.hidden);
+document.addEventListener('visibilitychange', () => {
+    isPaused = document.hidden;
+    previousFrameTime = null;
+});
 
 initMainPanel();
 
@@ -1401,22 +1513,17 @@ updateShip();
 logStatus('Build modules to survive!', 'info');
 logStatus('Right-click or 2-finger drag to pan view', 'info');
 
-let initTime = 0;
-let lastTime = 0;
-let currentTime = 0;
+let previousFrameTime = null;
 let elapsedTime = 0;
 
 function gameLoop(now) {
-    if (!initTime) initTime = now;
-    lastTime = currentTime;
-    currentTime = now;
-    elapsedTime = Math.min(Math.max(0, currentTime - lastTime), 100);
-    camera.update(elapsedTime);
-    if (!gameOver && !isPaused) {
-        gameTime = currentTime - initTime;
-        if (elapsedTime > 0) update();
-    }
-    render();
+    const frameTime = previousFrameTime === null ? 0 : Math.min(Math.max(0, now - previousFrameTime), 100);
+    elapsedTime = gameOver || isPaused ? 0 : frameTime;
+    gameTime += elapsedTime;
+    if (elapsedTime > 0) update();
+    previousFrameTime = now;
+    camera.update(frameTime);
+    if (!isPaused) render();
     requestAnimationFrame(gameLoop);
 }
 requestAnimationFrame(gameLoop);

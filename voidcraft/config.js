@@ -1,9 +1,7 @@
 'use strict';
 
 const B = 5;
-const B2 = B * B;
-const MAX_VERTICES = 5000000;
-const GRID_SIZE = 10;
+const MAX_QUADS = 833333;
 const VIEW_HEIGHT = 800;
 const WORLD_RADIUS = 2 * VIEW_HEIGHT;
 
@@ -96,7 +94,7 @@ function defineBlock(config) {
 
 const ENERGY_BLOCK = defineBlock({
     name: 'Reactor',
-    desc: 'Powers nearby modules. Essential for weapons and collectors.',
+    desc: 'Powers linked modules. Essential for weapons and collectors.',
     squares: [
         {x:0,y:0,color:Colors.gold},
         {x:-1,y:0,color:Colors.paleGold},{x:1,y:0,color:Colors.paleGold},{x:0,y:-1,color:Colors.paleGold},{x:0,y:1,color:Colors.paleGold},
@@ -131,6 +129,7 @@ const STORAGE_BLOCK = defineBlock({
 
 const CANON_BLOCK = defineBlock({
     name: 'Plasma Cannon',
+    shortName: 'Cannon',
     desc: 'Heavy projectile weapon. High damage, slow fire rate.',
     squares: [
         {x:-1,y:1,color:Colors.dimGray},{x:0,y:1,color:Colors.lightGray},{x:1,y:1,color:Colors.dimGray},
@@ -150,7 +149,8 @@ const CANON_BLOCK = defineBlock({
 
 const LASER_BLOCK = defineBlock({
     name: 'Laser Array',
-    desc: 'Continuous beam weapon. Fast fire rate, lower damage.',
+    shortName: 'Laser',
+    desc: 'Fast beam weapon. Rapid shots, lower damage.',
     squares: [
         {x:-1,y:1,color:Colors.dimGray},{x:0,y:1,color:Colors.lightGray},{x:1,y:1,color:Colors.dimGray},
         {x:-1,y:0,color:Colors.steel},{x:0,y:0,color:Colors.steel},{x:1,y:0,color:Colors.steel},
@@ -170,7 +170,8 @@ const LASER_BLOCK = defineBlock({
 
 const RADAR_BLOCK = defineBlock({
     name: 'Sensor Array',
-    desc: 'Extends detection and targeting range for nearby weapons. No power required.',
+    shortName: 'Sensor',
+    desc: 'Extends the targeting range of its linked weapon. No power required.',
     squares: [
         {x:0,y:0,color:Colors.steel},
         {x:-1,y:0,color:Colors.steel},{x:1,y:0,color:Colors.steel},{x:0,y:-1,color:Colors.steel},{x:0,y:1,color:Colors.steel},
@@ -221,6 +222,7 @@ const HULL_BLOCK = defineBlock({
 
 const SINGULARITY_BLOCK = defineBlock({
     name: 'Singularity Pulse',
+    shortName: 'Singularity',
     desc: 'Ultimate weapon. Creates a black hole that annihilates ALL matter in range.',
     squares: [
         {x:0,y:0,color:Colors.white},

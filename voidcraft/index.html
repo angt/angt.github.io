@@ -2,21 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <title>VoidCraft</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <canvas id="glCanvas"></canvas>
+    <canvas id="glCanvas" aria-label="VoidCraft game world"></canvas>
     <div id="main-panel">
-        <div id="atom-table"></div>
-        <div id="module-list"></div>
+        <div id="atom-table" aria-label="Available atoms"></div>
+        <div id="module-list" role="group" aria-label="Build modules"></div>
     </div>
-    <div id="module-info"></div>
-    <div id="stats-bar"></div>
-    <div id="status-bar"></div>
+    <div id="module-info" role="tooltip"></div>
+    <div id="stats-bar" aria-label="Game statistics"></div>
+    <div id="status-bar" role="log" aria-live="polite" aria-relevant="additions"></div>
     <script src="cargo.js"></script>
     <script src="config.js"></script>
     <script src="camera.js"></script>
