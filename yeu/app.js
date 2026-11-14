@@ -241,7 +241,9 @@ function fishingWindows(date){
   // look a bit beyond the day so windows crossing midnight are caught
   const ext = findExtrema(new Date(d0.getTime()-6*3600*1000), new Date(d1.getTime()+6*3600*1000));
   const lows = ext.filter(e=>e.type==='BM');
-  const coef = coefficient(date);
+  const pmc = coefficients(date);
+  const values = pmc.filter(Boolean);
+  const coef = values.length ? Math.max(...values.map(c=>c.coef)) : 0;
   const wins = lows.map(low=>{
     const start = new Date(low.time.getTime()-2*3600*1000);
     const end   = new Date(low.time.getTime()+1*3600*1000);
@@ -254,7 +256,7 @@ function fishingWindows(date){
   // keep windows whose low tide falls within the requested day
   const inDay = wins.filter(w=>w.low.time>=d0 && w.low.time<d1);
   inDay.sort((a,b)=>b.score-a.score);
-  return { windows: inDay, coef, extrema: ext.filter(e=>e.time>=d0 && e.time<d1) };
+  return { windows: inDay, coef, extrema: ext.filter(e=>e.time>=d0 && e.time<d1), pmc };
 }
 
 /* ---- formatting helpers (French) ---- */
@@ -276,15 +278,11 @@ function verdict(coef){
 const $ = id => document.getElementById(id);
 
 function renderDay(date, label){
-  const { windows, coef, extrema } = fishingWindows(date);
+  const { windows, coef, extrema, pmc } = fishingWindows(date);
   const best = windows[0];
   const v = best ? verdict(coef) : {t:'—',e:'🌊',cls:'st-bad'};
 
-  // Per-tide coefficient for each high tide (matches the official SHOM value).
-  // coefficients() pairs each actual high with the nearest equilibrium high
-  // (3.35 h phase lag) and returns them in chronological order — the same order
-  // as the day's extrema, so pmSeen indexes both arrays in lockstep.
-  const pmc = coefficients(date);
+  // Per-tide coefficients and the day's extrema are both in chronological order.
   let pmSeen = 0;
   const tidesHtml = extrema.map(e=>{
     let c = null;
